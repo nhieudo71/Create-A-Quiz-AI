@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # Hệ Thống Tạo Đề Thi Trắc Nghiệm Tự Động Với AI (Tao-Trac-Nghiem AI)
 
 Hệ thống chuyên sâu dành cho sinh viên, đặc biệt tập trung cho sinh viên ngành Y khoa:
@@ -86,3 +87,7 @@ npm run dev
 npm run build
 npm start
 ```
+=======
+# Create-A-Quiz-AI
+Tạo câu hỏi trắc nghiệm tự động theo tài liệu của bạn
+>>>>>>> origin/main
