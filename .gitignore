@@ -1,0 +1,33 @@
+# Dependencies
+node_modules/
+client/node_modules/
+
+# Build output
+dist/
+client/dist/
+dist-electron/
+
+# Secrets (giữ lại .env.example)
+.env
+.env.local
+.env.*.local
+
+# Dữ liệu người dùng tải lên
+uploads/*
+!uploads/.gitkeep
+
+# Dữ liệu PGlite nhúng + settings.json (cấu hình nhà cung cấp AI + khoá API,
+# xem src/modules/settings/settings.store.ts) — TUYỆT ĐỐI không commit.
+data/
+
+# Logs & OS
+*.log
+npm-debug.log*
+.DS_Store
+Thumbs.db
+
+# Dữ liệu ngôn ngữ Tesseract: worker tự tải và cache, không cần nằm trong repo
+*.traineddata
+
+# File test chạy tay tạm thời
+*.tmp.ts

@@ -1,0 +1,104 @@
+{
+  "name": "tao-trac-nghiem-ai",
+  "version": "1.0.0",
+  "description": "Hệ thống tạo đề thi trắc nghiệm tự động với AI và luyện thi chuyên sâu",
+  "main": "electron/main.cjs",
+  "scripts": {
+    "dev": "tsx watch src/server.ts",
+    "build": "tsc",
+    "build:server": "tsc",
+    "test": "tsx --test tests/api.test.ts tests/auth.test.ts tests/settings.test.ts tests/backup.test.ts tests/retry.test.ts tests/ocr-fallback.test.ts tests/document-formats.test.ts tests/upload-formats.test.ts tests/quiz-library.test.ts tests/grading.test.ts tests/question-types.test.ts",
+    "build:client": "npm --prefix client run build",
+    "build:all": "npm run build:client && npm run build:server",
+    "start": "node dist/server.js",
+    "electron": "electron .",
+    "electron:dev": "cross-env NODE_ENV=development electron .",
+    "build:exe": "npm run build:all && electron-builder --win --x64",
+    "build:portable": "npm run build:all && electron-builder --win portable --x64"
+  },
+  "keywords": [
+    "quiz",
+    "ai",
+    "gemini",
+    "medical",
+    "exam",
+    "electron"
+  ],
+  "author": "MedQuiz Team",
+  "license": "ISC",
+  "dependencies": {
+    "@electric-sql/pglite": "0.5.15",
+    "@fastify/cors": "^9.0.1",
+    "@fastify/helmet": "^11.1.1",
+    "@fastify/multipart": "^8.2.0",
+    "@fastify/rate-limit": "^9.1.0",
+    "@fastify/static": "^7.0.4",
+    "@google/generative-ai": "^0.21.0",
+    "@napi-rs/canvas": "^0.1.65",
+    "dotenv": "^16.4.5",
+    "exceljs": "^4.4.0",
+    "fastify": "^4.28.1",
+    "jszip": "^3.10.2",
+    "kysely": "^0.27.4",
+    "mammoth": "^1.8.0",
+    "pdf-parse": "^1.1.1",
+    "pdfjs-dist": "^4.10.38",
+    "pg": "^8.12.0",
+    "pino": "^9.2.0",
+    "pino-pretty": "^11.2.1",
+    "tesseract.js": "^5.1.1",
+    "uuid": "^10.0.0",
+    "zod": "^3.23.8"
+  },
+  "devDependencies": {
+    "@types/node": "^20.14.9",
+    "@types/pdf-parse": "^1.1.4",
+    "@types/pg": "^8.11.6",
+    "@types/uuid": "^10.0.0",
+    "cross-env": "^7.0.3",
+    "electron": "^31.1.0",
+    "electron-builder": "^24.13.3",
+    "tsx": "^4.16.2",
+    "typescript": "^5.5.2"
+  },
+  "build": {
+    "appId": "com.medquiz.ai",
+    "productName": "MedQuiz AI",
+    "copyright": "Copyright © 2026 MedQuiz AI Team",
+    "directories": {
+      "output": "dist-electron"
+    },
+    "files": [
+      "dist/**/*",
+      "client/dist/**/*",
+      "electron/**/*",
+      "package.json",
+      "node_modules/**/*",
+      "!node_modules/*/{CHANGELOG.md,README.md,README,test,tests,example,examples}",
+      "!**/*.map"
+    ],
+    "win": {
+      "target": [
+        {
+          "target": "nsis",
+          "arch": [
+            "x64"
+          ]
+        },
+        {
+          "target": "portable",
+          "arch": [
+            "x64"
+          ]
+        }
+      ]
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "shortcutName": "MedQuiz AI"
+    }
+  }
+}

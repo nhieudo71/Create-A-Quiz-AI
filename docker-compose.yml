@@ -1,0 +1,104 @@
+version: '3.8'
+
+services:
+  # ============================================================================
+  # 1. ỨNG DỤNG CHÍNH (BACKEND FASTIFY + CLIENT SPA)
+  # ============================================================================
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: medquiz_app
+    restart: unless-stopped
+    ports:
+      - "${PORT:-3000}:3000"
+    environment:
+      - NODE_ENV=production
+      - PORT=3000
+      - HOST=0.0.0.0
+      # Bắt buộc khi HOST khác loopback: env.config từ chối khởi động nếu thiếu.
+      # Sinh bằng: openssl rand -hex 32  (tối thiểu 32 ký tự)
+      - APP_AUTH_TOKEN=${APP_AUTH_TOKEN:?APP_AUTH_TOKEN phải được đặt trong .env (tối thiểu 32 ký tự)}
+      - DB_MODE=postgres
+      - GEMINI_API_KEY=${GEMINI_API_KEY}
+      - DATABASE_URL=postgres://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-postgres_password}@postgres:5432/${POSTGRES_DB:-tao_trac_nghiem}
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - REDIS_PASSWORD=${REDIS_PASSWORD:-}
+      - MAX_FILE_SIZE_MB=${MAX_FILE_SIZE_MB:-20}
+    volumes:
+      - app_uploads:/app/uploads
+      # settings.json (cấu hình nhà cung cấp AI + khoá API) phải sống sót qua redeploy
+      - app_data:/app/data
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - medquiz_network
+
+  # ============================================================================
+  # 2. CƠ SỞ DỮ LIỆU CHÍNH (POSTGRESQL 16)
+  # ============================================================================
+  postgres:
+    image: postgres:16-alpine
+    container_name: medquiz_postgres
+    restart: unless-stopped
+    ports:
+      - "${POSTGRES_PORT:-5432}:5432"
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres_password}
+      POSTGRES_DB: ${POSTGRES_DB:-tao_trac_nghiem}
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      # Tự động nạp Schema & Index tối ưu khi khởi tạo database lần đầu
+      - ./docs/DATABASE_SCHEMA.sql:/docker-entrypoint-initdb.d/01_schema.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-postgres} -d ${POSTGRES_DB:-tao_trac_nghiem}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    networks:
+      - medquiz_network
+
+  # ============================================================================
+  # 3. BỘ NHỚ CACHE & HÀNG ĐỢI TÁC VỤ (REDIS 7)
+  # ============================================================================
+  redis:
+    image: redis:7-alpine
+    container_name: medquiz_redis
+    restart: unless-stopped
+    ports:
+      - "${REDIS_PORT:-6379}:6379"
+    command: ["redis-server", "--appendonly", "yes"]
+    volumes:
+      - redisdata:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+      start_period: 5s
+    networks:
+      - medquiz_network
+
+# ==============================================================================
+# VOLUMES & NETWORKS
+# ==============================================================================
+volumes:
+  pgdata:
+    name: medquiz_pgdata
+  redisdata:
+    name: medquiz_redisdata
+  app_uploads:
+    name: medquiz_app_uploads
+  app_data:
+    name: medquiz_app_data
+
+networks:
+  medquiz_network:
+    name: medquiz_network
+    driver: bridge

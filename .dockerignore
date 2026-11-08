@@ -1,0 +1,15 @@
+node_modules
+client/node_modules
+npm-debug.log*
+.git
+.gitignore
+.env
+.env.local
+dist
+client/dist
+uploads/*
+!uploads/.gitkeep
+.gemini
+README.md
+.DS_Store
+Thumbs.db
