@@ -46,13 +46,20 @@ export const GeneratorContainer: React.FC<GeneratorContainerProps> = ({ onStartE
       )}
 
       {step === 'CONFIG' && docData && (
-        <GenerationConfigView
-          docData={docData}
-          config={config}
-          onUpdateConfig={handleUpdateConfig}
-          onStartGeneration={handleStartGeneration}
-          onBack={handleReset}
-        />
+        <div className="space-y-4">
+          {errorMessage && (
+            <div className="max-w-2xl mx-auto p-4 rounded-xl bg-rose-50 border border-rose-200 text-xs font-semibold text-rose-800">
+              {errorMessage}
+            </div>
+          )}
+          <GenerationConfigView
+            docData={docData}
+            config={config}
+            onUpdateConfig={handleUpdateConfig}
+            onStartGeneration={handleStartGeneration}
+            onBack={handleReset}
+          />
+        </div>
       )}
 
       {step === 'GENERATING' && (

@@ -1,6 +1,7 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import { GeneratorContainer } from './components/generator/GeneratorContainer';
 import { useQuizGeneratorContext } from './context/QuizGeneratorContext';
+import { toast } from './context/ToastContext';
 import { ExamRoom } from './components/exam/ExamRoom';
 import { QuizLibrary } from './components/exam/QuizLibrary';
 import { StudyHub } from './components/exam/StudyHub';
@@ -171,8 +172,11 @@ export const App: React.FC = () => {
       setReviewAttemptId(null);
       setAttemptKey((prev) => prev + 1);
       setActiveTab('EXAM');
+      toast.success(`Đã lưu đề "${subject}" và mở Phòng Thi!`);
     } catch (err: any) {
-      setExamError(err.message || 'Không tạo được đề thi trên máy chủ.');
+      const msg = err.message || 'Không tạo được đề thi trên máy chủ.';
+      setExamError(msg);
+      toast.error(msg, 'Lỗi tạo đề thi');
     } finally {
       setIsPreparingExam(false);
     }
@@ -205,8 +209,11 @@ export const App: React.FC = () => {
     try {
       await QuizService.abandonAttempt(attemptId);
       setInProgressSummary(null);
+      toast.info('Đã huỷ lượt thi đang làm dở.');
     } catch (err: any) {
-      setExamError(err.message || 'Không huỷ được lượt thi cũ.');
+      const msg = err.message || 'Không huỷ được lượt thi cũ.';
+      setExamError(msg);
+      toast.error(msg);
     }
   };
 

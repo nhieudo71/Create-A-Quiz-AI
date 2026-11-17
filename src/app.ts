@@ -157,7 +157,11 @@ export function buildApp(options: BuildAppOptions = {}): FastifyInstance {
   // ============================================================================
   // PHỤC VỤ GIAO DIỆN TĨNH (bản web/desktop đã build)
   // ============================================================================
-  const clientDistPath = path.join(process.cwd(), 'client', 'dist');
+  const clientDistPath =
+    process.env.CLIENT_DIST_PATH ||
+    (fs.existsSync(path.join(__dirname, '..', 'client', 'dist'))
+      ? path.join(__dirname, '..', 'client', 'dist')
+      : path.join(process.cwd(), 'client', 'dist'));
   if (fs.existsSync(clientDistPath)) {
     app.register(fastifyStatic, {
       root: clientDistPath,

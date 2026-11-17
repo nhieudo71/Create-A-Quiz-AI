@@ -8,6 +8,8 @@ import {
 } from '../types/generator.types';
 import { GeneratorService } from '../services/generator.service';
 import { getMaxFileSizeMb } from '../services/http';
+import { SettingsService } from '../services/settings.service';
+import { toast } from '../context/ToastContext';
 import { estimateGenerationSeconds, recordGenerationDuration } from '../services/eta.service';
 import {
   DOCUMENT_FORMAT_GROUPS,
@@ -75,8 +77,11 @@ export function useQuizGenerator() {
       setDocData(result);
       setRawText(result.preview_text || '');
       setStep('CONFIG');
+      toast.success(`Đã trích xuất ${result.text_length.toLocaleString()} ký tự từ "${result.filename}".`, 'Tải tài liệu thành công');
     } catch (err: any) {
-      setErrorMessage(err.message || 'Không thể tải file lên. Vui lòng thử lại.');
+      const msg = err.message || 'Không thể tải file lên. Vui lòng thử lại.';
+      setErrorMessage(msg);
+      toast.error(msg, 'Lỗi tải tài liệu');
     } finally {
       setIsLoading(false);
     }
@@ -94,8 +99,27 @@ export function useQuizGenerator() {
    */
   const handleStartGeneration = useCallback(async () => {
     if (!docData && !rawText) {
-      setErrorMessage('Thiếu dữ liệu văn bản từ tài liệu.');
+      const msg = 'Thiếu dữ liệu văn bản từ tài liệu.';
+      setErrorMessage(msg);
+      toast.error(msg);
       return;
+    }
+
+    // Kiểm tra nhanh cấu hình AI trước khi chạy để báo rõ nếu chưa nhập API Key
+    try {
+      const settings = await SettingsService.getSettings();
+      const active = settings.providers.find((p) => p.id === settings.ai.activeProviderId);
+      if (active) {
+        const meta = settings.providerMeta[active.type];
+        if (meta?.requiresApiKey && !active.hasApiKey) {
+          const msg = `Nhà cung cấp "${active.label}" chưa có API Key. Vui lòng vào tab Cài Đặt để nhập API Key trước khi tạo đề.`;
+          setErrorMessage(msg);
+          toast.error(msg, 'Chưa nhập API Key');
+          return;
+        }
+      }
+    } catch {
+      // Nếu không đọc được cài đặt thì để server kiểm tra tiếp
     }
 
     setStep('GENERATING');
@@ -115,8 +139,6 @@ export function useQuizGenerator() {
       message: 'Đang tiền xử lý văn bản và phân tích thuật ngữ y khoa...'
     });
 
-    // Khai báo ngoài try để luôn dọn được ở finally (tránh timer chạy tiếp khi lỗi)
-    let progressTimer: ReturnType<typeof setInterval> | undefined;
     let clockTimer: ReturnType<typeof setInterval> | undefined;
     const startedAt = Date.now();
 
@@ -125,31 +147,18 @@ export function useQuizGenerator() {
         setElapsedSeconds(Math.floor((Date.now() - startedAt) / 1000));
       }, 1000);
 
-      // Mô phỏng tiến trình mượt mà cho sinh viên theo dõi
-      progressTimer = setInterval(() => {
-        setProgress((prev) => {
-          if (prev.percent < 85) {
-            const nextPercent = prev.percent + 15;
-            const currentQuestions = Math.round((nextPercent / 100) * total);
-            return {
-              ...prev,
-              percent: nextPercent,
-              current: currentQuestions,
-              status: 'GENERATING',
-              message: `AI đang biên soạn câu hỏi (${currentQuestions}/${total} câu)...`
-            };
-          }
-          return prev;
-        });
-      }, 1500);
-
-      const generated = await GeneratorService.generateQuestions({
-        textContent: rawText,
-        targetCount: total,
-        subjectName: config.subjectName,
-        difficultyMode: config.difficultyMode,
-        questionTypes: config.questionTypes
-      });
+      const generated = await GeneratorService.generateQuestionsStream(
+        {
+          textContent: rawText,
+          targetCount: total,
+          subjectName: config.subjectName,
+          difficultyMode: config.difficultyMode,
+          questionTypes: config.questionTypes
+        },
+        (realProgress) => {
+          setProgress(realProgress);
+        }
+      );
 
       setProgress({
         current: generated.length,
@@ -161,15 +170,18 @@ export function useQuizGenerator() {
 
       setQuestions(generated);
       setStep('REVIEW');
+      toast.success(`AI đã biên soạn xong ${generated.length} câu hỏi!`, 'Tạo đề thành công');
 
       // Ghi nhận thời gian thật để các lần sau ước lượng chính xác hơn
       recordGenerationDuration(total, (Date.now() - startedAt) / 1000);
     } catch (err: any) {
       setProgress((prev) => ({ ...prev, status: 'FAILED' }));
-      setErrorMessage(err.message || 'Lỗi khi gọi AI. Vui lòng kiểm tra lại cấu hình.');
+      const msg = err.message || 'Lỗi khi gọi AI. Vui lòng kiểm tra lại cấu hình.';
+      setErrorMessage(msg);
+      const isMissingKey = /api key|chưa cấu hình nhà cung cấp|401|403/i.test(msg);
+      toast.error(msg, isMissingKey ? 'Chưa nhập hoặc sai API Key' : 'Lỗi tạo đề AI');
       setStep('CONFIG');
     } finally {
-      if (progressTimer) clearInterval(progressTimer);
       if (clockTimer) clearInterval(clockTimer);
       setIsLoading(false);
     }

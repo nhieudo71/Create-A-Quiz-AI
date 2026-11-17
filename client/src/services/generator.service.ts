@@ -1,4 +1,4 @@
-import { QuestionItem, UploadDocumentResponse } from '../types/generator.types';
+import { GenerationProgress, QuestionItem, UploadDocumentResponse } from '../types/generator.types';
 import { UNAUTHORIZED_MESSAGE, withAuthHeaders } from './http';
 
 // File có thể lên tới 500MB: tải lên, trích xuất PDF và OCR scan đều có thể mất
@@ -147,5 +147,100 @@ export class GeneratorService {
       throw new Error('AI không sinh được câu hỏi nào từ tài liệu này.');
     }
     return data.questions;
+  }
+
+  /**
+   * Gọi API sinh câu hỏi bằng SSE để nhận tiến trình THẬT theo từng lô từ server.
+   */
+  static async generateQuestionsStream(
+    params: {
+      textContent: string;
+      targetCount: number;
+      subjectName: string;
+      difficultyMode?: 'MIXED' | 'EASY' | 'HARD';
+      questionTypes?: string[];
+    },
+    onProgress: (progress: GenerationProgress) => void
+  ): Promise<QuestionItem[]> {
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), GENERATE_TIMEOUT_MS);
+
+    let response: Response;
+    try {
+      response = await fetch('/api/v1/questions/generate?stream=true', {
+        method: 'POST',
+        headers: withAuthHeaders({
+          'Content-Type': 'application/json',
+          Accept: 'text/event-stream'
+        }),
+        body: JSON.stringify({
+          text_content: params.textContent,
+          target_count: params.targetCount,
+          subject_name: params.subjectName,
+          difficulty_mode: params.difficultyMode ?? 'MIXED',
+          question_types: params.questionTypes ?? ['MCQ']
+        }),
+        signal: controller.signal
+      });
+    } catch (err: any) {
+      clearTimeout(timer);
+      if (err?.name === 'AbortError') {
+        throw new Error('Máy chủ phản hồi quá lâu. Vui lòng thử lại.');
+      }
+      throw new Error('Không kết nối được tới máy chủ. Kiểm tra kết nối hoặc việc khởi động Backend.');
+    }
+
+    try {
+      if (response.status === 401) {
+        throw new Error(UNAUTHORIZED_MESSAGE);
+      }
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData?.error?.message || `Lỗi khi AI xử lý câu hỏi (Mã: ${response.status})`);
+      }
+      if (!response.body) {
+        throw new Error('Trình duyệt không hỗ trợ đọc luồng tiến trình từ máy chủ.');
+      }
+
+      const reader = response.body.getReader();
+      const decoder = new TextDecoder('utf-8');
+      let buffer = '';
+      let finalQuestions: QuestionItem[] | null = null;
+
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        buffer += decoder.decode(value, { stream: true });
+
+        const frames = buffer.split('\n\n');
+        buffer = frames.pop() ?? '';
+
+        for (const frame of frames) {
+          let eventName = 'message';
+          const dataLines: string[] = [];
+          for (const line of frame.split('\n')) {
+            if (line.startsWith('event:')) eventName = line.slice(6).trim();
+            else if (line.startsWith('data:')) dataLines.push(line.slice(5).trim());
+          }
+          if (dataLines.length === 0) continue;
+
+          const parsed = JSON.parse(dataLines.join('\n'));
+          if (eventName === 'progress') {
+            onProgress(parsed as GenerationProgress);
+          } else if (eventName === 'result') {
+            finalQuestions = parsed.questions as QuestionItem[];
+          } else if (eventName === 'error') {
+            throw new Error(parsed.message || 'Lỗi khi AI xử lý câu hỏi.');
+          }
+        }
+      }
+
+      if (!Array.isArray(finalQuestions) || finalQuestions.length === 0) {
+        throw new Error('AI không sinh được câu hỏi nào từ tài liệu này.');
+      }
+      return finalQuestions;
+    } finally {
+      clearTimeout(timer);
+    }
   }
 }

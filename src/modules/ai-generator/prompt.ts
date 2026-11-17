@@ -217,59 +217,72 @@ export function validateQuestions(payload: unknown): GeneratedQuestionItem[] {
     'LIKERT'
   ];
 
-  return parsed.questions.map((q: any) => {
-    const options = q?.options;
-    if (!Array.isArray(options) || options.length < 2 || options.length > 4) {
-      throw new AppError('Câu hỏi sinh ra phải có từ 2 đến 4 đáp án.', 502);
+  const validItems: GeneratedQuestionItem[] = [];
+  let lastErrorMsg = 'AI không sinh được câu hỏi hợp lệ nào.';
+
+  for (const q of parsed.questions as any[]) {
+    try {
+      const options = q?.options;
+      if (!Array.isArray(options) || options.length < 2 || options.length > 4) {
+        throw new AppError('Câu hỏi sinh ra phải có từ 2 đến 4 đáp án.', 502);
+      }
+
+      const type: QuestionType = validTypes.includes(q?.question_type) ? q.question_type : 'MCQ';
+      const correctCount = options.filter((o: any) => o.is_correct === true).length;
+
+      const optionCountOk = type === 'TRUE_FALSE' ? options.length === 2 : options.length === 4;
+      if (!optionCountOk) {
+        throw new AppError(`Câu hỏi loại ${type} có số đáp án không hợp lệ.`, 502);
+      }
+
+      if (type === 'MCQ' || type === 'TRUE_FALSE' || type === 'FILL_BLANK') {
+        if (correctCount !== 1) {
+          throw new AppError(`Câu hỏi loại ${type} phải có đúng 1 đáp án đúng.`, 502);
+        }
+      } else if (type === 'MULTI_SELECT') {
+        if (correctCount < 2) {
+          throw new AppError('Câu hỏi nhiều đáp án cần ít nhất 2 phương án đúng.', 502);
+        }
+      } else if (type === 'MATCHING') {
+        const pairs = q?.payload?.pairs;
+        if (!Array.isArray(pairs) || pairs.length !== 4) {
+          throw new AppError('Câu ghép đôi thiếu payload.pairs với 4 cặp.', 502);
+        }
+      } else if (type === 'ORDERING') {
+        const order = q?.payload?.correctOrder;
+        if (!Array.isArray(order) || order.length !== 4 || new Set(order).size !== 4) {
+          throw new AppError('Câu sắp xếp thiếu payload.correctOrder hợp lệ.', 502);
+        }
+      } else if (type === 'LIKERT') {
+        const scale = q?.payload?.scale;
+        if (!Array.isArray(scale) || scale.length < 2) {
+          throw new AppError('Câu Likert thiếu payload.scale hợp lệ.', 502);
+        }
+      }
+
+      validItems.push({
+        content: String(q.content ?? ''),
+        question_type: type,
+        difficulty: q.difficulty,
+        explanation: String(q.explanation ?? ''),
+        source_reference: q.source_reference ? String(q.source_reference) : null,
+        source_quote: q.source_quote ? String(q.source_quote) : null,
+        payload: q?.payload ?? null,
+        options: options.map((o: any) => ({
+          label: o.label,
+          content: String(o.content ?? ''),
+          is_correct: o.is_correct === true
+        }))
+      } as GeneratedQuestionItem);
+    } catch (err: any) {
+      // Loại bỏ riêng câu lỗi thay vì huỷ toàn bộ lô câu hỏi hợp lệ khác
+      if (err?.message) lastErrorMsg = err.message;
     }
+  }
 
-    const type: QuestionType = validTypes.includes(q?.question_type) ? q.question_type : 'MCQ';
-    const correctCount = options.filter((o: any) => o.is_correct === true).length;
+  if (validItems.length === 0) {
+    throw new AppError(lastErrorMsg, 502);
+  }
 
-    // Quy tắc đáp án đúng khác nhau theo loại, nên kiểm tra riêng thay vì một điều kiện chung.
-    const optionCountOk = type === 'TRUE_FALSE' ? options.length === 2 : options.length === 4;
-    if (!optionCountOk) {
-      throw new AppError(`Câu hỏi loại ${type} có số đáp án không hợp lệ.`, 502);
-    }
-
-    if (type === 'MCQ' || type === 'TRUE_FALSE' || type === 'FILL_BLANK') {
-      if (correctCount !== 1) {
-        throw new AppError(`Câu hỏi loại ${type} phải có đúng 1 đáp án đúng.`, 502);
-      }
-    } else if (type === 'MULTI_SELECT') {
-      if (correctCount < 2) {
-        throw new AppError('Câu hỏi nhiều đáp án cần ít nhất 2 phương án đúng.', 502);
-      }
-    } else if (type === 'MATCHING') {
-      const pairs = q?.payload?.pairs;
-      if (!Array.isArray(pairs) || pairs.length !== 4) {
-        throw new AppError('Câu ghép đôi thiếu payload.pairs với 4 cặp.', 502);
-      }
-    } else if (type === 'ORDERING') {
-      const order = q?.payload?.correctOrder;
-      if (!Array.isArray(order) || order.length !== 4 || new Set(order).size !== 4) {
-        throw new AppError('Câu sắp xếp thiếu payload.correctOrder hợp lệ.', 502);
-      }
-    } else if (type === 'LIKERT') {
-      const scale = q?.payload?.scale;
-      if (!Array.isArray(scale) || scale.length < 2) {
-        throw new AppError('Câu Likert thiếu payload.scale hợp lệ.', 502);
-      }
-    }
-
-    return {
-      content: String(q.content ?? ''),
-      question_type: type,
-      difficulty: q.difficulty,
-      explanation: String(q.explanation ?? ''),
-      source_reference: q.source_reference ? String(q.source_reference) : null,
-      source_quote: q.source_quote ? String(q.source_quote) : null,
-      payload: q?.payload ?? null,
-      options: options.map((o: any) => ({
-        label: o.label,
-        content: String(o.content ?? ''),
-        is_correct: o.is_correct === true
-      }))
-    } as GeneratedQuestionItem;
-  });
+  return validItems;
 }

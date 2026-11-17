@@ -42,74 +42,150 @@ export function registerQuestionRoutes(
         throw new AppError('Nội dung tài liệu quá lớn để xử lý.', 413);
       }
 
-      const targetCount = body.target_count;
-      const BATCH_SIZE = 25;
-      // Tăng song song 2 -> 4: mỗi batch là một request mạng độc lập, chờ đợi chủ
-      // yếu là độ trễ của nhà cung cấp AI. Tăng song song cắt thời gian gần như
-      // theo bậc mà không đổi chất lượng — vẫn mỗi đoạn văn bản một batch riêng.
-      // 4 là mức an toàn cho hạn mức phổ biến của Gemini/OpenAI ở gói miễn phí/cơ bản.
-      const MAX_CONCURRENCY = 4;
-      const numBatches = Math.ceil(targetCount / BATCH_SIZE);
-      const chunks = docParser.splitIntoChunks(body.text_content, numBatches);
+      const query = (req.query ?? {}) as { stream?: string };
+      const wantsStream =
+        query.stream === 'true' ||
+        String(req.headers.accept ?? '').includes('text/event-stream');
 
-      // Mỗi batch dùng một đoạn văn bản riêng: tránh việc tài liệu ngắn bị gửi lặp
-      // nhiều lần dẫn đến câu hỏi trùng lặp. Nếu số đoạn ít hơn số batch thì dừng.
-      const usableBatches = Math.min(numBatches, chunks.length);
-      const batchJobs: Array<{ chunk: string; count: number }> = [];
-      let remaining = targetCount;
-      for (let i = 0; i < usableBatches && remaining > 0; i++) {
-        const count = Math.min(BATCH_SIZE, remaining);
-        batchJobs.push({ chunk: chunks[i], count });
-        remaining -= count;
+      const sendSse = (event: string, data: unknown) => {
+        if (!wantsStream || reply.raw.writableEnded) return;
+        reply.raw.write(`event: ${event}\ndata: ${JSON.stringify(data)}\n\n`);
+      };
+
+      if (wantsStream) {
+        reply.raw.writeHead(200, {
+          'Content-Type': 'text/event-stream; charset=utf-8',
+          'Cache-Control': 'no-cache, no-transform',
+          Connection: 'keep-alive',
+          'X-Accel-Buffering': 'no'
+        });
       }
 
-      const results: GeneratedQuestionItem[][] = [];
-      for (let start = 0; start < batchJobs.length; start += MAX_CONCURRENCY) {
-        const group = batchJobs.slice(start, start + MAX_CONCURRENCY);
-        const groupResults = await Promise.all(
-          group.map((job) =>
-            aiService.generateBatch(
-              job.chunk,
-              job.count,
-              body.subject_name,
-              body.difficulty_mode,
-              body.question_types
-            )
-          )
-        );
-        results.push(...groupResults);
-      }
+      try {
+        const targetCount = body.target_count;
+        const BATCH_SIZE = 25;
+        const MAX_CONCURRENCY = 4;
+        const numBatches = Math.ceil(targetCount / BATCH_SIZE);
+        const chunks = docParser.splitIntoChunks(body.text_content, numBatches);
 
-      // Kiểm chứng chống bịa: mỗi câu phải có đoạn trích dẫn xuất hiện thật trong
-      // tài liệu gốc. Loại câu không qua được kiểm chứng thay vì trả về đề có thể sai.
-      const { kept, droppedReasons } = verifyGrounding(results.flat(), body.text_content);
+        const usableBatches = Math.min(numBatches, chunks.length);
+        const batchJobs: Array<{ chunk: string; count: number }> = [];
+        let remaining = targetCount;
+        for (let i = 0; i < usableBatches && remaining > 0; i++) {
+          const count = Math.min(BATCH_SIZE, remaining);
+          batchJobs.push({ chunk: chunks[i], count });
+          remaining -= count;
+        }
 
-      const questions = dedupeQuestions(kept).slice(0, targetCount);
-      if (droppedReasons.length > 0) {
-        req.log.warn(
-          { dropped: droppedReasons.length, total: results.flat().length },
-          'Đã loại câu hỏi không có căn cứ trong tài liệu'
-        );
-      }
-      if (questions.length === 0) {
-        throw new AppError(
-          results.flat().length > 0
-            ? 'AI sinh được câu hỏi nhưng không câu nào trích dẫn được nguyên văn từ tài liệu, ' +
-                'nên đã bị loại để tránh nội dung bịa đặt. Hãy thử lại hoặc dùng model mạnh hơn.'
-            : 'AI không sinh được câu hỏi nào từ tài liệu này.',
-          502
-        );
-      }
+        sendSse('progress', {
+          current: 0,
+          total: targetCount,
+          percent: 5,
+          status: 'PARSING',
+          message: `Đã chia tài liệu thành ${batchJobs.length} lô xử lý — đang gửi tới AI...`
+        });
 
-      return reply.send({
-        success: true,
-        data: {
+        let completedBatches = 0;
+        let generatedSoFar = 0;
+        let lastBatchError: unknown = null;
+        const results: GeneratedQuestionItem[][] = [];
+
+        for (let start = 0; start < batchJobs.length; start += MAX_CONCURRENCY) {
+          const group = batchJobs.slice(start, start + MAX_CONCURRENCY);
+          const groupResults = await Promise.all(
+            group.map(async (job) => {
+              try {
+                const batchItems = await aiService.generateBatch(
+                  job.chunk,
+                  job.count,
+                  body.subject_name,
+                  body.difficulty_mode,
+                  body.question_types
+                );
+                completedBatches++;
+                generatedSoFar = Math.min(targetCount, generatedSoFar + batchItems.length);
+                const percent = 10 + Math.round((completedBatches / batchJobs.length) * 75);
+                sendSse('progress', {
+                  current: generatedSoFar,
+                  total: targetCount,
+                  percent,
+                  status: 'GENERATING',
+                  message: `Đã nhận ${completedBatches}/${batchJobs.length} lô từ AI (${generatedSoFar}/${targetCount} câu)...`
+                });
+                return batchItems;
+              } catch (batchErr) {
+                completedBatches++;
+                lastBatchError = batchErr;
+                req.log.warn({ err: batchErr }, 'Một lô sinh câu hỏi thất bại, tiếp tục giữ các lô hợp lệ');
+                return [];
+              }
+            })
+          );
+          results.push(...groupResults);
+        }
+
+        if (results.flat().length === 0 && lastBatchError) {
+          throw lastBatchError;
+        }
+
+        sendSse('progress', {
+          current: generatedSoFar,
+          total: targetCount,
+          percent: 90,
+          status: 'GENERATING',
+          message: 'Đang kiểm chứng trích dẫn từ tài liệu gốc (chống bịa đặt)...'
+        });
+
+        const { kept, droppedReasons } = verifyGrounding(results.flat(), body.text_content);
+        const questions = dedupeQuestions(kept).slice(0, targetCount);
+
+        if (droppedReasons.length > 0) {
+          req.log.warn(
+            { dropped: droppedReasons.length, total: results.flat().length },
+            'Đã loại câu hỏi không có căn cứ trong tài liệu'
+          );
+        }
+        if (questions.length === 0) {
+          throw new AppError(
+            results.flat().length > 0
+              ? 'AI sinh được câu hỏi nhưng không câu nào trích dẫn được nguyên văn từ tài liệu, ' +
+                  'nên đã bị loại để tránh nội dung bịa đặt. Hãy thử lại hoặc dùng model mạnh hơn.'
+              : 'AI không sinh được câu hỏi nào từ tài liệu này.',
+            502
+          );
+        }
+
+        const payload = {
           total_generated: questions.length,
           requested: targetCount,
           dropped_ungrounded: droppedReasons.length,
           questions
+        };
+
+        if (wantsStream) {
+          sendSse('progress', {
+            current: questions.length,
+            total: questions.length,
+            percent: 100,
+            status: 'COMPLETED',
+            message: `Hoàn tất! Đã tạo ${questions.length} câu hỏi hợp lệ.`
+          });
+          sendSse('result', payload);
+          reply.raw.end();
+          return;
         }
-      });
+
+        return reply.send({ success: true, data: payload });
+      } catch (err: any) {
+        if (wantsStream) {
+          const message =
+            err instanceof AppError ? err.message : 'Lỗi hệ thống khi gọi AI tạo câu hỏi.';
+          sendSse('error', { message });
+          reply.raw.end();
+          return;
+        }
+        throw err;
+      }
     }
   });
 

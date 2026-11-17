@@ -2,6 +2,7 @@ import React from 'react';
 import ReactDOM from 'react-dom/client';
 import { App } from './App';
 import { QuizGeneratorProvider } from './context/QuizGeneratorContext';
+import { ToastProvider } from './context/ToastContext';
 import { resolveAuthToken } from './services/http';
 import './index.css';
 
@@ -11,9 +12,11 @@ import './index.css';
 void resolveAuthToken().finally(() => {
   ReactDOM.createRoot(document.getElementById('root')!).render(
     <React.StrictMode>
-      <QuizGeneratorProvider>
-        <App />
-      </QuizGeneratorProvider>
+      <ToastProvider>
+        <QuizGeneratorProvider>
+          <App />
+        </QuizGeneratorProvider>
+      </ToastProvider>
     </React.StrictMode>
   );
 });

@@ -9,6 +9,7 @@ import {
   CheckAnswerResponse
 } from '../../types/quiz.types';
 import { QuestionAnswerPanel } from './QuestionAnswerPanel';
+import { toast } from '../../context/ToastContext';
 import { QUESTION_TYPE_LABELS } from '../../types/generator.types';
 import {
   Clock,
@@ -164,11 +165,19 @@ export const ExamRoom: React.FC<ExamRoomProps> = ({
 
         if (autoSubmitted) {
           setErrorMessage('Đã hết giờ làm bài. Hệ thống đã tự động thu bài.');
+          toast.warning('Đã hết giờ làm bài. Hệ thống đã tự động thu bài.');
+        } else {
+          toast.success(
+            `Điểm của bạn: ${submitResult.correct_count}/${submitResult.total_questions} (${submitResult.score_percentage}%)`,
+            'Nộp bài thành công'
+          );
         }
         onAttemptFinished?.();
       } catch (err: any) {
         hasSubmittedRef.current = false;
-        setErrorMessage(err.message || 'Không nộp được bài. Vui lòng thử lại.');
+        const msg = err.message || 'Không nộp được bài. Vui lòng thử lại.';
+        setErrorMessage(msg);
+        toast.error(msg, 'Lỗi nộp bài');
         if (autoSubmitted) setShowConfirmModal(true);
       } finally {
         setIsSubmitting(false);

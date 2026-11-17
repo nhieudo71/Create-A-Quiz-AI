@@ -9,6 +9,7 @@ const crypto = require('crypto');
 let mainWindow = null;
 let serverProcess = null;
 let backendPort = 3000;
+const serverLogs = [];
 const isDev = process.env.NODE_ENV === 'development';
 
 function findFreePort(preferred = 3000) {
@@ -94,6 +95,7 @@ function startBackendServer() {
   const userDataDir = path.join(app.getPath('userData'), 'data');
   fs.mkdirSync(userDataDir, { recursive: true });
   const schemaPath = path.join(rootPath, 'docs', 'DATABASE_SCHEMA.sql');
+  const clientDistPath = path.join(rootPath, 'client', 'dist');
 
   const serverEnv = {
     ...process.env,
@@ -103,6 +105,7 @@ function startBackendServer() {
     DB_MODE: 'embedded',
     DB_DATA_DIR: userDataDir,
     APP_SCHEMA_PATH: schemaPath,
+    CLIENT_DIST_PATH: clientDistPath,
     APP_AUTH_TOKEN: AUTH_TOKEN
   };
 
@@ -113,12 +116,20 @@ function startBackendServer() {
       stdio: 'inherit'
     });
   } else {
-    // utilityProcess chạy trong tiến trình riêng nhưng vẫn đọc được file bên trong app.asar
+    // cwd phải là thư mục thật trên đĩa (không thể là app.asar)
     serverProcess = utilityProcess.fork(serverScript, [], {
-      cwd: rootPath,
+      cwd: userDataDir,
       env: serverEnv,
-      stdio: 'inherit'
+      stdio: 'pipe'
     });
+    const appendLog = (chunk) => {
+      const text = chunk.toString();
+      serverLogs.push(text);
+      if (serverLogs.length > 50) serverLogs.shift();
+      console.log('[Backend]', text.trimEnd());
+    };
+    serverProcess.stdout?.on('data', appendLog);
+    serverProcess.stderr?.on('data', appendLog);
   }
 
   serverProcess.on('exit', (code) => {
@@ -191,19 +202,11 @@ async function createWindow() {
     }
     await mainWindow.loadURL(targetUrl);
   } catch (err) {
-    console.warn('[Electron] Không kết nối được qua HTTP, tải file cục bộ...', err.message);
-    const fallbackPath = path.join(__dirname, '..', 'client', 'dist', 'index.html');
-    if (fs.existsSync(fallbackPath)) {
-      await mainWindow.loadFile(fallbackPath);
-    } else {
-      dialog.showErrorBox(
-        'Không khởi động được máy chủ',
-        `Không kết nối được tới ${targetUrl} và không tìm thấy bản build giao diện.\n\n` +
-          `Chi tiết: ${err.message}\n\n` +
-          'Hãy chạy "npm run build:all" hoặc dùng chế độ [2] trong run.bat để xem log lỗi.'
-      );
-      mainWindow.show();
-    }
+    console.warn('[Electron] Không kết nối được qua HTTP:', err.message);
+    dialog.showErrorBox(
+      'Không khởi động được máy chủ',
+      `Không kết nối được tới ${targetUrl}.\n\nChi tiết: ${err.message}\n\nLog:\n${serverLogs.join('').slice(-800)}`
+    );
   }
 
   mainWindow.on('closed', () => {

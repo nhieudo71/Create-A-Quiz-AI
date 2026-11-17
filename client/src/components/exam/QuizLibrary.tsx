@@ -2,6 +2,7 @@ import React, { useCallback, useEffect, useState } from 'react';
 import { QuizService } from '../../services/quiz.service';
 import { StudyService } from '../../services/study.service';
 import { withAuthHeaders } from '../../services/http';
+import { toast } from '../../context/ToastContext';
 import { SavedQuiz, SubjectSummary } from '../../types/quiz.types';
 import {
   FolderOpen,
@@ -105,8 +106,11 @@ export const QuizLibrary: React.FC<QuizLibraryProps> = ({ onStartQuiz }) => {
       await QuizService.deleteQuiz(quiz.id);
       setQuizzes((prev) => prev.filter((q) => q.id !== quiz.id));
       await loadSubjects();
+      toast.success(`Đã xoá đề "${quiz.title}".`);
     } catch (err: any) {
-      setErrorMessage(err.message || 'Không xoá được đề thi.');
+      const msg = err.message || 'Không xoá được đề thi.';
+      setErrorMessage(msg);
+      toast.error(msg);
     } finally {
       setDeletingQuizId(null);
     }
@@ -116,6 +120,7 @@ export const QuizLibrary: React.FC<QuizLibraryProps> = ({ onStartQuiz }) => {
     if (!editingQuiz) return;
     const updated = await QuizService.updateQuiz(editingQuiz.id, { title, subjectName });
     setEditingQuiz(null);
+    toast.success('Đã cập nhật thông tin đề thi!');
     await loadSubjects();
     // Nếu đề được chuyển sang môn khác, chuyển luôn danh sách đang xem sang môn đó
     if (updated.subject_id !== selectedSubjectId) {
@@ -138,8 +143,11 @@ export const QuizLibrary: React.FC<QuizLibraryProps> = ({ onStartQuiz }) => {
       link.download = format === 'docx' ? `${quiz.title}.docx` : `${quiz.title}-anki.csv`;
       link.click();
       URL.revokeObjectURL(link.href);
+      toast.success(`Đã xuất đề thi sang ${format === 'docx' ? 'Word (.docx)' : 'Anki (.csv)'}!`);
     } catch (err: any) {
-      setErrorMessage(err.message || 'Lỗi khi xuất đề thi.');
+      const msg = err.message || 'Lỗi khi xuất đề thi.';
+      setErrorMessage(msg);
+      toast.error(msg);
     }
   };
 
@@ -162,8 +170,11 @@ export const QuizLibrary: React.FC<QuizLibraryProps> = ({ onStartQuiz }) => {
       }
       await loadSubjects();
       if (selectedSubjectId) await loadQuizzes(selectedSubjectId);
+      toast.success(`Đã nhập thành công ${json.data?.importedCount ?? ''} câu hỏi từ Excel!`);
     } catch (err: any) {
-      setErrorMessage(err.message || 'Không nhập được file Excel.');
+      const msg = err.message || 'Không nhập được file Excel.';
+      setErrorMessage(msg);
+      toast.error(msg);
     }
   };
 
@@ -184,9 +195,12 @@ export const QuizLibrary: React.FC<QuizLibraryProps> = ({ onStartQuiz }) => {
       setShowComposeModal(false);
       await loadQuizzes(selectedSubject.id);
       await loadSubjects();
+      toast.success('Đã tạo đề tổng hợp thành công!');
       onStartQuiz(res.quiz.id, res.subject_name);
     } catch (err: any) {
-      setErrorMessage(err.message || 'Không tạo được đề tổng hợp.');
+      const msg = err.message || 'Không tạo được đề tổng hợp.';
+      setErrorMessage(msg);
+      toast.error(msg);
     } finally {
       setIsComposing(false);
     }
