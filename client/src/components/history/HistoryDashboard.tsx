@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { QuizService } from '../../services/quiz.service';
-import { HistoryEntry } from '../../types/quiz.types';
+import { AnalyticsResponse, HistoryEntry } from '../../types/quiz.types';
 import {
   Award,
   CheckCircle,
@@ -34,6 +34,7 @@ export const HistoryDashboard: React.FC<HistoryDashboardProps> = ({
   onGoToExamTab
 }) => {
   const [attempts, setAttempts] = useState<HistoryEntry[]>([]);
+  const [analytics, setAnalytics] = useState<AnalyticsResponse | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
@@ -41,8 +42,12 @@ export const HistoryDashboard: React.FC<HistoryDashboardProps> = ({
     setIsLoading(true);
     setErrorMessage(null);
     try {
-      const list = await QuizService.getHistory();
+      const [list, analyticsData] = await Promise.all([
+        QuizService.getHistory(),
+        QuizService.getAnalytics().catch(() => null)
+      ]);
       setAttempts(list);
+      setAnalytics(analyticsData);
     } catch (err: any) {
       setErrorMessage(err.message || 'Không tải được lịch sử thi.');
       setAttempts([]);
@@ -182,6 +187,101 @@ export const HistoryDashboard: React.FC<HistoryDashboardProps> = ({
                 {stats.bestScore} <span className="text-xs font-normal text-slate-400">/ 10</span>
               </p>
             </div>
+          </div>
+        </div>
+      )}
+
+      {!isLoading && !errorMessage && analytics && finished.length > 0 && (
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+          {/* Biểu đồ xu hướng điểm số */}
+          <div className="lg:col-span-2 bg-white p-5 rounded-2xl border border-slate-200/90 shadow-sm">
+            <div className="flex items-center justify-between mb-3">
+              <h3 className="text-sm font-bold text-slate-800">Xu hướng điểm số gần đây (%)</h3>
+              <span className="text-[11px] text-slate-400">{analytics.trend.length} lượt gần nhất</span>
+            </div>
+            {analytics.trend.length < 2 ? (
+              <p className="text-xs text-slate-400 py-8 text-center">
+                Cần ít nhất 2 lượt thi để vẽ biểu đồ xu hướng.
+              </p>
+            ) : (
+              <svg viewBox="0 0 420 120" className="w-full h-32 overflow-visible">
+                {[0, 50, 100].map((pct) => {
+                  const y = 100 - pct * 0.85 + 8;
+                  return (
+                    <g key={pct}>
+                      <line x1="28" y1={y} x2="412" y2={y} stroke="#e2e8f0" strokeDasharray="3 3" strokeWidth="1" />
+                      <text x="0" y={y + 3} fontSize="9" fill="#94a3b8">
+                        {pct}%
+                      </text>
+                    </g>
+                  );
+                })}
+                {(() => {
+                  const pts = analytics.trend.map((t, idx) => {
+                    const x = 34 + (idx / Math.max(1, analytics.trend.length - 1)) * 370;
+                    const y = 100 - Math.min(100, Math.max(0, t.score_percentage)) * 0.85 + 8;
+                    return { x, y, t };
+                  });
+                  const pathD = pts.map((p, i) => `${i === 0 ? 'M' : 'L'} ${p.x.toFixed(1)} ${p.y.toFixed(1)}`).join(' ');
+                  return (
+                    <>
+                      <path d={pathD} fill="none" stroke="#0284c7" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
+                      {pts.map((p) => (
+                        <g key={p.t.attempt_id}>
+                          <circle cx={p.x} cy={p.y} r="4" fill="#0ea5e9" stroke="#ffffff" strokeWidth="1.5" />
+                          <title>{`${p.t.quiz_title}: ${p.t.score_percentage}%`}</title>
+                        </g>
+                      ))}
+                    </>
+                  );
+                })()}
+              </svg>
+            )}
+          </div>
+
+          {/* Tỉ lệ đúng theo độ khó & môn học */}
+          <div className="bg-white p-5 rounded-2xl border border-slate-200/90 shadow-sm space-y-4">
+            <div>
+              <h3 className="text-sm font-bold text-slate-800 mb-2">Theo độ khó</h3>
+              <div className="space-y-2">
+                {(['EASY', 'MEDIUM', 'HARD'] as const).map((diff) => {
+                  const row = analytics.by_difficulty.find((d) => d.difficulty === diff);
+                  const pct = row?.accuracy_percentage ?? 0;
+                  const label = diff === 'EASY' ? 'Dễ' : diff === 'MEDIUM' ? 'Trung bình' : 'Khó';
+                  const barColor =
+                    diff === 'EASY' ? 'bg-emerald-500' : diff === 'MEDIUM' ? 'bg-amber-500' : 'bg-rose-500';
+                  return (
+                    <div key={diff} className="space-y-1">
+                      <div className="flex justify-between text-xs">
+                        <span className="font-medium text-slate-600">{label}</span>
+                        <span className="font-bold text-slate-800">
+                          {row ? `${pct}% (${row.correct}/${row.total})` : '—'}
+                        </span>
+                      </div>
+                      <div className="h-1.5 rounded-full bg-slate-100 overflow-hidden">
+                        <div className={`h-full rounded-full ${barColor}`} style={{ width: `${pct}%` }} />
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+
+            {analytics.by_subject.length > 0 && (
+              <div className="pt-2 border-t border-slate-100">
+                <h3 className="text-sm font-bold text-slate-800 mb-2">Theo môn học</h3>
+                <div className="space-y-1.5 max-h-28 overflow-y-auto pr-1">
+                  {analytics.by_subject.map((sub) => (
+                    <div key={sub.subject_id} className="flex items-center justify-between text-xs">
+                      <span className="truncate text-slate-600 max-w-[150px]" title={sub.subject_name}>
+                        {sub.subject_name}
+                      </span>
+                      <span className="font-bold text-medical-600">{sub.avg_percentage}%</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
         </div>
       )}

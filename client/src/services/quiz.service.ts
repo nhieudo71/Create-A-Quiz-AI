@@ -20,7 +20,7 @@ const REQUEST_TIMEOUT_MS = 30 * 1000;
  * Bài thi là dữ liệu y khoa: tuyệt đối không tự chấm điểm hay tự dựng đề
  * khi máy chủ không phản hồi — điểm phải do server quyết định.
  */
-async function requestJson<T>(url: string, init: RequestInit, fallbackMessage: string): Promise<T> {
+export async function requestJson<T>(url: string, init: RequestInit, fallbackMessage: string): Promise<T> {
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS);
 
@@ -212,6 +212,63 @@ export class QuizService {
       `/api/v1/quizzes/${quizId}`,
       { method: 'DELETE' },
       'Không xoá được đề thi'
+    );
+  }
+
+  /** Tìm lượt thi đang làm dở còn hạn (nếu có). */
+  static async getInProgressAttempt(): Promise<import('../types/quiz.types').InProgressAttemptSummary | null> {
+    return requestJson<import('../types/quiz.types').InProgressAttemptSummary | null>(
+      '/api/v1/attempts/in-progress',
+      { method: 'GET' },
+      'Không kiểm tra được bài thi đang làm dở'
+    );
+  }
+
+  /** Khôi phục lượt thi đang làm dở kèm đáp án nháp. */
+  static async resumeAttempt(attemptId: string): Promise<import('../types/quiz.types').ResumeAttemptResponse> {
+    return requestJson<import('../types/quiz.types').ResumeAttemptResponse>(
+      `/api/v1/attempts/${attemptId}/resume`,
+      { method: 'GET' },
+      'Không khôi phục được lượt thi'
+    );
+  }
+
+  /** Lưu nháp đáp án của một câu trong lúc làm bài. */
+  static async saveDraftAnswer(
+    attemptId: string,
+    questionId: string,
+    response: AnswerResponse
+  ): Promise<void> {
+    await requestJson<{ saved: boolean }>(
+      `/api/v1/attempts/${attemptId}/draft`,
+      {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          question_id: questionId,
+          selected_option_id: response.option_id ?? null,
+          response
+        })
+      },
+      'Không lưu được nháp đáp án'
+    );
+  }
+
+  /** Huỷ lượt thi đang làm dở. */
+  static async abandonAttempt(attemptId: string): Promise<void> {
+    await requestJson<{ deleted: boolean }>(
+      `/api/v1/attempts/${attemptId}`,
+      { method: 'DELETE' },
+      'Không huỷ được lượt thi'
+    );
+  }
+
+  /** Thống kê xu hướng điểm & tỉ lệ đúng theo môn / độ khó. */
+  static async getAnalytics(): Promise<import('../types/quiz.types').AnalyticsResponse> {
+    return requestJson<import('../types/quiz.types').AnalyticsResponse>(
+      '/api/v1/attempts/analytics',
+      { method: 'GET' },
+      'Không tải được dữ liệu phân tích'
     );
   }
 }

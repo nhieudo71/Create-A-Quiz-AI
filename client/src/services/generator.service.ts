@@ -47,19 +47,72 @@ async function requestJson<T>(url: string, init: RequestInit, timeoutMs: number,
   return json.data as T;
 }
 
+export interface SavedDocumentSummary {
+  id: string;
+  original_filename: string;
+  file_size_bytes: number;
+  page_count: number;
+  extracted_text_length: number;
+  created_at: string;
+}
+
 export class GeneratorService {
   /**
    * Tải tài liệu PDF / DOCX lên máy chủ để trích xuất văn bản
    */
-  static async uploadDocument(file: File): Promise<UploadDocumentResponse> {
+  static async uploadDocument(
+    file: File,
+    pageRange?: { fromPage?: number; toPage?: number }
+  ): Promise<UploadDocumentResponse> {
     const formData = new FormData();
     formData.append('file', file);
 
+    const params = new URLSearchParams();
+    if (pageRange?.fromPage) params.set('fromPage', String(pageRange.fromPage));
+    if (pageRange?.toPage) params.set('toPage', String(pageRange.toPage));
+    const qs = params.toString() ? `?${params.toString()}` : '';
+
     return requestJson<UploadDocumentResponse>(
-      '/api/v1/documents/upload',
+      `/api/v1/documents/upload${qs}`,
       { method: 'POST', body: formData },
       UPLOAD_TIMEOUT_MS,
       'Lỗi máy chủ khi xử lý file'
+    );
+  }
+
+  static async listSavedDocuments(): Promise<SavedDocumentSummary[]> {
+    return requestJson<SavedDocumentSummary[]>(
+      '/api/v1/documents',
+      { method: 'GET' },
+      30_000,
+      'Không tải được danh sách tài liệu đã lưu'
+    );
+  }
+
+  static async loadSavedDocument(id: string): Promise<UploadDocumentResponse> {
+    return requestJson<UploadDocumentResponse>(
+      `/api/v1/documents/${id}`,
+      { method: 'GET' },
+      30_000,
+      'Không nạp được tài liệu'
+    );
+  }
+
+  static async deleteSavedDocument(id: string): Promise<void> {
+    await requestJson<{ deleted: boolean }>(
+      `/api/v1/documents/${id}`,
+      { method: 'DELETE' },
+      30_000,
+      'Không xoá được tài liệu'
+    );
+  }
+
+  static async deepExplainQuestion(questionId: string): Promise<{ deep_explanation: string }> {
+    return requestJson<{ deep_explanation: string }>(
+      `/api/v1/questions/${questionId}/deep-explain`,
+      { method: 'POST' },
+      120_000,
+      'Không tạo được giải thích chuyên sâu'
     );
   }
 

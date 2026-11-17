@@ -137,3 +137,33 @@ WHERE status = 'IN_PROGRESS';
 
 -- Một môn học chỉ có một tên (không phân biệt hoa/thường) để tránh sinh trùng khi hai request đồng thời
 CREATE UNIQUE INDEX IF NOT EXISTS uq_subjects_name_lower ON subjects (lower(name));
+
+-- ============================================================================
+-- NÂNG CẤP GIAI ĐOẠN 1: LƯU VĂN BẢN TÀI LIỆU, ĐÁNH DẤU CÂU HỎI & SRS
+-- ============================================================================
+
+-- Lưu văn bản đã trích xuất để tái sử dụng tài liệu mà không cần upload/OCR lại
+ALTER TABLE documents ADD COLUMN IF NOT EXISTS extracted_text TEXT;
+
+-- Đánh dấu (Bookmark/Flag) & ghi chú cá nhân cho từng câu hỏi
+CREATE TABLE IF NOT EXISTS question_bookmarks (
+    question_id UUID PRIMARY KEY REFERENCES questions(id) ON DELETE CASCADE,
+    is_flagged BOOLEAN NOT NULL DEFAULT TRUE,
+    personal_note TEXT,
+    updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- Trạng thái ôn tập lặp lại ngắt quãng (SRS) & đếm số lần sai theo câu hỏi
+CREATE TABLE IF NOT EXISTS question_srs (
+    question_id UUID PRIMARY KEY REFERENCES questions(id) ON DELETE CASCADE,
+    ease_factor DECIMAL(4, 2) NOT NULL DEFAULT 2.50,
+    interval_days INT NOT NULL DEFAULT 0,
+    repetitions INT NOT NULL DEFAULT 0,
+    wrong_count INT NOT NULL DEFAULT 0,
+    correct_count INT NOT NULL DEFAULT 0,
+    last_reviewed_at TIMESTAMPTZ,
+    next_review_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+CREATE INDEX IF NOT EXISTS idx_question_srs_next_review ON question_srs (next_review_at);
+CREATE INDEX IF NOT EXISTS idx_question_srs_wrong_count ON question_srs (wrong_count DESC) WHERE wrong_count > 0;

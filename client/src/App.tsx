@@ -1,13 +1,15 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { GeneratorContainer } from './components/generator/GeneratorContainer';
 import { useQuizGeneratorContext } from './context/QuizGeneratorContext';
 import { ExamRoom } from './components/exam/ExamRoom';
 import { QuizLibrary } from './components/exam/QuizLibrary';
+import { StudyHub } from './components/exam/StudyHub';
 import { AttemptReview } from './components/history/AttemptReview';
 import { HistoryDashboard } from './components/history/HistoryDashboard';
 import { SettingsPage } from './components/settings/SettingsPage';
 import { QuizService } from './services/quiz.service';
-import { Stethoscope, FileText, Clock, BookOpen, Sparkles, Play, Loader2, Settings } from 'lucide-react';
+import { InProgressAttemptSummary } from './types/quiz.types';
+import { Stethoscope, FileText, Clock, BookOpen, Sparkles, Play, Loader2, Settings, Sun, Moon, RotateCcw } from 'lucide-react';
 import { QuestionItem } from './types/generator.types';
 
 // Đề mẫu Y khoa có sẵn để dùng thử ngay khi chưa có tài liệu
@@ -95,10 +97,43 @@ export const App: React.FC = () => {
 
   // Phiên thi đang mở (đề đã lưu trên server)
   const [activeQuizId, setActiveQuizId] = useState<string | null>(null);
+  const [resumeAttemptId, setResumeAttemptId] = useState<string | null>(null);
   const [activeSubject, setActiveSubject] = useState<string>('Dược Lý & Nội Khoa');
   const [attemptKey, setAttemptKey] = useState<number>(0);
   const [isPreparingExam, setIsPreparingExam] = useState<boolean>(false);
   const [examError, setExamError] = useState<string | null>(null);
+  const [inProgressSummary, setInProgressSummary] = useState<InProgressAttemptSummary | null>(null);
+
+  // Dark Mode
+  const [darkMode, setDarkMode] = useState<boolean>(() => {
+    try {
+      return localStorage.getItem('medquiz-theme') === 'dark';
+    } catch {
+      return false;
+    }
+  });
+
+  useEffect(() => {
+    document.documentElement.classList.toggle('dark', darkMode);
+    try {
+      localStorage.setItem('medquiz-theme', darkMode ? 'dark' : 'light');
+    } catch {
+      // ignore storage errors
+    }
+  }, [darkMode]);
+
+  const refreshInProgress = useCallback(async () => {
+    try {
+      const summary = await QuizService.getInProgressAttempt();
+      setInProgressSummary(summary);
+    } catch {
+      // Không chặn UI nếu kiểm tra nháp lỗi
+    }
+  }, []);
+
+  useEffect(() => {
+    void refreshInProgress();
+  }, [refreshInProgress]);
 
   // Xem lại một lượt thi trong quá khứ
   const [reviewAttemptId, setReviewAttemptId] = useState<string | null>(null);
@@ -131,6 +166,7 @@ export const App: React.FC = () => {
       });
 
       setActiveQuizId(quiz.id);
+      setResumeAttemptId(null);
       setActiveSubject(subject);
       setReviewAttemptId(null);
       setAttemptKey((prev) => prev + 1);
@@ -149,10 +185,29 @@ export const App: React.FC = () => {
   /** Làm lại một đề đã có trên server: không cần tạo lại đề, chỉ mở lượt mới */
   const handleRetakeQuiz = (quizId: string, subject: string) => {
     setActiveQuizId(quizId);
+    setResumeAttemptId(null);
     setActiveSubject(subject);
     setReviewAttemptId(null);
     setAttemptKey((prev) => prev + 1);
     setActiveTab('EXAM');
+  };
+
+  const handleResumeAttempt = (summary: InProgressAttemptSummary) => {
+    setActiveQuizId(summary.quiz_id);
+    setResumeAttemptId(summary.attempt_id);
+    setActiveSubject(summary.subject_name);
+    setReviewAttemptId(null);
+    setAttemptKey((prev) => prev + 1);
+    setActiveTab('EXAM');
+  };
+
+  const handleDiscardInProgress = async (attemptId: string) => {
+    try {
+      await QuizService.abandonAttempt(attemptId);
+      setInProgressSummary(null);
+    } catch (err: any) {
+      setExamError(err.message || 'Không huỷ được lượt thi cũ.');
+    }
   };
 
   /** Mở một đề đã lưu từ Thư viện đề thi (danh mục theo môn học) */
@@ -251,9 +306,45 @@ export const App: React.FC = () => {
               <Settings className="w-3.5 h-3.5" />
               <span>Cài Đặt</span>
             </button>
+
+            <button
+              onClick={() => setDarkMode((d) => !d)}
+              title={darkMode ? 'Chuyển sang giao diện Sáng' : 'Chuyển sang giao diện Tối'}
+              className="p-1.5 rounded-lg text-slate-600 hover:text-slate-900 hover:bg-white/70 transition"
+            >
+              {darkMode ? <Sun className="w-4 h-4 text-amber-400" /> : <Moon className="w-4 h-4" />}
+            </button>
           </nav>
         </div>
       </header>
+
+      {inProgressSummary && !activeQuizId && (
+        <div className="max-w-6xl w-full mx-auto px-4 pt-4">
+          <div className="p-3.5 rounded-2xl bg-amber-50 border border-amber-200 text-xs text-amber-900 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+            <div className="flex items-center space-x-2.5">
+              <RotateCcw className="w-4 h-4 text-amber-600 flex-shrink-0" />
+              <div>
+                <span className="font-bold">Bạn có bài thi đang làm dở:</span>{' '}
+                <span className="font-semibold">{inProgressSummary.quiz_title}</span> ({inProgressSummary.answered_count}/{inProgressSummary.total_questions} câu đã trả lời)
+              </div>
+            </div>
+            <div className="flex items-center space-x-2 flex-shrink-0">
+              <button
+                onClick={() => void handleDiscardInProgress(inProgressSummary.attempt_id)}
+                className="px-3 py-1.5 rounded-lg border border-amber-300 text-amber-800 font-semibold hover:bg-amber-100 transition"
+              >
+                Huỷ lượt cũ
+              </button>
+              <button
+                onClick={() => handleResumeAttempt(inProgressSummary)}
+                className="px-3.5 py-1.5 rounded-lg bg-amber-600 hover:bg-amber-700 text-white font-bold transition"
+              >
+                Tiếp tục làm bài
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {examError && (
         <div className="max-w-6xl w-full mx-auto px-4 pt-4">
@@ -288,10 +379,19 @@ export const App: React.FC = () => {
           (activeQuizId ? (
             <ExamRoom
               quizId={activeQuizId}
+              resumeAttemptId={resumeAttemptId}
               attemptKey={attemptKey}
               subjectName={activeSubject}
-              onExit={() => setActiveQuizId(null)}
-              onAttemptFinished={() => setHistoryVersion((v) => v + 1)}
+              onExit={() => {
+                setActiveQuizId(null);
+                setResumeAttemptId(null);
+                void refreshInProgress();
+              }}
+              onAttemptFinished={() => {
+                setHistoryVersion((v) => v + 1);
+                setResumeAttemptId(null);
+                setInProgressSummary(null);
+              }}
             />
           ) : (
             <div className="bg-white rounded-3xl border border-slate-200 p-8 md:p-12 text-center max-w-2xl mx-auto shadow-sm space-y-6">
@@ -342,7 +442,8 @@ export const App: React.FC = () => {
           ))}
 
         {activeTab === 'EXAM' && !activeQuizId && (
-          <div className="mt-8">
+          <div className="mt-8 space-y-6">
+            <StudyHub onStartQuiz={handleStartLibraryQuiz} />
             <QuizLibrary onStartQuiz={handleStartLibraryQuiz} />
           </div>
         )}

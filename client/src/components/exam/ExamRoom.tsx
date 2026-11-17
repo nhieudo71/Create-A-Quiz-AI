@@ -27,9 +27,11 @@ import {
 
 interface ExamRoomProps {
   quizId: string;
-  subjectName: string;
+  /** Nếu có -> khôi phục lượt thi đang làm dở thay vì tạo lượt mới */
+  resumeAttemptId?: string | null;
   /** Lần thử mới -> buộc tải lại lượt thi khi "Làm lại đề" */
   attemptKey?: number;
+  subjectName: string;
   onExit: () => void;
   onAttemptFinished?: () => void;
 }
@@ -39,6 +41,7 @@ const AUTO_CHECK_TYPES = new Set(['MCQ', 'TRUE_FALSE', 'LIKERT']);
 
 export const ExamRoom: React.FC<ExamRoomProps> = ({
   quizId,
+  resumeAttemptId = null,
   subjectName,
   attemptKey = 0,
   onExit,
@@ -66,6 +69,29 @@ export const ExamRoom: React.FC<ExamRoomProps> = ({
   const hasSubmittedRef = useRef(false);
 
   const bootAttempt = useCallback(async () => {
+    if (resumeAttemptId) {
+      const data = await QuizService.resumeAttempt(resumeAttemptId);
+      setAttempt(data);
+      const restored: Record<string, AnswerResponse> = {};
+      for (const d of data.draft_answers ?? []) {
+        if (d.response && typeof d.response === 'object') {
+          restored[d.question_id] = d.response;
+        } else if (d.selected_option_id) {
+          restored[d.question_id] = { option_id: d.selected_option_id };
+        }
+      }
+      setAnswers(restored);
+      setChecks({});
+      setFlagged(new Set());
+      setCurrentIdx(0);
+      setTimeLeft(
+        data.expires_at
+          ? Math.max(0, Math.round((new Date(data.expires_at).getTime() - Date.now()) / 1000))
+          : data.time_limit_seconds
+      );
+      return data;
+    }
+
     const data = await QuizService.startAttempt(quizId);
     setAttempt(data);
     setAnswers({});
@@ -78,7 +104,7 @@ export const ExamRoom: React.FC<ExamRoomProps> = ({
         : data.time_limit_seconds
     );
     return data;
-  }, [quizId]);
+  }, [quizId, resumeAttemptId]);
 
   // ---------------------------------------------------------------------
   // Khởi động lượt thi
@@ -210,24 +236,72 @@ export const ExamRoom: React.FC<ExamRoomProps> = ({
 
       setAnswers((prev) => ({ ...prev, [question.question_id]: next }));
 
+      if (attempt) {
+        void QuizService.saveDraftAnswer(attempt.attempt_id, question.question_id, next).catch(() => {
+          // Lỗi lưu nháp mạng không chặn việc làm bài
+        });
+      }
+
       if (AUTO_CHECK_TYPES.has(question.question_type)) {
         void runCheck(question.question_id, next);
       }
     },
-    [result, checks, runCheck]
+    [result, checks, runCheck, attempt]
   );
 
-  const toggleFlag = (questionId: string) => {
+  const toggleFlag = useCallback((questionId: string) => {
     setFlagged((prev) => {
       const next = new Set(prev);
       if (next.has(questionId)) next.delete(questionId);
       else next.add(questionId);
       return next;
     });
-  };
+  }, []);
 
   const questions = attempt?.questions ?? [];
   const currentQ: AttemptQuestion | undefined = questions[currentIdx];
+
+  // Phím tắt làm bài nhanh: 1-4 / A-D chọn đáp án, ←/→ chuyển câu, F gắn cờ
+  useEffect(() => {
+    if (!attempt || result || !currentQ) return;
+    const onKeyDown = (e: KeyboardEvent) => {
+      const tag = (e.target as HTMLElement | null)?.tagName;
+      if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT') return;
+      if (e.ctrlKey || e.metaKey || e.altKey) return;
+
+      if (e.key === 'ArrowLeft') {
+        e.preventDefault();
+        setCurrentIdx((prev) => Math.max(0, prev - 1));
+        return;
+      }
+      if (e.key === 'ArrowRight') {
+        e.preventDefault();
+        setCurrentIdx((prev) => Math.min(questions.length - 1, prev + 1));
+        return;
+      }
+      if (e.key.toLowerCase() === 'f') {
+        e.preventDefault();
+        toggleFlag(currentQ.question_id);
+        return;
+      }
+
+      const keyMap: Record<string, number> = {
+        '1': 0, '2': 1, '3': 2, '4': 3,
+        a: 0, b: 1, c: 2, d: 3
+      };
+      const optIdx = keyMap[e.key.toLowerCase()];
+      if (
+        optIdx !== undefined &&
+        (currentQ.question_type === 'MCQ' || currentQ.question_type === 'TRUE_FALSE') &&
+        currentQ.options[optIdx]
+      ) {
+        e.preventDefault();
+        handleAnswerChange(currentQ, { option_id: currentQ.options[optIdx].option_id });
+      }
+    };
+    window.addEventListener('keydown', onKeyDown);
+    return () => window.removeEventListener('keydown', onKeyDown);
+  }, [attempt, result, currentQ, questions.length, handleAnswerChange, toggleFlag]);
   const answeredCount = Object.keys(answers).filter((id) => {
     const r = answers[id];
     return Boolean(

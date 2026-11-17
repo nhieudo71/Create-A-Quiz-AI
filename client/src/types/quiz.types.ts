@@ -151,3 +151,45 @@ export interface SubjectQuizzesResponse {
   subject: { id: string; name: string };
   quizzes: SavedQuiz[];
 }
+
+export interface InProgressAttemptSummary {
+  attempt_id: string;
+  quiz_id: string;
+  quiz_title: string;
+  subject_name: string;
+  mode: 'PRACTICE' | 'EXAM';
+  total_questions: number;
+  answered_count: number;
+  started_at: string;
+  expires_at: string | null;
+}
+
+export interface ResumeAttemptResponse extends StartAttemptResponse {
+  draft_answers: Array<{
+    question_id: string;
+    selected_option_id: string | null;
+    response: AnswerResponse | null;
+  }>;
+}
+
+export interface AnalyticsResponse {
+  trend: Array<{
+    attempt_id: string;
+    quiz_title: string;
+    subject_name: string;
+    score_percentage: number;
+    started_at: string;
+  }>;
+  by_subject: Array<{
+    subject_id: string;
+    subject_name: string;
+    attempt_count: number;
+    avg_percentage: number;
+  }>;
+  by_difficulty: Array<{
+    difficulty: Difficulty;
+    total: number;
+    correct: number;
+    accuracy_percentage: number;
+  }>;
+}

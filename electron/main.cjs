@@ -1,14 +1,34 @@
-const { app, BrowserWindow, dialog, ipcMain } = require('electron');
+const { app, BrowserWindow, dialog, ipcMain, utilityProcess } = require('electron');
 const path = require('path');
 const { spawn } = require('child_process');
 const http = require('http');
+const net = require('net');
 const fs = require('fs');
 const crypto = require('crypto');
 
 let mainWindow = null;
 let serverProcess = null;
-const BACKEND_PORT = 3000;
+let backendPort = 3000;
 const isDev = process.env.NODE_ENV === 'development';
+
+function findFreePort(preferred = 3000) {
+  return new Promise((resolve) => {
+    const srv = net.createServer();
+    srv.unref();
+    srv.on('error', () => {
+      const srv2 = net.createServer();
+      srv2.unref();
+      srv2.listen(0, '127.0.0.1', () => {
+        const port = srv2.address().port;
+        srv2.close(() => resolve(port));
+      });
+    });
+    srv.listen(preferred, '127.0.0.1', () => {
+      const port = srv.address().port;
+      srv.close(() => resolve(port));
+    });
+  });
+}
 
 /**
  * Token dùng chung giữa Electron và máy chủ Backend trong suốt phiên chạy.
@@ -71,30 +91,38 @@ function startBackendServer() {
 
   console.log(`[Electron] Đang khởi động Backend: ${serverScript}`);
 
-  // Trong Electron, process.execPath là electron.exe chứ không phải node.exe.
-  // ELECTRON_RUN_AS_NODE=1 buộc tiến trình con chạy như Node thuần, nếu không
-  // nó sẽ mở thêm một cửa sổ Electron thay vì khởi động máy chủ.
-  serverProcess = spawn(process.execPath, args, {
-    cwd: rootPath,
-    env: {
-      ...process.env,
-      ELECTRON_RUN_AS_NODE: '1',
-      PORT: BACKEND_PORT.toString(),
-      HOST: '127.0.0.1',
-      NODE_ENV: isDev ? 'development' : 'production',
-      // Bắt buộc: phải khớp token mà renderer sẽ gửi trong header x-app-token,
-      // nếu không mọi request /api/* trả 401.
-      APP_AUTH_TOKEN: AUTH_TOKEN
-    },
-    stdio: 'inherit'
-  });
+  const userDataDir = path.join(app.getPath('userData'), 'data');
+  fs.mkdirSync(userDataDir, { recursive: true });
+  const schemaPath = path.join(rootPath, 'docs', 'DATABASE_SCHEMA.sql');
 
-  serverProcess.on('error', (err) => {
-    console.error('[Electron] Lỗi khi chạy Backend:', err);
-  });
+  const serverEnv = {
+    ...process.env,
+    PORT: backendPort.toString(),
+    HOST: '127.0.0.1',
+    NODE_ENV: isDev ? 'development' : 'production',
+    DB_MODE: 'embedded',
+    DB_DATA_DIR: userDataDir,
+    APP_SCHEMA_PATH: schemaPath,
+    APP_AUTH_TOKEN: AUTH_TOKEN
+  };
 
-  serverProcess.on('exit', (code, signal) => {
-    console.log(`[Electron] Backend đã dừng với mã ${code}, signal: ${signal}`);
+  if (isDev) {
+    serverProcess = spawn(process.execPath, args, {
+      cwd: rootPath,
+      env: { ...serverEnv, ELECTRON_RUN_AS_NODE: '1' },
+      stdio: 'inherit'
+    });
+  } else {
+    // utilityProcess chạy trong tiến trình riêng nhưng vẫn đọc được file bên trong app.asar
+    serverProcess = utilityProcess.fork(serverScript, [], {
+      cwd: rootPath,
+      env: serverEnv,
+      stdio: 'inherit'
+    });
+  }
+
+  serverProcess.on('exit', (code) => {
+    console.log(`[Electron] Backend đã dừng với mã ${code}`);
   });
 }
 
@@ -114,13 +142,17 @@ async function createWindow() {
       contextIsolation: true,
       preload: path.join(__dirname, 'preload.cjs')
     },
-    show: false
+    show: true
   });
 
-  // Chờ hiển thị khi đã nạp DOM để tránh màn hình trắng
-  mainWindow.once('ready-to-show', () => {
-    mainWindow.show();
-  });
+  // Hiện ngay màn hình chờ để người dùng biết app đang khởi động (tránh cảm giác bấm không phản hồi)
+  const loadingHtml = `<!doctype html><html><head><meta charset="utf-8"><style>
+    body{margin:0;height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;background:#f8fafc;font-family:Segoe UI,sans-serif;color:#0f172a}
+    .spinner{width:38px;height:38px;border:3px solid #e2e8f0;border-top-color:#0284c7;border-radius:50%;animation:s .8s linear infinite;margin-bottom:16px}
+    @keyframes s{to{transform:rotate(360deg)}}
+    h2{margin:0 0 6px;font-size:18px}p{margin:0;font-size:13px;color:#64748b}
+  </style></head><body><div class="spinner"></div><h2>Đang khởi động MedQuiz AI...</h2><p>Vui lòng chờ vài giây để nạp cơ sở dữ liệu</p></body></html>`;
+  void mainWindow.loadURL(`data:text/html;charset=utf-8,${encodeURIComponent(loadingHtml)}`);
 
   // Nếu tải trang thất bại, phải báo cho người dùng thay vì im lặng
   mainWindow.webContents.on('did-fail-load', (_event, errorCode, errorDescription, validatedURL) => {
@@ -144,7 +176,7 @@ async function createWindow() {
   // Đích URL tải trang
   const targetUrl = isDev
     ? 'http://localhost:5273'
-    : `http://127.0.0.1:${BACKEND_PORT}`;
+    : `http://127.0.0.1:${backendPort}`;
 
   try {
     console.log(`[Electron] Đang chờ server tại ${targetUrl}...`);
@@ -152,10 +184,10 @@ async function createWindow() {
       // Dev: cần cả Vite (giao diện) lẫn backend (API) sẵn sàng
       await Promise.all([
         waitForServer(targetUrl, 30000),
-        waitForServer(`http://127.0.0.1:${BACKEND_PORT}/health`, 30000)
+        waitForServer(`http://127.0.0.1:${backendPort}/health`, 30000)
       ]);
     } else {
-      await waitForServer(`http://127.0.0.1:${BACKEND_PORT}/health`, 15000);
+      await waitForServer(`http://127.0.0.1:${backendPort}/health`, 20000);
     }
     await mainWindow.loadURL(targetUrl);
   } catch (err) {
@@ -181,6 +213,7 @@ async function createWindow() {
 
 // Vòng đời ứng dụng Electron
 app.whenReady().then(async () => {
+  backendPort = isDev ? 3000 : await findFreePort(3000);
   startBackendServer();
   await createWindow();
 

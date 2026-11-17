@@ -27,11 +27,17 @@ export interface OcrResult {
   pagesProcessed: number;
 }
 
+export interface OcrOptions {
+  fromPage?: number;
+  toPage?: number;
+  onProgress?: (current: number, total: number) => void;
+}
+
 /**
  * Nhận diện văn bản từ một PDF dạng ảnh scan.
  * Ném AppError 422 nếu bất kỳ bước nào (render hay OCR) thất bại hoàn toàn.
  */
-export async function ocrScannedPdf(buffer: Buffer): Promise<OcrResult> {
+export async function ocrScannedPdf(buffer: Buffer, options: OcrOptions = {}): Promise<OcrResult> {
   let pdfjs: typeof import('pdfjs-dist/legacy/build/pdf.mjs');
   let canvasPkg: typeof import('@napi-rs/canvas');
   let tesseract: typeof import('tesseract.js');
@@ -67,7 +73,14 @@ export async function ocrScannedPdf(buffer: Buffer): Promise<OcrResult> {
     throw new AppError('Không đọc được file PDF (file bị hỏng hoặc được mã hóa bằng mật khẩu).', 422);
   }
 
-  const pageCount = Math.min(doc.numPages, OCR_MAX_PAGES);
+  const startPage = Math.max(1, options.fromPage ?? 1);
+  const requestedEnd = options.toPage ? Math.min(doc.numPages, options.toPage) : doc.numPages;
+  const endPage = Math.min(requestedEnd, startPage + OCR_MAX_PAGES - 1);
+  if (startPage > doc.numPages) {
+    await doc.destroy().catch(() => undefined);
+    throw new AppError(`Trang bắt đầu (${startPage}) vượt quá tổng số trang (${doc.numPages}).`, 400);
+  }
+  const pageCount = Math.max(0, endPage - startPage + 1);
 
   let worker: Awaited<ReturnType<typeof tesseract.createWorker>>;
   try {
@@ -79,7 +92,7 @@ export async function ocrScannedPdf(buffer: Buffer): Promise<OcrResult> {
 
   try {
     const pagesText: string[] = [];
-    for (let i = 1; i <= pageCount; i++) {
+    for (let i = startPage; i <= endPage; i++) {
       const page = await doc.getPage(i);
       const viewport = page.getViewport({ scale: RENDER_SCALE });
       const canvas = canvasPkg.createCanvas(viewport.width, viewport.height);
@@ -93,6 +106,9 @@ export async function ocrScannedPdf(buffer: Buffer): Promise<OcrResult> {
       const { data } = await worker.recognize(pngBuffer);
       pagesText.push(data.text);
       page.cleanup();
+      options.onProgress?.(i - startPage + 1, pageCount);
+      // Nhường event loop giữa các trang để server không bị nghẽn request khác
+      await new Promise((resolve) => setImmediate(resolve));
     }
     return { text: pagesText.join('\n\n'), pagesProcessed: pageCount };
   } catch {

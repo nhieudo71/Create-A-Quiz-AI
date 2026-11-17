@@ -40,6 +40,33 @@ export class AIService {
   }
 
   /**
+   * Giải thích chuyên sâu một câu hỏi: phân tích đáp án đúng và lý do từng phương án nhiễu sai.
+   */
+  async deepExplainQuestion(input: {
+    content: string;
+    options: Array<{ label: string; content: string; is_correct: boolean }>;
+    explanation: string;
+  }): Promise<string> {
+    const config = this.resolveActiveProvider();
+    const provider = createProvider(config);
+    const timeoutMs = settingsStore.getRequestTimeoutMs();
+
+    const optionsText = input.options
+      .map((o) => `${o.label}. ${o.content} ${o.is_correct ? '(ĐÁP ÁN ĐÚNG)' : '(Nhiễu)'}`)
+      .join('\n');
+
+    const prompt = [
+      'Bạn là giảng viên Y khoa. Hãy giải thích chuyên sâu, ngắn gọn và rõ ràng bằng tiếng Việt cho câu hỏi sau:',
+      `Câu hỏi: ${input.content}`,
+      `Các phương án:\n${optionsText}`,
+      `Giải thích tóm tắt hiện có: ${input.explanation}`,
+      'Yêu cầu trả lời theo 2 phần: (1) Cơ chế / lý do chọn đáp án đúng; (2) Giải thích ngắn gọn vì sao từng phương án nhiễu còn lại không đúng.'
+    ].join('\n\n');
+
+    return await provider.generateText({ prompt, temperature: 0.3, timeoutMs });
+  }
+
+  /**
    * Provider đang hoạt động theo cấu hình Cài đặt. Nếu người dùng chưa cấu hình
    * gì cả thì dùng GEMINI_API_KEY trong .env (hành vi cũ, để không phá vỡ các
    * bản cài đặt hiện có khi nâng cấp lên bản có đa nhà cung cấp).

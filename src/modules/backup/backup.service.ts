@@ -3,7 +3,7 @@ import { db } from '../../core/database/db';
 import { AppError } from '../../core/errors';
 import type { DatabaseSchema } from '../../core/database/types';
 
-export const BACKUP_FORMAT_VERSION = 1;
+export const BACKUP_FORMAT_VERSION = 2;
 
 /**
  * Thứ tự bảng theo ràng buộc khoá ngoại: cha trước con.
@@ -15,6 +15,8 @@ const TABLE_ORDER = [
   'documents',
   'questions',
   'question_options',
+  'question_bookmarks',
+  'question_srs',
   'quizzes',
   'quiz_questions',
   'quiz_attempts',

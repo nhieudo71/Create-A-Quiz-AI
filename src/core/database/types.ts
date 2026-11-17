@@ -19,6 +19,7 @@ export interface DocumentTable {
   mime_type: string;
   page_count: number;
   extracted_text_length: number;
+  extracted_text: string | null;
   status: 'UPLOADED' | 'PARSING' | 'PROCESSED' | 'FAILED';
   created_at: Generated<Date>;
 }
@@ -90,6 +91,24 @@ export interface AttemptAnswerTable {
   answered_at: Generated<Date>;
 }
 
+export interface QuestionBookmarkTable {
+  question_id: string;
+  is_flagged: Generated<boolean>;
+  personal_note: string | null;
+  updated_at: Generated<Date>;
+}
+
+export interface QuestionSrsTable {
+  question_id: string;
+  ease_factor: Generated<number>;
+  interval_days: Generated<number>;
+  repetitions: Generated<number>;
+  wrong_count: Generated<number>;
+  correct_count: Generated<number>;
+  last_reviewed_at: Date | null;
+  next_review_at: Generated<Date>;
+}
+
 export interface DatabaseSchema {
   subjects: SubjectTable;
   documents: DocumentTable;
@@ -99,4 +118,6 @@ export interface DatabaseSchema {
   quiz_questions: QuizQuestionTable;
   quiz_attempts: QuizAttemptTable;
   attempt_answers: AttemptAnswerTable;
+  question_bookmarks: QuestionBookmarkTable;
+  question_srs: QuestionSrsTable;
 }

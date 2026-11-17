@@ -1,7 +1,9 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { QuizService } from '../../services/quiz.service';
+import { GeneratorService } from '../../services/generator.service';
+import { StudyService } from '../../services/study.service';
 import { ReviewAttemptResponse } from '../../types/quiz.types';
-import { Award, BookOpen, Check, X, ArrowLeft, Loader2, AlertCircle } from 'lucide-react';
+import { Award, BookOpen, Check, X, ArrowLeft, Loader2, AlertCircle, Sparkles, Bookmark } from 'lucide-react';
 
 interface AttemptReviewProps {
   attemptId: string;
@@ -17,6 +19,38 @@ export const AttemptReview: React.FC<AttemptReviewProps> = ({ attemptId, onBack 
   const [isLoading, setIsLoading] = useState(true);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [filter, setFilter] = useState<'ALL' | 'WRONG' | 'CORRECT'>('ALL');
+  const [deepExplains, setDeepExplains] = useState<Record<string, string>>({});
+  const [explainingId, setExplainingId] = useState<string | null>(null);
+  const [flaggedIds, setFlaggedIds] = useState<Set<string>>(new Set());
+  const [notes, setNotes] = useState<Record<string, string>>({});
+  const [editingNoteId, setEditingNoteId] = useState<string | null>(null);
+
+  const handleDeepExplain = async (questionId: string) => {
+    setExplainingId(questionId);
+    try {
+      const res = await GeneratorService.deepExplainQuestion(questionId);
+      setDeepExplains((prev) => ({ ...prev, [questionId]: res.deep_explanation }));
+    } catch (err: any) {
+      setDeepExplains((prev) => ({ ...prev, [questionId]: `Lỗi: ${err.message}` }));
+    } finally {
+      setExplainingId(null);
+    }
+  };
+
+  const handleSaveBookmark = async (questionId: string, nextFlag: boolean, noteText: string) => {
+    try {
+      await StudyService.saveBookmark(questionId, nextFlag, noteText || null);
+      setFlaggedIds((prev) => {
+        const copy = new Set(prev);
+        if (nextFlag) copy.add(questionId);
+        else copy.delete(questionId);
+        return copy;
+      });
+      setEditingNoteId(null);
+    } catch {
+      // ignore
+    }
+  };
 
   useEffect(() => {
     let cancelled = false;
@@ -198,6 +232,72 @@ export const AttemptReview: React.FC<AttemptReviewProps> = ({ attemptId, onBack 
                     <p className="text-[11px] text-slate-400 italic mt-1.5">
                       Căn cứ tài liệu: {detail.source_reference}
                     </p>
+                  )}
+
+                  <div className="mt-3 pt-2.5 border-t border-slate-100 flex flex-wrap items-center gap-2">
+                    <button
+                      onClick={() => void handleDeepExplain(detail.question_id)}
+                      disabled={explainingId === detail.question_id}
+                      className="px-2.5 py-1 rounded-lg bg-medical-50 hover:bg-medical-100 text-medical-700 font-semibold flex items-center space-x-1 transition disabled:opacity-60"
+                    >
+                      {explainingId === detail.question_id ? (
+                        <Loader2 className="w-3 h-3 animate-spin" />
+                      ) : (
+                        <Sparkles className="w-3 h-3" />
+                      )}
+                      <span>Giải thích sâu hơn (AI)</span>
+                    </button>
+
+                    <button
+                      onClick={() => {
+                        const isFlag = !flaggedIds.has(detail.question_id);
+                        void handleSaveBookmark(detail.question_id, isFlag, notes[detail.question_id] ?? '');
+                      }}
+                      className={`px-2.5 py-1 rounded-lg font-semibold flex items-center space-x-1 transition ${
+                        flaggedIds.has(detail.question_id)
+                          ? 'bg-amber-100 text-amber-800'
+                          : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+                      }`}
+                    >
+                      <Bookmark className="w-3 h-3" />
+                      <span>{flaggedIds.has(detail.question_id) ? 'Đã đánh dấu' : 'Đánh dấu'}</span>
+                    </button>
+
+                    <button
+                      onClick={() =>
+                        setEditingNoteId((prev) => (prev === detail.question_id ? null : detail.question_id))
+                      }
+                      className="px-2.5 py-1 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-600 font-semibold transition"
+                    >
+                      Ghi chú cá nhân
+                    </button>
+                  </div>
+
+                  {deepExplains[detail.question_id] && (
+                    <div className="mt-2.5 p-3 rounded-lg bg-sky-50 border border-sky-200 text-slate-700 whitespace-pre-line leading-relaxed">
+                      {deepExplains[detail.question_id]}
+                    </div>
+                  )}
+
+                  {editingNoteId === detail.question_id && (
+                    <div className="mt-2.5 flex gap-2">
+                      <input
+                        value={notes[detail.question_id] ?? ''}
+                        onChange={(e) =>
+                          setNotes((prev) => ({ ...prev, [detail.question_id]: e.target.value }))
+                        }
+                        placeholder="Nhập ghi chú cá nhân cho câu hỏi này..."
+                        className="flex-1 px-2.5 py-1.5 rounded-lg border border-slate-300 text-xs"
+                      />
+                      <button
+                        onClick={() =>
+                          void handleSaveBookmark(detail.question_id, true, notes[detail.question_id] ?? '')
+                        }
+                        className="px-3 py-1.5 rounded-lg bg-amber-600 text-white font-bold text-xs"
+                      >
+                        Lưu
+                      </button>
+                    </div>
                   )}
                 </div>
               </div>

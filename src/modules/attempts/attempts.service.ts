@@ -7,6 +7,7 @@ import type { GeneratedQuestionItem } from '../ai-generator/ai.service';
 import { QuestionPayload, QuestionType, isScorableType } from '../../core/question-types';
 import { gradeAnswer, AnswerResponse, hasResponse, GradableQuestion } from './grading';
 import { shuffleOptions, shuffleQuestions } from './shuffle';
+import { updateSrsAfterSubmit } from '../study/study.service';
 
 const EXAM_TIME_LIMIT_SECONDS = 1800;
 const PRACTICE_TIME_LIMIT_SECONDS = 0;
@@ -166,13 +167,28 @@ export class AttemptsService {
       .returningAll()
       .execute();
 
-    // Trộn thứ tự theo attempt id: mỗi lượt một thứ tự khác, nhưng xem lại bài cũ
-    // vẫn ra đúng thứ tự đã làm mà không cần lưu vào CSDL.
+    return this.buildAttemptPayload(quiz, attempt, durationSeconds, questions, options);
+  }
+
+  private buildAttemptPayload(
+    quiz: { id: string; title: string; mode: 'PRACTICE' | 'EXAM'; instant_feedback: boolean },
+    attempt: { id: string; started_at: Date; expires_at: Date | null },
+    durationSeconds: number,
+    questions: Array<{
+      display_order: number;
+      question_id: string;
+      content: string;
+      difficulty: string;
+      question_type: string;
+      payload: unknown;
+    }>,
+    options: Array<{ option_id: string; question_id: string; option_label: string; content: string }>
+  ) {
     const shuffledQuestions = shuffleQuestions(questions, attempt.id);
 
     return {
       attempt_id: attempt.id,
-      quiz_id: quizId,
+      quiz_id: quiz.id,
       title: quiz.title,
       mode: quiz.mode,
       time_limit_seconds: durationSeconds,
@@ -311,8 +327,21 @@ export class AttemptsService {
         };
       });
 
+      // Xoá các bản nháp cũ (nếu có) trước khi ghi đáp án chính thức đã chấm
+      await trx.deleteFrom('attempt_answers').where('attempt_id', '=', attemptId).execute();
+
       if (answerRows.length > 0) {
         await trx.insertInto('attempt_answers').values(answerRows).execute();
+
+        // Cập nhật trạng thái SRS / đếm số lần sai cho các câu có chấm điểm
+        const srsItems = answerRows
+          .filter((row) => {
+            const q = questionById.get(row.question_id);
+            const qType = ((q?.question_type as QuestionType) ?? 'MCQ');
+            return isScorableType(qType);
+          })
+          .map((row) => ({ questionId: row.question_id, isCorrect: row.is_correct }));
+        await updateSrsAfterSubmit(trx, srsItems, now);
       }
 
       // Mẫu số là số câu CÓ THỂ chấm (bỏ câu Likert khảo sát, không có đáp án đúng).
@@ -542,6 +571,280 @@ export class AttemptsService {
             attempt.id,
             ans.question_id
           )
+        };
+      })
+    };
+  }
+
+  /**
+   * Lưu nháp câu trả lời khi đang làm bài (không chấm điểm, chỉ giữ trạng thái để khôi phục nếu tải lại trang).
+   */
+  async saveDraftAnswer(attemptId: string, input: SubmitAnswerItem) {
+    const attempt = await db
+      .selectFrom('quiz_attempts')
+      .selectAll()
+      .where('id', '=', attemptId)
+      .executeTakeFirst();
+
+    if (!attempt) throw new NotFoundError('Không tìm thấy lượt làm bài.');
+    if (attempt.status !== 'IN_PROGRESS') {
+      throw new ConflictError('Bài thi này đã được nộp trước đó.');
+    }
+    if (attempt.expires_at && new Date() > new Date(attempt.expires_at)) {
+      throw new ConflictError('Đã hết thời gian làm bài.');
+    }
+
+    const belongs = await db
+      .selectFrom('quiz_questions')
+      .select('question_id')
+      .where('quiz_id', '=', attempt.quiz_id)
+      .where('question_id', '=', input.question_id)
+      .executeTakeFirst();
+
+    if (!belongs) {
+      throw new BadRequestError('Câu hỏi không thuộc bài thi này.');
+    }
+
+    const responseJson = input.response !== undefined && input.response !== null
+      ? JSON.stringify(input.response)
+      : null;
+
+    await db
+      .insertInto('attempt_answers')
+      .values({
+        attempt_id: attemptId,
+        question_id: input.question_id,
+        selected_option_id: input.selected_option_id ?? null,
+        response: responseJson,
+        is_correct: false,
+        answered_at: new Date()
+      })
+      .onConflict((oc) =>
+        oc.columns(['attempt_id', 'question_id']).doUpdateSet({
+          selected_option_id: input.selected_option_id ?? null,
+          response: responseJson,
+          answered_at: new Date()
+        })
+      )
+      .execute();
+
+    return { saved: true };
+  }
+
+  /**
+   * Tìm lượt thi đang làm dở gần nhất (còn hạn). Lượt đã quá hạn sẽ được đánh dấu TIMED_OUT.
+   */
+  async getInProgressAttempt(userId = DEFAULT_USER_ID) {
+    const now = new Date();
+    await db
+      .updateTable('quiz_attempts')
+      .set({ status: 'TIMED_OUT' })
+      .where('user_id', '=', userId)
+      .where('status', '=', 'IN_PROGRESS')
+      .where('expires_at', 'is not', null)
+      .where('expires_at', '<', now)
+      .execute();
+
+    const row = await db
+      .selectFrom('quiz_attempts')
+      .innerJoin('quizzes', 'quizzes.id', 'quiz_attempts.quiz_id')
+      .innerJoin('subjects', 'subjects.id', 'quizzes.subject_id')
+      .select([
+        'quiz_attempts.id as attempt_id',
+        'quiz_attempts.quiz_id',
+        'quizzes.title as quiz_title',
+        'subjects.name as subject_name',
+        'quizzes.mode',
+        'quiz_attempts.total_questions',
+        'quiz_attempts.started_at',
+        'quiz_attempts.expires_at'
+      ])
+      .where('quiz_attempts.user_id', '=', userId)
+      .where('quiz_attempts.status', '=', 'IN_PROGRESS')
+      .orderBy('quiz_attempts.started_at', 'desc')
+      .executeTakeFirst();
+
+    if (!row) return null;
+
+    const answeredRow = await db
+      .selectFrom('attempt_answers')
+      .select(sql<string>`count(*)`.as('count'))
+      .where('attempt_id', '=', row.attempt_id)
+      .executeTakeFirst();
+
+    return {
+      ...row,
+      answered_count: Number(answeredRow?.count ?? 0)
+    };
+  }
+
+  /**
+   * Khôi phục toàn bộ dữ liệu một lượt thi đang làm dở (câu hỏi theo đúng thứ tự cũ + đáp án nháp).
+   */
+  async resumeAttempt(attemptId: string) {
+    const attempt = await db
+      .selectFrom('quiz_attempts')
+      .selectAll()
+      .where('id', '=', attemptId)
+      .executeTakeFirst();
+
+    if (!attempt) throw new NotFoundError('Không tìm thấy lượt làm bài.');
+    if (attempt.status !== 'IN_PROGRESS') {
+      throw new ConflictError('Lượt thi này đã kết thúc.');
+    }
+    if (attempt.expires_at && new Date() > new Date(attempt.expires_at)) {
+      await db
+        .updateTable('quiz_attempts')
+        .set({ status: 'TIMED_OUT' })
+        .where('id', '=', attemptId)
+        .execute();
+      throw new ConflictError('Lượt thi đã hết thời gian làm bài.');
+    }
+
+    const quiz = await db
+      .selectFrom('quizzes')
+      .selectAll()
+      .where('id', '=', attempt.quiz_id)
+      .executeTakeFirst();
+
+    if (!quiz) throw new NotFoundError('Không tìm thấy bài thi.');
+
+    const questions = await db
+      .selectFrom('quiz_questions')
+      .innerJoin('questions', 'questions.id', 'quiz_questions.question_id')
+      .select([
+        'quiz_questions.display_order',
+        'questions.id as question_id',
+        'questions.content',
+        'questions.difficulty',
+        'questions.question_type',
+        'questions.payload'
+      ])
+      .where('quiz_questions.quiz_id', '=', quiz.id)
+      .orderBy('quiz_questions.display_order', 'asc')
+      .execute();
+
+    const questionIds = questions.map((q) => q.question_id);
+    const options = questionIds.length > 0
+      ? await db
+          .selectFrom('question_options')
+          .select(['id as option_id', 'question_id', 'option_label', 'content'])
+          .where('question_id', 'in', questionIds)
+          .execute()
+      : [];
+
+    const draftRows = await db
+      .selectFrom('attempt_answers')
+      .select(['question_id', 'selected_option_id', 'response'])
+      .where('attempt_id', '=', attemptId)
+      .execute();
+
+    const durationSeconds =
+      quiz.mode === 'PRACTICE'
+        ? PRACTICE_TIME_LIMIT_SECONDS
+        : quiz.time_limit_seconds || EXAM_TIME_LIMIT_SECONDS;
+
+    const payload = this.buildAttemptPayload(quiz, attempt, durationSeconds, questions, options);
+    return {
+      ...payload,
+      draft_answers: draftRows.map((d) => ({
+        question_id: d.question_id,
+        selected_option_id: d.selected_option_id,
+        response: d.response ?? null
+      }))
+    };
+  }
+
+  /**
+   * Huỷ một lượt thi đang làm dở (chỉ cho phép khi IN_PROGRESS).
+   */
+  async abandonAttempt(attemptId: string): Promise<void> {
+    const deleted = await db
+      .deleteFrom('quiz_attempts')
+      .where('id', '=', attemptId)
+      .where('status', '=', 'IN_PROGRESS')
+      .returning('id')
+      .executeTakeFirst();
+
+    if (!deleted) {
+      throw new NotFoundError('Không tìm thấy lượt thi đang làm dở để huỷ.');
+    }
+  }
+
+  /**
+   * Thống kê phân tích năng lực: xu hướng điểm, tỉ lệ đúng theo môn và theo độ khó.
+   */
+  async getAnalytics(userId = DEFAULT_USER_ID) {
+    const recentAttempts = await db
+      .selectFrom('quiz_attempts')
+      .innerJoin('quizzes', 'quizzes.id', 'quiz_attempts.quiz_id')
+      .innerJoin('subjects', 'subjects.id', 'quizzes.subject_id')
+      .select([
+        'quiz_attempts.id as attempt_id',
+        'quizzes.title as quiz_title',
+        'subjects.name as subject_name',
+        'quiz_attempts.score_percentage',
+        'quiz_attempts.started_at'
+      ])
+      .where('quiz_attempts.user_id', '=', userId)
+      .where('quiz_attempts.status', '!=', 'IN_PROGRESS')
+      .orderBy('quiz_attempts.started_at', 'desc')
+      .limit(15)
+      .execute();
+
+    const bySubjectRows = await db
+      .selectFrom('quiz_attempts')
+      .innerJoin('quizzes', 'quizzes.id', 'quiz_attempts.quiz_id')
+      .innerJoin('subjects', 'subjects.id', 'quizzes.subject_id')
+      .select([
+        'subjects.id as subject_id',
+        'subjects.name as subject_name',
+        sql<string>`count(${sql.ref('quiz_attempts.id')})`.as('attempt_count'),
+        sql<string>`round(avg(${sql.ref('quiz_attempts.score_percentage')})::numeric, 1)`.as('avg_percentage')
+      ])
+      .where('quiz_attempts.user_id', '=', userId)
+      .where('quiz_attempts.status', '!=', 'IN_PROGRESS')
+      .groupBy(['subjects.id', 'subjects.name'])
+      .orderBy('avg_percentage', 'asc')
+      .execute();
+
+    const byDifficultyRows = await db
+      .selectFrom('attempt_answers')
+      .innerJoin('quiz_attempts', 'quiz_attempts.id', 'attempt_answers.attempt_id')
+      .innerJoin('questions', 'questions.id', 'attempt_answers.question_id')
+      .select([
+        'questions.difficulty',
+        sql<string>`count(*)`.as('total'),
+        sql<string>`sum(case when ${sql.ref('attempt_answers.is_correct')} then 1 else 0 end)`.as('correct')
+      ])
+      .where('quiz_attempts.user_id', '=', userId)
+      .where('quiz_attempts.status', '!=', 'IN_PROGRESS')
+      .where('questions.question_type', '!=', 'LIKERT')
+      .groupBy('questions.difficulty')
+      .execute();
+
+    return {
+      trend: [...recentAttempts].reverse().map((r) => ({
+        attempt_id: r.attempt_id,
+        quiz_title: r.quiz_title,
+        subject_name: r.subject_name,
+        score_percentage: Number(r.score_percentage),
+        started_at: r.started_at
+      })),
+      by_subject: bySubjectRows.map((r) => ({
+        subject_id: r.subject_id,
+        subject_name: r.subject_name,
+        attempt_count: Number(r.attempt_count),
+        avg_percentage: Number(r.avg_percentage ?? 0)
+      })),
+      by_difficulty: byDifficultyRows.map((r) => {
+        const total = Number(r.total);
+        const correct = Number(r.correct ?? 0);
+        return {
+          difficulty: r.difficulty as 'EASY' | 'MEDIUM' | 'HARD',
+          total,
+          correct,
+          accuracy_percentage: total > 0 ? Math.round((correct / total) * 100) : 0
         };
       })
     };

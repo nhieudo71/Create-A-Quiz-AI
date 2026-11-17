@@ -180,7 +180,7 @@ export class MedicalDocumentParser {
    * rời không cần render qua PDF nên là một đường xử lý khác hẳn.
    */
   constructor(
-    private readonly ocrFallback: (buffer: Buffer) => Promise<OcrResult> = ocrScannedPdf,
+    private readonly ocrFallback: (buffer: Buffer, options?: { fromPage?: number; toPage?: number }) => Promise<OcrResult> = ocrScannedPdf,
     private readonly imageOcr: (buffer: Buffer) => Promise<OcrResult> = (buf) => ocrImages([buf])
   ) {}
 
@@ -188,20 +188,32 @@ export class MedicalDocumentParser {
     return cleanExtractedText(raw);
   }
 
-  async extractTextFromPDF(buffer: Buffer): Promise<{ cleanText: string; pageCount: number; usedOcr?: boolean }> {
+  async extractTextFromPDF(
+    buffer: Buffer,
+    options?: { fromPage?: number; toPage?: number }
+  ): Promise<{ cleanText: string; pageCount: number; usedOcr?: boolean }> {
     // Lỗi ở bước đọc text layer KHÔNG được coi là kết luận cuối cùng: pdf-parse có
     // thể hỏng vì lý do không liên quan tới nội dung file, mà file scan cũng chính là
     // loại dễ làm nó lỗi. Luôn cho OCR một cơ hội trước khi báo file hỏng.
     let embeddedText = '';
     let pageCount = 0;
     let readFailure: unknown = null;
+    const fromPage = options?.fromPage && options.fromPage >= 1 ? options.fromPage : undefined;
+    const toPage = options?.toPage && options.toPage >= 1 ? options.toPage : undefined;
 
     try {
-      // Truyền Uint8Array mới thay vì Buffer: pdf.js phiên bản cũ bên trong pdf-parse
-      // đọc sai offset khi nhận Buffer trong một số môi trường (gặp thật với tsx ở
-      // `npm run dev`, báo "bad XRef entry" dù file hợp lệ). Bản sao này nhỏ (tối đa
-      // bằng kích thước file tải lên) và chạy đúng ở cả dev lẫn bản build.
-      const data = await pdfParse(new Uint8Array(buffer) as unknown as Buffer, { max: PDF_MAX_PAGES });
+      let currentPage = 0;
+      const parseOpts: any = { max: PDF_MAX_PAGES };
+      if (fromPage || toPage) {
+        parseOpts.pagerender = async (pageData: any) => {
+          currentPage++;
+          if (fromPage && currentPage < fromPage) return '';
+          if (toPage && currentPage > toPage) return '';
+          const textContent = await pageData.getTextContent();
+          return textContent.items.map((item: any) => item.str).join(' ');
+        };
+      }
+      const data = await pdfParse(new Uint8Array(buffer) as unknown as Buffer, parseOpts);
       embeddedText = this.clean(data.text);
       pageCount = data.numpages;
     } catch (err) {
@@ -213,7 +225,7 @@ export class MedicalDocumentParser {
     if (embeddedText.length < OCR_FALLBACK_THRESHOLD_CHARS) {
       let ocrError: unknown = null;
       try {
-        const ocr = await this.ocrFallback(buffer);
+        const ocr = await this.ocrFallback(buffer, options);
         const ocrText = this.clean(ocr.text);
         if (ocrText.length >= OCR_FALLBACK_THRESHOLD_CHARS) {
           return { cleanText: ocrText, pageCount: pageCount || ocr.pagesProcessed, usedOcr: true };
@@ -291,7 +303,11 @@ export class MedicalDocumentParser {
    * đuôi `.md` cần giữ nguyên cú pháp Markdown. Không dùng đuôi file để quyết định
    * tin hay không tin nội dung.
    */
-  async extractText(buffer: Buffer, filename = ''): Promise<{ cleanText: string; pageCount: number }> {
+  async extractText(
+    buffer: Buffer,
+    filename = '',
+    options?: { fromPage?: number; toPage?: number }
+  ): Promise<{ cleanText: string; pageCount: number }> {
     const kind = detectDocumentKind(buffer);
 
     if (kind === null) {
@@ -301,7 +317,7 @@ export class MedicalDocumentParser {
       );
     }
 
-    if (kind === 'pdf') return this.extractTextFromPDF(buffer);
+    if (kind === 'pdf') return this.extractTextFromPDF(buffer, options);
     if (kind === 'image') return this.extractTextFromImage(buffer);
     if (kind === 'excel') return this.extractTextFromSpreadsheet(buffer);
 
