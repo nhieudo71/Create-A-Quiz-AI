@@ -102,4 +102,18 @@ describe('API: Giai đoạn 4 - Lưu tài liệu tái sử dụng & sửa câu h
     assert.equal(startRes2.json().data.questions[0].content, 'Nội dung mới đã chỉnh sửa?');
     assert.equal(startRes2.json().data.questions[0].difficulty, 'HARD');
   });
+
+  it('POST /api/v1/generator/summarize báo lỗi thân thiện khi chưa cấu hình AI', async () => {
+    const res = await app.inject({
+      method: 'POST',
+      url: '/api/v1/generator/summarize',
+      payload: {
+        text_content: 'Bệnh phổi tắc nghẽn mạn tính (COPD) là bệnh hô hấp phổ biến có thể phòng ngừa và điều trị được.',
+        subject_name: 'Bệnh Học Nội Khoa'
+      }
+    });
+    assert.equal(res.statusCode, 400);
+    assert.equal(res.json().success, false);
+    assert.ok(res.json().error.message.includes('Chưa cấu hình nhà cung cấp AI nào'));
+  });
 });

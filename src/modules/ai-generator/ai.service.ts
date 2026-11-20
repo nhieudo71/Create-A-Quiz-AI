@@ -63,7 +63,38 @@ export class AIService {
       'Yêu cầu trả lời theo 2 phần: (1) Cơ chế / lý do chọn đáp án đúng; (2) Giải thích ngắn gọn vì sao từng phương án nhiễu còn lại không đúng.'
     ].join('\n\n');
 
-    return await provider.generateText({ prompt, temperature: 0.3, timeoutMs });
+    return await provider.generateText({ prompt, temperature: 0.3, timeoutMs, responseFormat: 'text' });
+  }
+
+  /**
+   * Tóm tắt và tổng hợp kiến thức y khoa cốt lõi từ văn bản tài liệu tải lên.
+   */
+  async summarizeDocument(textChunk: string, subjectName: string): Promise<string> {
+    const config = this.resolveActiveProvider();
+    const provider = createProvider(config);
+    const timeoutMs = settingsStore.getRequestTimeoutMs();
+
+    // Giới hạn độ dài để tránh vượt context limit
+    const truncated = textChunk.slice(0, 35000);
+
+    const prompt = [
+      `Bạn là một giáo sư, chuyên gia y khoa đầu ngành phụ trách bộ môn "${subjectName}".`,
+      'Hãy phân tích tài liệu y khoa dưới đây và lập bản tổng hợp kiến thức cốt lõi ôn thi trắc nghiệm theo định dạng Markdown chuẩn đẹp gồm các mục sau:',
+      '# 📌 TỔNG HỢP KIẾN THỨC Y KHOA TRỌNG TÂM',
+      '## 1. Khái Quát & Mục Tiêu Học Tập Cốt Lõi (Executive Summary)',
+      '- Tóm tắt các định nghĩa, vai trò và phạm vi nội dung then chốt trong 3-5 gạch đầu dòng.',
+      '## 2. Các Khái Niệm, Cơ Chế & Thuật Ngữ Mấu Chốt',
+      '- Trình bày chi tiết cơ chế bệnh sinh, phân loại giải phẫu, cơ chế tác dụng dược lý.',
+      '## 3. Bảng Ngọc Lâm Sàng (High-Yield Clinical Pearls)',
+      '- Những điểm then chốt bắt buộc phải nhớ khi đi lâm sàng và làm bài thi trắc nghiệm.',
+      '## 4. Các Cạm Bẫy Trắc Nghiệm Hay Gặp (Common Exam Traps)',
+      '- Những điểm dễ nhầm lẫn giữa các bệnh lý / triệu chứng / chỉ định / chống chỉ định.',
+      '',
+      `--- NỘI DUNG TÀI LIỆU (${subjectName}) ---`,
+      truncated
+    ].join('\n\n');
+
+    return await provider.generateText({ prompt, temperature: 0.3, timeoutMs, responseFormat: 'text' });
   }
 
   /**

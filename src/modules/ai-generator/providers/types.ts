@@ -5,6 +5,7 @@ export interface GenerateContext {
   prompt: string;
   temperature: number;
   timeoutMs: number;
+  responseFormat?: 'json' | 'text';
 }
 
 export interface ConnectionTestResult {

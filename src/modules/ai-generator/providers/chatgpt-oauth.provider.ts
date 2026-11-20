@@ -49,24 +49,31 @@ export class ChatGPTOAuthProvider implements AIProvider {
   async generateText(ctx: GenerateContext): Promise<string> {
     await this.ensureFreshToken();
 
+    const isText = ctx.responseFormat === 'text';
+    const requestBody: Record<string, unknown> = {
+      model: this.config.model,
+      temperature: ctx.temperature,
+      messages: [
+        {
+          role: 'system',
+          content: isText
+            ? 'Bạn là chuyên gia y khoa hàng đầu.'
+            : 'Bạn là chuyên gia khảo thí y khoa. Chỉ trả về JSON hợp lệ, không thêm lời dẫn, không dùng khối mã.'
+        },
+        { role: 'user', content: ctx.prompt }
+      ]
+    };
+
+    if (!isText) {
+      requestBody.response_format = {
+        type: 'json_schema',
+        json_schema: { name: 'medical_questions', strict: false, schema: QUESTION_JSON_SCHEMA }
+      };
+    }
+
     const data = await postJson<ChatCompletionResponse>(`${this.baseUrl()}/chat/completions`, {
       headers: this.authHeaders(),
-      body: {
-        model: this.config.model,
-        temperature: ctx.temperature,
-        messages: [
-          {
-            role: 'system',
-            content:
-              'Bạn là chuyên gia khảo thí y khoa. Chỉ trả về JSON hợp lệ, không thêm lời dẫn, không dùng khối mã.'
-          },
-          { role: 'user', content: ctx.prompt }
-        ],
-        response_format: {
-          type: 'json_schema',
-          json_schema: { name: 'medical_questions', strict: false, schema: QUESTION_JSON_SCHEMA }
-        }
-      },
+      body: requestBody,
       timeoutMs: ctx.timeoutMs,
       providerLabel: this.label
     });

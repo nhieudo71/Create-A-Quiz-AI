@@ -8,9 +8,10 @@ import { StudyHub } from './components/exam/StudyHub';
 import { AttemptReview } from './components/history/AttemptReview';
 import { HistoryDashboard } from './components/history/HistoryDashboard';
 import { SettingsPage } from './components/settings/SettingsPage';
+import { SummaryStudyHub } from './components/summaries/SummaryStudyHub';
 import { QuizService } from './services/quiz.service';
 import { InProgressAttemptSummary } from './types/quiz.types';
-import { Stethoscope, FileText, Clock, BookOpen, Sparkles, Play, Loader2, Settings, Sun, Moon, RotateCcw } from 'lucide-react';
+import { Stethoscope, FileText, Clock, BookOpen, Sparkles, Play, Loader2, Settings, Sun, Moon, RotateCcw, History } from 'lucide-react';
 import { QuestionItem } from './types/generator.types';
 
 // Đề mẫu Y khoa có sẵn để dùng thử ngay khi chưa có tài liệu
@@ -86,19 +87,20 @@ const SAMPLE_MEDICAL_QUESTIONS: QuestionItem[] = [
   }
 ];
 
-type Tab = 'GENERATE' | 'EXAM' | 'HISTORY' | 'SETTINGS';
+type Tab = 'GENERATE' | 'EXAM' | 'SUMMARIES' | 'HISTORY' | 'SETTINGS';
 
 export const App: React.FC = () => {
   const [activeTab, setActiveTab] = useState<Tab>('GENERATE');
 
   // Tiến trình sinh câu hỏi nằm ở provider phía trên App nên vẫn chạy khi đổi tab.
   // Đọc ở đây để hiện chỉ báo trên thanh điều hướng.
-  const { step: generatorStep, progress: generatorProgress } = useQuizGeneratorContext();
+  const { step: generatorStep, progress: generatorProgress, loadTextForGeneration } = useQuizGeneratorContext();
   const isGenerating = generatorStep === 'GENERATING';
 
   // Phiên thi đang mở (đề đã lưu trên server)
   const [activeQuizId, setActiveQuizId] = useState<string | null>(null);
   const [resumeAttemptId, setResumeAttemptId] = useState<string | null>(null);
+  const [examFinished, setExamFinished] = useState<boolean>(false);
   const [activeSubject, setActiveSubject] = useState<string>('Dược Lý & Nội Khoa');
   const [attemptKey, setAttemptKey] = useState<number>(0);
   const [isPreparingExam, setIsPreparingExam] = useState<boolean>(false);
@@ -168,6 +170,7 @@ export const App: React.FC = () => {
 
       setActiveQuizId(quiz.id);
       setResumeAttemptId(null);
+      setExamFinished(false);
       setActiveSubject(subject);
       setReviewAttemptId(null);
       setAttemptKey((prev) => prev + 1);
@@ -190,6 +193,7 @@ export const App: React.FC = () => {
   const handleRetakeQuiz = (quizId: string, subject: string) => {
     setActiveQuizId(quizId);
     setResumeAttemptId(null);
+    setExamFinished(false);
     setActiveSubject(subject);
     setReviewAttemptId(null);
     setAttemptKey((prev) => prev + 1);
@@ -199,6 +203,7 @@ export const App: React.FC = () => {
   const handleResumeAttempt = (summary: InProgressAttemptSummary) => {
     setActiveQuizId(summary.quiz_id);
     setResumeAttemptId(summary.attempt_id);
+    setExamFinished(false);
     setActiveSubject(summary.subject_name);
     setReviewAttemptId(null);
     setAttemptKey((prev) => prev + 1);
@@ -229,7 +234,19 @@ export const App: React.FC = () => {
   };
 
   const goToTab = (tab: Tab) => {
-    if (tab === 'EXAM') setReviewAttemptId(null);
+    if (tab === 'EXAM') {
+      setReviewAttemptId(null);
+      if (examFinished) {
+        setActiveQuizId(null);
+        setResumeAttemptId(null);
+        setExamFinished(false);
+      }
+    } else {
+      if (examFinished) {
+        setActiveQuizId(null);
+        setResumeAttemptId(null);
+      }
+    }
     setActiveTab(tab);
   };
 
@@ -291,6 +308,18 @@ export const App: React.FC = () => {
             </button>
 
             <button
+              onClick={() => goToTab('SUMMARIES')}
+              className={`flex items-center space-x-1.5 px-3.5 py-1.5 rounded-lg text-xs font-semibold transition ${
+                activeTab === 'SUMMARIES'
+                  ? 'bg-white text-medical-700 shadow-xs'
+                  : 'text-slate-600 hover:text-slate-900'
+              }`}
+            >
+              <BookOpen className="w-3.5 h-3.5" />
+              <span>Tài Liệu Tóm Tắt</span>
+            </button>
+
+            <button
               onClick={() => goToTab('HISTORY')}
               className={`flex items-center space-x-1.5 px-3.5 py-1.5 rounded-lg text-xs font-semibold transition ${
                 activeTab === 'HISTORY'
@@ -298,7 +327,7 @@ export const App: React.FC = () => {
                   : 'text-slate-600 hover:text-slate-900'
               }`}
             >
-              <BookOpen className="w-3.5 h-3.5" />
+              <History className="w-3.5 h-3.5" />
               <span>Lịch Sử Thi</span>
             </button>
 
@@ -379,6 +408,18 @@ export const App: React.FC = () => {
             onStartExamRoom={(questions, subject, mode) =>
               void startExamWithQuestions(questions, subject, mode)
             }
+            onNavigateToSummaries={() => goToTab('SUMMARIES')}
+          />
+        )}
+
+        {activeTab === 'SUMMARIES' && (
+          <SummaryStudyHub
+            onNavigateToGenerator={(summaryText, subjectName, sourceTitle) => {
+              if (summaryText) {
+                loadTextForGeneration(summaryText, subjectName, sourceTitle);
+              }
+              goToTab('GENERATE');
+            }}
           />
         )}
 
@@ -392,12 +433,14 @@ export const App: React.FC = () => {
               onExit={() => {
                 setActiveQuizId(null);
                 setResumeAttemptId(null);
+                setExamFinished(false);
                 void refreshInProgress();
               }}
               onAttemptFinished={() => {
                 setHistoryVersion((v) => v + 1);
                 setResumeAttemptId(null);
                 setInProgressSummary(null);
+                setExamFinished(true);
               }}
             />
           ) : (

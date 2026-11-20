@@ -169,3 +169,24 @@ CREATE TABLE IF NOT EXISTS question_srs (
 
 CREATE INDEX IF NOT EXISTS idx_question_srs_next_review ON question_srs (next_review_at);
 CREATE INDEX IF NOT EXISTS idx_question_srs_wrong_count ON question_srs (wrong_count DESC) WHERE wrong_count > 0;
+
+-- ============================================================================
+-- NÂNG CẤP GIAI ĐOẠN 2: KHO BÀI HỌC TÓM TẮT & ÔN TẬP (SUMMARY STUDY HUB)
+-- ============================================================================
+
+CREATE TABLE IF NOT EXISTS document_summaries (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    title VARCHAR(255) NOT NULL,
+    subject_id UUID REFERENCES subjects(id) ON DELETE SET NULL,
+    document_id UUID REFERENCES documents(id) ON DELETE SET NULL,
+    summary TEXT NOT NULL,
+    key_takeaways JSONB,
+    source_filename VARCHAR(255),
+    word_count INT DEFAULT 0,
+    created_at TIMESTAMPTZ DEFAULT NOW(),
+    updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+CREATE INDEX IF NOT EXISTS idx_doc_summaries_subject ON document_summaries(subject_id);
+CREATE INDEX IF NOT EXISTS idx_doc_summaries_created ON document_summaries(created_at DESC);
+

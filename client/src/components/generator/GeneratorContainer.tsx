@@ -8,9 +8,13 @@ import { QuestionItem } from '../../types/generator.types';
 
 interface GeneratorContainerProps {
   onStartExamRoom?: (questions: QuestionItem[], subject: string, mode: 'PRACTICE' | 'EXAM') => void;
+  onNavigateToSummaries?: () => void;
 }
 
-export const GeneratorContainer: React.FC<GeneratorContainerProps> = ({ onStartExamRoom }) => {
+export const GeneratorContainer: React.FC<GeneratorContainerProps> = ({
+  onStartExamRoom,
+  onNavigateToSummaries
+}) => {
   const {
     step,
     docData,
@@ -21,6 +25,12 @@ export const GeneratorContainer: React.FC<GeneratorContainerProps> = ({ onStartE
     errorMessage,
     elapsedSeconds,
     estimatedSeconds,
+    documentSummary,
+    isSummarizing,
+    savedQuizId,
+    isAutoSaved,
+    savedAt,
+    savedSummaryId,
     handleUploadFile,
     handleUpdateConfig,
     handleStartGeneration,
@@ -75,6 +85,13 @@ export const GeneratorContainer: React.FC<GeneratorContainerProps> = ({ onStartE
         <QuestionReviewList
           questions={questions}
           subjectName={config.subjectName}
+          documentSummary={documentSummary}
+          isSummarizing={isSummarizing}
+          savedQuizId={savedQuizId}
+          isAutoSaved={isAutoSaved}
+          savedAt={savedAt}
+          savedSummaryId={savedSummaryId}
+          onNavigateToSummaries={onNavigateToSummaries}
           onUpdateQuestion={handleUpdateQuestion}
           onDeleteQuestion={handleDeleteQuestion}
           onReset={handleReset}

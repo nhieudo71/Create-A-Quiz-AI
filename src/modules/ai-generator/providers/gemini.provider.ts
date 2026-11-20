@@ -24,6 +24,46 @@ export class GeminiProvider implements AIProvider {
   async generateText(ctx: GenerateContext): Promise<string> {
     // Dùng SDK cho đường sinh câu hỏi: nó hỗ trợ responseSchema nên đầu ra
     // bám đúng cấu trúc hơn hẳn việc dặn bằng lời.
+    const isJson = ctx.responseFormat !== 'text';
+    const generationConfig: Record<string, unknown> = {
+      temperature: ctx.temperature
+    };
+    if (isJson) {
+      generationConfig.responseMimeType = 'application/json';
+      generationConfig.responseSchema = {
+        type: SchemaType.OBJECT,
+        properties: {
+          questions: {
+            type: SchemaType.ARRAY,
+            items: {
+              type: SchemaType.OBJECT,
+              properties: {
+                content: { type: SchemaType.STRING },
+                difficulty: { type: SchemaType.STRING, enum: ['EASY', 'MEDIUM', 'HARD'] },
+                explanation: { type: SchemaType.STRING },
+                source_reference: { type: SchemaType.STRING },
+                source_quote: { type: SchemaType.STRING },
+                options: {
+                  type: SchemaType.ARRAY,
+                  items: {
+                    type: SchemaType.OBJECT,
+                    properties: {
+                      label: { type: SchemaType.STRING, enum: ['A', 'B', 'C', 'D'] },
+                      content: { type: SchemaType.STRING },
+                      is_correct: { type: SchemaType.BOOLEAN }
+                    },
+                    required: ['label', 'content', 'is_correct']
+                  }
+                }
+              },
+              required: ['content', 'difficulty', 'explanation', 'source_reference', 'source_quote', 'options']
+            }
+          }
+        },
+        required: ['questions']
+      };
+    }
+
     const model = this.client().getGenerativeModel({
       model: this.config.model || env.GEMINI_MODEL,
       safetySettings: [
@@ -32,42 +72,7 @@ export class GeminiProvider implements AIProvider {
         { category: HarmCategory.HARM_CATEGORY_HATE_SPEECH, threshold: HarmBlockThreshold.BLOCK_NONE },
         { category: HarmCategory.HARM_CATEGORY_SEXUALLY_EXPLICIT, threshold: HarmBlockThreshold.BLOCK_NONE }
       ],
-      generationConfig: {
-        responseMimeType: 'application/json',
-        temperature: ctx.temperature,
-        responseSchema: {
-          type: SchemaType.OBJECT,
-          properties: {
-            questions: {
-              type: SchemaType.ARRAY,
-              items: {
-                type: SchemaType.OBJECT,
-                properties: {
-                  content: { type: SchemaType.STRING },
-                  difficulty: { type: SchemaType.STRING, enum: ['EASY', 'MEDIUM', 'HARD'] },
-                  explanation: { type: SchemaType.STRING },
-                  source_reference: { type: SchemaType.STRING },
-                  source_quote: { type: SchemaType.STRING },
-                  options: {
-                    type: SchemaType.ARRAY,
-                    items: {
-                      type: SchemaType.OBJECT,
-                      properties: {
-                        label: { type: SchemaType.STRING, enum: ['A', 'B', 'C', 'D'] },
-                        content: { type: SchemaType.STRING },
-                        is_correct: { type: SchemaType.BOOLEAN }
-                      },
-                      required: ['label', 'content', 'is_correct']
-                    }
-                  }
-                },
-                required: ['content', 'difficulty', 'explanation', 'source_reference', 'source_quote', 'options']
-              }
-            }
-          },
-          required: ['questions']
-        }
-      }
+      generationConfig
     });
 
     try {

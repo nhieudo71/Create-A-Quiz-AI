@@ -23,7 +23,8 @@ import {
   Check,
   X,
   Loader2,
-  Lightbulb
+  Lightbulb,
+  LogOut
 } from 'lucide-react';
 
 interface ExamRoomProps {
@@ -61,6 +62,7 @@ export const ExamRoom: React.FC<ExamRoomProps> = ({
   const [flagged, setFlagged] = useState<Set<string>>(new Set());
   const [timeLeft, setTimeLeft] = useState<number>(0);
   const [showConfirmModal, setShowConfirmModal] = useState(false);
+  const [showExitModal, setShowExitModal] = useState(false);
   const [reviewFilter, setReviewFilter] = useState<'ALL' | 'WRONG' | 'CORRECT'>('ALL');
   const [paletteFilter, setPaletteFilter] = useState<'ALL' | 'UNANSWERED' | 'CORRECT' | 'WRONG' | 'FLAGGED'>('ALL');
 
@@ -271,13 +273,14 @@ export const ExamRoom: React.FC<ExamRoomProps> = ({
   const questions = attempt?.questions ?? [];
   const currentQ: AttemptQuestion | undefined = questions[currentIdx];
 
-  // Phím tắt làm bài nhanh: 1-4 / A-D chọn đáp án, ←/→ chuyển câu, F gắn cờ
+  // Phím tắt làm bài nhanh: 1-4 / Numpad 1-4 / A-D chọn đáp án, Enter chuyển câu, ←/→ chuyển câu, F gắn cờ
   useEffect(() => {
     if (!attempt || result || !currentQ) return;
     const onKeyDown = (e: KeyboardEvent) => {
       const tag = (e.target as HTMLElement | null)?.tagName;
       if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT') return;
       if (e.ctrlKey || e.metaKey || e.altKey) return;
+      if (showConfirmModal || showExitModal) return;
 
       if (e.key === 'ArrowLeft') {
         e.preventDefault();
@@ -295,11 +298,25 @@ export const ExamRoom: React.FC<ExamRoomProps> = ({
         return;
       }
 
+      // Nhấn Enter để sang câu tiếp theo hoặc nộp bài nếu ở câu cuối
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        if (currentIdx < questions.length - 1) {
+          setCurrentIdx((prev) => prev + 1);
+        } else {
+          setShowConfirmModal(true);
+        }
+        return;
+      }
+
       const keyMap: Record<string, number> = {
         '1': 0, '2': 1, '3': 2, '4': 3,
+        numpad1: 0, numpad2: 1, numpad3: 2, numpad4: 3,
         a: 0, b: 1, c: 2, d: 3
       };
-      const optIdx = keyMap[e.key.toLowerCase()];
+      const codeLower = (e.code || '').toLowerCase();
+      const keyLower = (e.key || '').toLowerCase();
+      const optIdx = keyMap[codeLower] ?? keyMap[keyLower];
       if (
         optIdx !== undefined &&
         (currentQ.question_type === 'MCQ' || currentQ.question_type === 'TRUE_FALSE') &&
@@ -311,7 +328,7 @@ export const ExamRoom: React.FC<ExamRoomProps> = ({
     };
     window.addEventListener('keydown', onKeyDown);
     return () => window.removeEventListener('keydown', onKeyDown);
-  }, [attempt, result, currentQ, questions.length, handleAnswerChange, toggleFlag]);
+  }, [attempt, result, currentQ, questions.length, currentIdx, handleAnswerChange, toggleFlag, showConfirmModal, showExitModal]);
   const answeredCount = Object.keys(answers).filter((id) => {
     const r = answers[id];
     return Boolean(
@@ -415,9 +432,10 @@ export const ExamRoom: React.FC<ExamRoomProps> = ({
           <div className="mt-6 flex justify-center space-x-3">
             <button
               onClick={onExit}
-              className="px-5 py-2.5 rounded-xl border border-slate-300 hover:bg-slate-50 text-xs font-bold text-slate-700 transition"
+              className="px-5 py-2.5 rounded-xl border border-slate-300 hover:bg-slate-50 text-xs font-bold text-slate-700 transition flex items-center space-x-1.5"
             >
-              Về Trang Chủ
+              <LogOut className="w-4 h-4 text-slate-500" />
+              <span>Thoát Phòng Thi</span>
             </button>
             <button
               onClick={() => {
@@ -558,7 +576,17 @@ export const ExamRoom: React.FC<ExamRoomProps> = ({
           </p>
         </div>
 
-        <div className="flex items-center space-x-3">
+        <div className="flex items-center space-x-2.5">
+          <button
+            type="button"
+            onClick={() => setShowExitModal(true)}
+            title="Thoát phòng thi"
+            className="px-3 py-1.5 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 text-slate-600 font-semibold text-xs transition flex items-center space-x-1.5"
+          >
+            <LogOut className="w-3.5 h-3.5 text-slate-500" />
+            <span className="hidden sm:inline">Rời phòng</span>
+          </button>
+
           {hasTimeLimit ? (
             <div
               className={`flex items-center space-x-2 px-3.5 py-1.5 rounded-xl font-mono text-sm font-bold border transition ${
@@ -705,6 +733,10 @@ export const ExamRoom: React.FC<ExamRoomProps> = ({
                 <ArrowRight className="w-4 h-4" />
               </button>
             </div>
+
+            <div className="mt-3 text-[11px] text-slate-400 flex items-center justify-center sm:justify-start px-1 pt-2 border-t border-slate-100">
+              <span>💡 <strong>Phím tắt:</strong> [1-4 / Numpad] Chọn đáp án • [Enter] Sang câu tiếp • [←/→] Điều hướng • [F] Cờ</span>
+            </div>
           </div>
 
           <div className="bg-white rounded-2xl border border-slate-200 p-5 shadow-sm space-y-3">
@@ -839,6 +871,56 @@ export const ExamRoom: React.FC<ExamRoomProps> = ({
               >
                 {isSubmitting && <Loader2 className="w-3.5 h-3.5 animate-spin" />}
                 <span>{isSubmitting ? 'Đang nộp...' : 'Xác nhận nộp bài'}</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {showExitModal && (
+        <div className="fixed inset-0 z-50 bg-black/40 backdrop-blur-xs flex items-center justify-center p-4">
+          <div className="bg-white rounded-3xl max-w-md w-full p-6 shadow-xl border border-slate-100 space-y-4">
+            <div className="w-12 h-12 rounded-2xl bg-amber-50 text-amber-600 flex items-center justify-center mx-auto">
+              <LogOut className="w-6 h-6" />
+            </div>
+
+            <div className="text-center space-y-1">
+              <h3 className="font-bold text-slate-900 text-base">Rời Khỏi Phòng Thi?</h3>
+              <p className="text-xs text-slate-500 leading-relaxed">
+                Bạn đã làm <span className="font-bold text-medical-600">{answeredCount}/{questions.length} câu</span>.
+                Tiến trình làm bài đã được tự động lưu nháp an toàn trên máy chủ.
+              </p>
+            </div>
+
+            <div className="pt-2 flex flex-col gap-2">
+              <button
+                type="button"
+                onClick={() => {
+                  setShowExitModal(false);
+                  onExit();
+                }}
+                className="w-full py-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold transition flex items-center justify-center space-x-1.5"
+              >
+                <span>Lưu nháp & Tạm dừng (Có thể làm tiếp sau)</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => {
+                  setShowExitModal(false);
+                  setShowConfirmModal(true);
+                }}
+                className="w-full py-2.5 rounded-xl border border-medical-600 text-medical-700 hover:bg-medical-50 text-xs font-bold transition flex items-center justify-center space-x-1.5"
+              >
+                <span>Nộp bài ngay để chấm điểm</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setShowExitModal(false)}
+                className="w-full py-2 rounded-xl text-slate-400 hover:text-slate-600 text-xs font-semibold"
+              >
+                Tiếp tục làm bài
               </button>
             </div>
           </div>

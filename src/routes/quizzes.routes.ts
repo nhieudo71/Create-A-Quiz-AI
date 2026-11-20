@@ -33,6 +33,12 @@ export function registerQuizRoutes(
     return reply.send({ success: true, data: attemptData });
   });
 
+  app.get('/api/v1/quizzes/:id', async (req, reply) => {
+    const { id } = parseOrThrow(uuidParamsSchema, req.params);
+    const quiz = await attemptsService.getQuizById(id);
+    return reply.send({ success: true, data: quiz });
+  });
+
   app.get('/api/v1/subjects', async (req, reply) => {
     const subjects = await attemptsService.listSubjects();
     return reply.send({ success: true, data: subjects });

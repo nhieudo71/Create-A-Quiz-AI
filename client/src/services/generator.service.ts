@@ -117,6 +117,38 @@ export class GeneratorService {
   }
 
   /**
+   * Tóm tắt và tổng hợp kiến thức y khoa cốt lõi từ tài liệu tải lên
+   */
+  static async summarizeDocument(textContent: string, subjectName: string): Promise<string> {
+    const response = await fetch('/api/v1/generator/summarize', {
+      method: 'POST',
+      headers: withAuthHeaders({
+        'Content-Type': 'application/json'
+      }),
+      body: JSON.stringify({
+        text_content: textContent,
+        subject_name: subjectName
+      })
+    });
+
+    if (response.status === 401) {
+      throw new Error(UNAUTHORIZED_MESSAGE);
+    }
+
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
+      throw new Error(errorData?.error?.message || `Lỗi khi AI tóm tắt tài liệu (Mã: ${response.status})`);
+    }
+
+    const json = await response.json().catch(() => null);
+    if (!json || !json.success || !json.data) {
+      throw new Error('Dữ liệu tóm tắt không hợp lệ từ máy chủ.');
+    }
+
+    return json.data.summary;
+  }
+
+  /**
    * Gọi API sinh câu hỏi bằng AI
    */
   static async generateQuestions(params: {

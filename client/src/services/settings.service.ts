@@ -94,4 +94,22 @@ export class SettingsService {
   static async getOAuthLoginStatus(id: string): Promise<{ status: 'pending' | 'done' | 'error'; message?: string }> {
     return requestJson(`/api/v1/settings/providers/${id}/oauth/status`, { method: 'GET' });
   }
+
+  static async discoverModels(input: {
+    type: string;
+    apiKey?: string;
+    baseUrl?: string;
+    providerId?: string;
+  }): Promise<Array<{ id: string; name: string; recommended?: boolean }>> {
+    const res = await requestJson<{ models: Array<{ id: string; name: string; recommended?: boolean }> }>(
+      '/api/v1/settings/models/discover',
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(input)
+      },
+      12000
+    );
+    return res.models ?? [];
+  }
 }

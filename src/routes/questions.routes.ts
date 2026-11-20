@@ -24,12 +24,49 @@ const updateQuestionBodySchema = z.object({
 
 export const MAX_TEXT_CONTENT_CHARS = 30 * 1024 * 1024;
 
+export const summarizeBodySchema = z.object({
+  text_content: z
+    .string({ required_error: 'Thiếu nội dung tài liệu (text_content)' })
+    .min(10, 'Nội dung tài liệu tối thiểu 10 ký tự')
+    .max(MAX_TEXT_CONTENT_CHARS, 'Nội dung tài liệu quá lớn để xử lý'),
+  subject_name: z
+    .string({ required_error: 'Thiếu tên môn học (subject_name)' })
+    .min(1, 'Tên môn học không được để trống')
+});
+
 export function registerQuestionRoutes(
   app: FastifyInstance,
   aiService: AIService,
   docParser: MedicalDocumentParser,
   jsonBodyLimit: number
 ): void {
+  // ============================================================================
+  // 1. TÓM TẮT TỔNG HỢP KIẾN THỨC TÀI LIỆU (Task 2)
+  // ============================================================================
+  app.post('/api/v1/generator/summarize', {
+    config: { rateLimit: { max: 20, timeWindow: '5 minutes' } },
+    bodyLimit: jsonBodyLimit,
+    handler: async (req, reply) => {
+      const body = parseOrThrow(summarizeBodySchema, req.body);
+      try {
+        const summary = await aiService.summarizeDocument(body.text_content, body.subject_name);
+        return reply.send({
+          success: true,
+          data: {
+            summary,
+            subject_name: body.subject_name
+          }
+        });
+      } catch (err: any) {
+        if (err instanceof AppError) {
+          throw err;
+        }
+        req.log.error(err, 'Lỗi khi AI tóm tắt tài liệu');
+        throw new AppError(err?.message || 'Không thể tạo bản tóm tắt từ tài liệu này.', 500);
+      }
+    }
+  });
+
   // ============================================================================
   // 2. SINH CÂU HỎI VỚI AI (song song có giới hạn, có timeout & retry trong AIService)
   // ============================================================================

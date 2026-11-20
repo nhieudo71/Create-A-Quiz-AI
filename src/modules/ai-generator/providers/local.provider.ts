@@ -28,14 +28,19 @@ export class LocalAIProvider implements AIProvider {
   }
 
   async generateText(ctx: GenerateContext): Promise<string> {
+    const isText = ctx.responseFormat === 'text';
+    const requestBody: Record<string, unknown> = {
+      model: this.config.model,
+      prompt: ctx.prompt,
+      stream: false,
+      options: { temperature: ctx.temperature }
+    };
+    if (!isText) {
+      requestBody.format = QUESTION_JSON_SCHEMA;
+    }
+
     const data = await postJson<OllamaGenerateResponse>(`${this.baseUrl()}/api/generate`, {
-      body: {
-        model: this.config.model,
-        prompt: ctx.prompt,
-        stream: false,
-        format: QUESTION_JSON_SCHEMA,
-        options: { temperature: ctx.temperature }
-      },
+      body: requestBody,
       timeoutMs: ctx.timeoutMs,
       providerLabel: this.label
     });

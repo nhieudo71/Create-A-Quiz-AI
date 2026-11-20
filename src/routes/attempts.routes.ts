@@ -22,6 +22,17 @@ export function registerAttemptRoutes(
     return reply.send({ success: true, data: result });
   });
 
+  app.post('/api/v1/attempts/:id/complete', async (req, reply) => {
+    const { id } = parseOrThrow(uuidParamsSchema, req.params);
+    let answers: any[] = [];
+    if (req.body && typeof req.body === 'object' && 'answers' in (req.body as any)) {
+      const body = parseOrThrow(submitBodySchema, req.body);
+      answers = body.answers;
+    }
+    const result = await attemptsService.submitAttempt(id, answers);
+    return reply.send({ success: true, data: result });
+  });
+
   // Chấm tức thì MỘT câu để giao diện hiện đúng/sai + giải thích ngay khi người dùng chọn.
   // Cố ý không ghi CSDL: điểm chính thức chỉ chốt ở /submit.
   app.post('/api/v1/attempts/:id/check', async (req, reply) => {
@@ -78,5 +89,11 @@ export function registerAttemptRoutes(
     const { id } = parseOrThrow(uuidParamsSchema, req.params);
     await attemptsService.abandonAttempt(id);
     return reply.send({ success: true, data: { deleted: true } });
+  });
+
+  app.post('/api/v1/attempts/:id/abandon', async (req, reply) => {
+    const { id } = parseOrThrow(uuidParamsSchema, req.params);
+    await attemptsService.abandonAttempt(id);
+    return reply.send({ success: true, data: { abandoned: true, deleted: true } });
   });
 }

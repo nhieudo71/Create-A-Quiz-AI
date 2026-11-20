@@ -61,6 +61,36 @@ describe('API: validation và xử lý lỗi', () => {
     assert.equal(res.statusCode, 400);
   });
 
+  it('summarize: thiếu text_content -> 400', async () => {
+    const res = await app.inject({
+      method: 'POST',
+      url: '/api/v1/generator/summarize',
+      payload: { subject_name: 'Dược Lý' }
+    });
+    assert.equal(res.statusCode, 400);
+    assert.equal(res.json().success, false);
+  });
+
+  it('summarize: text quá ngắn (dưới 10 ký tự) -> 400', async () => {
+    const res = await app.inject({
+      method: 'POST',
+      url: '/api/v1/generator/summarize',
+      payload: { text_content: 'Quá ngắn', subject_name: 'Dược Lý' }
+    });
+    assert.equal(res.statusCode, 400);
+    assert.equal(res.json().success, false);
+  });
+
+  it('summarize: thiếu subject_name -> 400', async () => {
+    const res = await app.inject({
+      method: 'POST',
+      url: '/api/v1/generator/summarize',
+      payload: { text_content: 'Văn bản y khoa hợp lệ có độ dài trên mười ký tự' }
+    });
+    assert.equal(res.statusCode, 400);
+    assert.equal(res.json().success, false);
+  });
+
   it('JSON hỏng -> 400 (không phải 500)', async () => {
     const res = await app.inject({
       method: 'POST',

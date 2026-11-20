@@ -64,6 +64,7 @@ export interface QuestionItem {
 }
 
 export interface UploadDocumentResponse {
+  id?: string;
   filename: string;
   page_count: number;
   text_length: number;

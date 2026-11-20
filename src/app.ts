@@ -16,6 +16,7 @@ import { AttemptsService } from './modules/attempts/attempts.service';
 import { BackupService } from './modules/backup/backup.service';
 import { StudyService } from './modules/study/study.service';
 import { ExportService } from './modules/export/export.service';
+import { SummariesService } from './modules/summaries/summaries.service';
 import { registerDocumentRoutes } from './routes/documents.routes';
 import { registerQuestionRoutes } from './routes/questions.routes';
 import { registerQuizRoutes } from './routes/quizzes.routes';
@@ -24,6 +25,7 @@ import { registerSettingsRoutes } from './routes/settings.routes';
 import { registerBackupRoutes } from './routes/backup.routes';
 import { registerStudyRoutes } from './routes/study.routes';
 import { registerExportRoutes } from './routes/export.routes';
+import { registerSummariesRoutes } from './routes/summaries.routes';
 
 // Văn bản trích xuất từ file lớn (giáo trình vài trăm trang) có thể rất dài.
 // Giới hạn theo ký tự phải đi kèm trần body JSON, nếu không request sẽ bị chặn
@@ -105,6 +107,7 @@ export function buildApp(options: BuildAppOptions = {}): FastifyInstance {
   const backupService = new BackupService();
   const studyService = new StudyService();
   const exportService = new ExportService();
+  const summariesService = new SummariesService();
 
   // Healthcheck: báo trạng thái DB thật thay vì luôn "ok"
   app.get('/health', async (req, reply) => {
@@ -153,6 +156,7 @@ export function buildApp(options: BuildAppOptions = {}): FastifyInstance {
   registerBackupRoutes(app, backupService, JSON_BODY_LIMIT);
   registerStudyRoutes(app, studyService);
   registerExportRoutes(app, exportService);
+  registerSummariesRoutes(app, summariesService, exportService);
 
   // ============================================================================
   // PHỤC VỤ GIAO DIỆN TĨNH (bản web/desktop đã build)

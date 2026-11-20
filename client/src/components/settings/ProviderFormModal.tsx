@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
-import { X, Loader2, AlertTriangle } from 'lucide-react';
+import { X, Loader2, AlertTriangle, RefreshCw } from 'lucide-react';
+import { SettingsService } from '../../services/settings.service';
 import {
   CreateProviderInput,
   ProviderMeta,
@@ -34,6 +35,47 @@ export const ProviderFormModal: React.FC<ProviderFormModalProps> = ({
   const [apiKey, setApiKey] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  const [discoveredModels, setDiscoveredModels] = useState<Array<{ id: string; name: string; recommended?: boolean }>>([]);
+  const [isLoadingModels, setIsLoadingModels] = useState(false);
+  const [isCustomModel, setIsCustomModel] = useState(false);
+
+  const fetchModels = async (keyOverride?: string) => {
+    if (type === 'chatgpt-oauth') return;
+    setIsLoadingModels(true);
+    try {
+      const models = await SettingsService.discoverModels({
+        type,
+        apiKey: keyOverride !== undefined ? keyOverride : apiKey,
+        baseUrl,
+        providerId: editing?.id
+      });
+      setDiscoveredModels(models);
+      if (models.length > 0) {
+        if (!editing || !model) {
+          const rec = models.find((m) => m.recommended) || models[0];
+          setModel(rec.id);
+        }
+      }
+    } catch {
+      // Giữ nguyên danh sách nếu không tải được
+    } finally {
+      setIsLoadingModels(false);
+    }
+  };
+
+  useEffect(() => {
+    void fetchModels();
+  }, [type]);
+
+  // Tự động tải model khi dán/nhập API Key
+  useEffect(() => {
+    if (!apiKey || apiKey.length < 8) return;
+    const timer = setTimeout(() => {
+      void fetchModels(apiKey);
+    }, 600);
+    return () => clearTimeout(timer);
+  }, [apiKey]);
 
   useEffect(() => {
     if (editing) return;
@@ -117,13 +159,51 @@ export const ProviderFormModal: React.FC<ProviderFormModalProps> = ({
 
           {type !== 'chatgpt-oauth' && (
             <div>
-              <label className="block text-xs font-semibold text-slate-700 mb-1.5">Model</label>
-              <input
-                value={model}
-                onChange={(e) => setModel(e.target.value)}
-                placeholder={meta.defaultModel}
-                className="w-full px-3 py-2.5 rounded-xl border border-slate-300 text-sm outline-none focus:border-medical-500 focus:ring-2 focus:ring-medical-100"
-              />
+              <div className="flex items-center justify-between mb-1.5">
+                <label className="block text-xs font-semibold text-slate-700">
+                  Model {isLoadingModels && <span className="text-slate-400 font-normal">(Đang tải...)</span>}
+                </label>
+                <div className="flex items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={() => void fetchModels()}
+                    disabled={isLoadingModels}
+                    title="Tải lại danh sách Model"
+                    className="text-[11px] text-medical-600 hover:text-medical-800 flex items-center gap-1 font-semibold"
+                  >
+                    <RefreshCw className={`w-3 h-3 ${isLoadingModels ? 'animate-spin' : ''}`} />
+                    <span>Làm mới</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setIsCustomModel(!isCustomModel)}
+                    className="text-[11px] text-slate-500 hover:text-slate-800 underline font-medium"
+                  >
+                    {isCustomModel ? 'Chọn danh sách' : 'Gõ model khác'}
+                  </button>
+                </div>
+              </div>
+
+              {!isCustomModel && discoveredModels.length > 0 ? (
+                <select
+                  value={model}
+                  onChange={(e) => setModel(e.target.value)}
+                  className="w-full px-3 py-2.5 rounded-xl border border-slate-300 text-sm outline-none focus:border-medical-500 focus:ring-2 focus:ring-medical-100 bg-white"
+                >
+                  {discoveredModels.map((m) => (
+                    <option key={m.id} value={m.id}>
+                      {m.name}
+                    </option>
+                  ))}
+                </select>
+              ) : (
+                <input
+                  value={model}
+                  onChange={(e) => setModel(e.target.value)}
+                  placeholder={meta.defaultModel}
+                  className="w-full px-3 py-2.5 rounded-xl border border-slate-300 text-sm outline-none focus:border-medical-500 focus:ring-2 focus:ring-medical-100 font-mono"
+                />
+              )}
             </div>
           )}
 

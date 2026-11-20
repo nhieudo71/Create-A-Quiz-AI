@@ -284,7 +284,7 @@ export const QuestionAnswerPanel: React.FC<QuestionAnswerPanelProps> = ({
   // ---------------------------------------------------------------
   return (
     <div className="mt-6 space-y-3">
-      {question.options.map((opt) => {
+      {question.options.map((opt, idx) => {
         const isSelected = response.option_id === opt.option_id;
         const isCorrectOption = correctOptionIds?.includes(opt.option_id) ?? false;
         return (
@@ -303,7 +303,10 @@ export const QuestionAnswerPanel: React.FC<QuestionAnswerPanelProps> = ({
             >
               {opt.label}
             </span>
-            <span className="text-sm">{opt.content}</span>
+            <span className="text-sm flex-1">{opt.content}</span>
+            <span className="text-[10px] font-mono font-semibold text-slate-400 bg-slate-100 px-1.5 py-0.5 rounded border border-slate-200 hidden sm:inline-block">
+              Phím {idx + 1}
+            </span>
             {showResult && isCorrectOption && <Check className="w-4 h-4 ml-auto text-emerald-600" />}
             {showResult && isSelected && !isCorrectOption && (
               <X className="w-4 h-4 ml-auto text-rose-600" />

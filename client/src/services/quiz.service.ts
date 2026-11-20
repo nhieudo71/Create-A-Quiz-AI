@@ -215,6 +215,15 @@ export class QuizService {
     );
   }
 
+  /** Lấy chi tiết đề thi kèm danh sách câu hỏi. */
+  static async getQuiz(quizId: string): Promise<any> {
+    return requestJson<any>(
+      `/api/v1/quizzes/${quizId}`,
+      { method: 'GET' },
+      'Không tải được chi tiết đề thi'
+    );
+  }
+
   /** Tìm lượt thi đang làm dở còn hạn (nếu có). */
   static async getInProgressAttempt(): Promise<import('../types/quiz.types').InProgressAttemptSummary | null> {
     return requestJson<import('../types/quiz.types').InProgressAttemptSummary | null>(

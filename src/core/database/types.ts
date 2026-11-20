@@ -110,6 +110,19 @@ export interface QuestionSrsTable {
   next_review_at: Generated<Date>;
 }
 
+export interface DocumentSummaryTable {
+  id: Generated<string>;
+  title: string;
+  subject_id: string | null;
+  document_id: string | null;
+  summary: string;
+  key_takeaways: unknown | null;
+  source_filename: string | null;
+  word_count: Generated<number>;
+  created_at: Generated<Date>;
+  updated_at: Generated<Date>;
+}
+
 export interface DatabaseSchema {
   subjects: SubjectTable;
   documents: DocumentTable;
@@ -121,4 +134,5 @@ export interface DatabaseSchema {
   attempt_answers: AttemptAnswerTable;
   question_bookmarks: QuestionBookmarkTable;
   question_srs: QuestionSrsTable;
+  document_summaries: DocumentSummaryTable;
 }

@@ -40,20 +40,22 @@ export class OpenAICompatibleProvider implements AIProvider {
   }
 
   async generateText(ctx: GenerateContext): Promise<string> {
+    const isText = ctx.responseFormat === 'text';
     const body: Record<string, unknown> = {
       model: this.config.model,
       temperature: ctx.temperature,
       messages: [
         {
           role: 'system',
-          content:
-            'Bạn là chuyên gia khảo thí y khoa. Chỉ trả về JSON hợp lệ, không thêm lời dẫn, không dùng khối mã.'
+          content: isText
+            ? 'Bạn là chuyên gia y khoa hàng đầu.'
+            : 'Bạn là chuyên gia khảo thí y khoa. Chỉ trả về JSON hợp lệ, không thêm lời dẫn, không dùng khối mã.'
         },
         { role: 'user', content: ctx.prompt }
       ]
     };
 
-    if (this.supportsJsonSchema()) {
+    if (!isText && this.supportsJsonSchema()) {
       body.response_format = {
         type: 'json_schema',
         json_schema: { name: 'medical_questions', strict: false, schema: QUESTION_JSON_SCHEMA }

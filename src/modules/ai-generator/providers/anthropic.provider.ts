@@ -35,14 +35,16 @@ export class AnthropicProvider implements AIProvider {
   }
 
   async generateText(ctx: GenerateContext): Promise<string> {
+    const isText = ctx.responseFormat === 'text';
     const data = await postJson<MessagesResponse>(`${this.baseUrl()}/messages`, {
       headers: this.headers(),
       body: {
         model: this.config.model,
         max_tokens: 8192,
         temperature: ctx.temperature,
-        system:
-          'Bạn là chuyên gia khảo thí y khoa. Chỉ trả về JSON hợp lệ theo đúng cấu trúc được yêu cầu, không thêm lời dẫn, không dùng khối mã markdown.',
+        system: isText
+          ? 'Bạn là chuyên gia y khoa hàng đầu.'
+          : 'Bạn là chuyên gia khảo thí y khoa. Chỉ trả về JSON hợp lệ theo đúng cấu trúc được yêu cầu, không thêm lời dẫn, không dùng khối mã markdown.',
         messages: [{ role: 'user', content: ctx.prompt }]
       },
       timeoutMs: ctx.timeoutMs,

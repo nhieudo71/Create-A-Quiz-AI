@@ -924,6 +924,82 @@ export class AttemptsService {
   }
 
   /**
+   * Lấy chi tiết đề thi kèm danh sách câu hỏi và các phương án trả lời.
+   */
+  async getQuizById(quizId: string) {
+    const quiz = await db
+      .selectFrom('quizzes')
+      .innerJoin('subjects', 'subjects.id', 'quizzes.subject_id')
+      .select([
+        'quizzes.id',
+        'quizzes.title',
+        'quizzes.mode',
+        'quizzes.total_questions',
+        'quizzes.time_limit_seconds',
+        'quizzes.instant_feedback',
+        'quizzes.created_at',
+        'subjects.id as subject_id',
+        'subjects.name as subject_name'
+      ])
+      .where('quizzes.id', '=', quizId)
+      .executeTakeFirst();
+
+    if (!quiz) {
+      throw new NotFoundError('Không tìm thấy đề thi.');
+    }
+
+    const questions = await db
+      .selectFrom('quiz_questions')
+      .innerJoin('questions', 'questions.id', 'quiz_questions.question_id')
+      .select([
+        'quiz_questions.display_order',
+        'questions.id as question_id',
+        'questions.content',
+        'questions.difficulty',
+        'questions.explanation',
+        'questions.source_reference',
+        'questions.subtopic',
+        'questions.question_type',
+        'questions.payload'
+      ])
+      .where('quiz_questions.quiz_id', '=', quizId)
+      .orderBy('quiz_questions.display_order', 'asc')
+      .execute();
+
+    const qIds = questions.map((q) => q.question_id);
+    const options =
+      qIds.length > 0
+        ? await db
+            .selectFrom('question_options')
+            .select(['id', 'question_id', 'option_label', 'content', 'is_correct'])
+            .where('question_id', 'in', qIds)
+            .orderBy('option_label', 'asc')
+            .execute()
+        : [];
+
+    const optionsByQ = new Map<string, Array<{ id: string; label: string; content: string; is_correct: boolean }>>();
+    for (const opt of options) {
+      const list = optionsByQ.get(opt.question_id) ?? [];
+      list.push({
+        id: opt.id,
+        label: opt.option_label,
+        content: opt.content,
+        is_correct: opt.is_correct
+      });
+      optionsByQ.set(opt.question_id, list);
+    }
+
+    return {
+      ...quiz,
+      questions: questions.map((q) => ({
+        ...q,
+        id: q.question_id,
+        options: optionsByQ.get(q.question_id) ?? []
+      }))
+    };
+  }
+
+  /**
    * Sửa đề thi: đổi tiêu đề và/hoặc chuyển sang môn học khác (tạo môn mới nếu tên chưa tồn tại).
    */
   async updateQuiz(quizId: string, input: { title?: string; subjectName?: string }) {

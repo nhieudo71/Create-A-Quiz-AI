@@ -7,6 +7,8 @@ import {
   UploadDocumentResponse
 } from '../types/generator.types';
 import { GeneratorService } from '../services/generator.service';
+import { QuizService } from '../services/quiz.service';
+import { SummaryService } from '../services/summary.service';
 import { getMaxFileSizeMb } from '../services/http';
 import { SettingsService } from '../services/settings.service';
 import { toast } from '../context/ToastContext';
@@ -43,6 +45,13 @@ export function useQuizGenerator() {
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [elapsedSeconds, setElapsedSeconds] = useState<number>(0);
   const [estimatedSeconds, setEstimatedSeconds] = useState<number>(0);
+  const [documentSummary, setDocumentSummary] = useState<string | null>(null);
+  const [isSummarizing, setIsSummarizing] = useState<boolean>(false);
+  const [savedQuizId, setSavedQuizId] = useState<string | null>(null);
+  const [isAutoSaved, setIsAutoSaved] = useState<boolean>(false);
+  const [savedAt, setSavedAt] = useState<Date | null>(null);
+  const [savedSummaryId, setSavedSummaryId] = useState<string | null>(null);
+  const [isSummarySaved, setIsSummarySaved] = useState<boolean>(false);
 
   /**
    * Xử lý tải tài liệu lên
@@ -174,6 +183,69 @@ export function useQuizGenerator() {
 
       // Ghi nhận thời gian thật để các lần sau ước lượng chính xác hơn
       recordGenerationDuration(total, (Date.now() - startedAt) / 1000);
+
+      // Auto-save đề thi vào CSDL ngay khi sinh xong (Task 3)
+      if (generated.length > 0) {
+        try {
+          const autoSaveTitle = `Đề thi ${config.subjectName} (${generated.length} câu) - ${new Date().toLocaleDateString('vi-VN')}`;
+          const res = await QuizService.createQuiz({
+            title: autoSaveTitle,
+            subjectName: config.subjectName,
+            mode: 'EXAM',
+            questions: generated
+          });
+          if (res?.id) {
+            setSavedQuizId(res.id);
+            setIsAutoSaved(true);
+            setSavedAt(new Date());
+            toast.success(`Đã tự động lưu đề thi vào CSDL`, 'Tự động lưu');
+          }
+        } catch (saveErr: any) {
+          console.error('Tự động lưu đề thi thất bại:', saveErr);
+          toast.warning('Không thể tự động lưu đề thi vào CSDL. Bạn có thể lưu thủ công.', 'Tự động lưu');
+        }
+      }
+
+      // Kích hoạt tóm tắt tài liệu tự động nếu rawText có văn bản (Task 2 & Task 4)
+      if (rawText && rawText.trim().length > 0) {
+        setIsSummarizing(true);
+        GeneratorService.summarizeDocument(rawText, config.subjectName)
+          .then(async (summary) => {
+            setDocumentSummary(summary);
+            toast.success('Đã hoàn thành tóm tắt kiến thức cốt lõi từ tài liệu!', 'Tóm tắt tài liệu');
+
+            // Tự động lưu bài tóm tắt vào CSDL để xuất hiện ngay trong Kho Ôn Tập (Summary Study Hub)
+            try {
+              const defaultTitle = docData?.filename
+                ? `Bài tóm tắt: ${docData.filename.replace(/\.[^/.]+$/, '')}`
+                : `Bài tóm tắt: ${config.subjectName} - ${new Date().toLocaleDateString('vi-VN')}`;
+
+              const wordCount = summary.trim().split(/\s+/).filter(Boolean).length;
+              const saved = await SummaryService.create({
+                title: defaultTitle,
+                summary,
+                subjectName: config.subjectName,
+                documentId: docData?.id || undefined,
+                sourceFilename: docData?.filename || selectedFile?.name || undefined,
+                wordCount
+              });
+
+              if (saved?.id) {
+                setSavedSummaryId(saved.id);
+                setIsSummarySaved(true);
+                toast.success('Đã tự động lưu bài tóm tắt vào Kho Ôn Tập!', 'Tự động lưu');
+              }
+            } catch (sumSaveErr: any) {
+              console.error('Lỗi khi tự động lưu bài tóm tắt vào CSDL:', sumSaveErr);
+            }
+          })
+          .catch((sumErr: any) => {
+            console.error('Lỗi khi tóm tắt tài liệu:', sumErr);
+          })
+          .finally(() => {
+            setIsSummarizing(false);
+          });
+      }
     } catch (err: any) {
       setProgress((prev) => ({ ...prev, status: 'FAILED' }));
       const msg = err.message || 'Lỗi khi gọi AI. Vui lòng kiểm tra lại cấu hình.';
@@ -206,6 +278,27 @@ export function useQuizGenerator() {
   }, []);
 
   /**
+   * Nạp văn bản tóm tắt hoặc nội dung trực tiếp để tạo đề ngay (Active Recall)
+   */
+  const loadTextForGeneration = useCallback((text: string, subjectName?: string, sourceTitle?: string) => {
+    setRawText(text);
+    if (subjectName) {
+      setConfig((prev) => ({ ...prev, subjectName }));
+    }
+    setDocData({
+      id: 'summary-import',
+      filename: sourceTitle ? `${sourceTitle}.txt` : 'bai-hoc-tom-tat.txt',
+      page_count: 1,
+      text_length: text.length,
+      preview_text: text.slice(0, 500)
+    });
+    setDocumentSummary(text);
+    setStep('CONFIG');
+    setQuestions([]);
+    setErrorMessage(null);
+  }, []);
+
+  /**
    * Đặt lại toàn bộ tiến trình
    */
   const handleReset = useCallback(() => {
@@ -218,6 +311,13 @@ export function useQuizGenerator() {
     setElapsedSeconds(0);
     setEstimatedSeconds(0);
     setProgress(INITIAL_PROGRESS);
+    setDocumentSummary(null);
+    setIsSummarizing(false);
+    setSavedQuizId(null);
+    setIsAutoSaved(false);
+    setSavedAt(null);
+    setSavedSummaryId(null);
+    setIsSummarySaved(false);
   }, []);
 
   return {
@@ -233,6 +333,20 @@ export function useQuizGenerator() {
     setErrorMessage,
     elapsedSeconds,
     estimatedSeconds,
+    documentSummary,
+    setDocumentSummary,
+    isSummarizing,
+    savedQuizId,
+    setSavedQuizId,
+    isAutoSaved,
+    setIsAutoSaved,
+    savedAt,
+    setSavedAt,
+    savedSummaryId,
+    setSavedSummaryId,
+    isSummarySaved,
+    setIsSummarySaved,
+    loadTextForGeneration,
     handleUploadFile,
     handleUpdateConfig,
     handleStartGeneration,
