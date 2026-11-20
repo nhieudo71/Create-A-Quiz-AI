@@ -4,8 +4,10 @@ import { db } from '../../core/database/db';
 import { AppError, NotFoundError } from '../../core/errors';
 import { AttemptsService } from '../attempts/attempts.service';
 import type { GeneratedQuestionItem } from '../ai-generator/ai.service';
+import { HtmlQuizService } from './html-quiz.service';
 
 export class ExportService {
+  readonly htmlQuiz = new HtmlQuizService();
   /** Tải toàn bộ câu hỏi + đáp án của một đề thi để xuất file. */
   private async loadQuizWithQuestions(quizId: string) {
     const quiz = await db
@@ -250,5 +252,24 @@ export class ExportService {
     });
 
     return { quiz, importedCount: Math.min(questions.length, 100) };
+  }
+
+  /** Xuất đề thi ra file HTML độc lập tương tác offline (Single-Page App). */
+  async exportQuizToInteractiveHtml(quizId: string): Promise<{ html: string; filename: string }> {
+    return this.htmlQuiz.exportQuizToInteractiveHtml(quizId);
+  }
+
+  /** Nhập đề thi từ file HTML chứa mảng ALL_CATEGORIES hoặc questions. */
+  async importQuizFromHtml(
+    htmlContent: string,
+    subjectName?: string,
+    title?: string
+  ): Promise<{ quizzes: any[]; importedCount: number }> {
+    return this.htmlQuiz.importQuizFromHtml(htmlContent, subjectName, title);
+  }
+
+  /** Nạp sẵn ngân hàng 604 câu hỏi Giải Phẫu Bệnh mẫu từ GPB.html. */
+  async seedGpbPathologyBank(): Promise<{ subject: any; quizzesCount: number; questionsCount: number }> {
+    return this.htmlQuiz.seedGpbPathologyBank();
   }
 }

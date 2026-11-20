@@ -67,6 +67,7 @@ export class AttemptsService {
         difficulty: q.difficulty,
         explanation: q.explanation,
         source_reference: q.source_reference,
+        subtopic: q.subtopic ?? null,
         question_type: q.question_type ?? 'MCQ',
         payload: q.payload ? JSON.stringify(q.payload) : null
       }));
@@ -125,7 +126,8 @@ export class AttemptsService {
         'questions.content',
         'questions.difficulty',
         'questions.question_type',
-        'questions.payload'
+        'questions.payload',
+        'questions.subtopic'
       ])
       .where('quiz_questions.quiz_id', '=', quizId)
       .orderBy('quiz_questions.display_order', 'asc')
@@ -500,6 +502,7 @@ export class AttemptsService {
         'questions.difficulty',
         'questions.explanation',
         'questions.source_reference',
+        'questions.subtopic',
         'questions.question_type',
         'questions.payload',
         'attempt_answers.selected_option_id',
@@ -718,7 +721,8 @@ export class AttemptsService {
         'questions.content',
         'questions.difficulty',
         'questions.question_type',
-        'questions.payload'
+        'questions.payload',
+        'questions.subtopic'
       ])
       .where('quiz_questions.quiz_id', '=', quiz.id)
       .orderBy('quiz_questions.display_order', 'asc')

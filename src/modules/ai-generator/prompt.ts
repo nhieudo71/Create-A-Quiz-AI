@@ -12,6 +12,7 @@ export interface GeneratedQuestionItem {
   source_reference: string | null;
   /** Đoạn văn bản NGUYÊN VĂN trong tài liệu làm căn cứ cho câu hỏi. */
   source_quote?: string | null;
+  subtopic?: string | null;
   question_type?: QuestionType;
   payload?: QuestionPayload | null;
   options: Array<{

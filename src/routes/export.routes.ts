@@ -37,4 +37,32 @@ export function registerExportRoutes(app: FastifyInstance, exportService: Export
     const result = await exportService.importQuizFromExcel(buffer, subjectName, query.title);
     return reply.status(201).send({ success: true, data: result });
   });
+
+  app.get('/api/v1/quizzes/:id/export/html', async (req, reply) => {
+    const { id } = parseOrThrow(uuidParamsSchema, req.params);
+    const { html, filename } = await exportService.exportQuizToInteractiveHtml(id);
+    reply.header('content-type', 'text/html; charset=utf-8');
+    reply.header('content-disposition', `attachment; filename="${encodeURIComponent(filename)}"`);
+    return reply.send(html);
+  });
+
+  app.post('/api/v1/quizzes/import/html', async (req, reply) => {
+    if (!req.isMultipart()) {
+      throw new AppError('Yêu cầu phải ở dạng multipart/form-data.', 415);
+    }
+    const data = await req.file();
+    if (!data) throw new AppError('Không tìm thấy file HTML tải lên.', 400);
+
+    const query = (req.query ?? {}) as { subjectName?: string; title?: string };
+    const buffer = await data.toBuffer();
+    const htmlContent = buffer.toString('utf8');
+
+    const result = await exportService.importQuizFromHtml(htmlContent, query.subjectName, query.title);
+    return reply.status(201).send({ success: true, data: result });
+  });
+
+  app.post('/api/v1/quizzes/seed-pathology', async (_req, reply) => {
+    const result = await exportService.seedGpbPathologyBank();
+    return reply.status(201).send({ success: true, data: result });
+  });
 }

@@ -283,6 +283,7 @@ export class StudyService {
     mediumPct?: number;
     hardPct?: number;
     questionTypes?: QuestionType[];
+    subtopic?: string;
   }) {
     const subject = await db
       .selectFrom('subjects')
@@ -296,6 +297,10 @@ export class StudyService {
       .select(['id', 'difficulty', 'question_type'])
       .where('subject_id', '=', input.subjectId)
       .where('is_deleted', '=', false);
+
+    if (input.subtopic && input.subtopic.trim()) {
+      query = query.where('subtopic', '=', input.subtopic.trim());
+    }
 
     if (input.questionTypes && input.questionTypes.length > 0) {
       query = query.where('question_type', 'in', input.questionTypes);

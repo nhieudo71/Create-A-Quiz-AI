@@ -1,0 +1,1574 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Trắc Nghiệm Y Khoa - Giải Phẫu Bệnh</title>
+  <style>
+    :root {
+      --primary: #4f46e5;
+      --primary-hover: #4338ca;
+      --primary-light: #e0e7ff;
+      --primary-text: #3730a3;
+      --success: #10b981;
+      --success-light: #d1fae5;
+      --success-dark: #065f46;
+      --danger: #ef4444;
+      --danger-light: #fee2e2;
+      --danger-dark: #991b1b;
+      --warning: #f59e0b;
+      --gray-50: #f8fafc;
+      --gray-100: #f1f5f9;
+      --gray-200: #e2e8f0;
+      --gray-300: #cbd5e1;
+      --gray-400: #94a3b8;
+      --gray-500: #64748b;
+      --gray-600: #475569;
+      --gray-700: #334155;
+      --gray-800: #1e293b;
+      --gray-900: #0f172a;
+      --bg: #f8fafc;
+      --card-bg: #ffffff;
+      --text: #1e293b;
+      --border: #e2e8f0;
+      --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+      --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.07), 0 2px 4px -2px rgba(0, 0, 0, 0.05);
+      --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.08), 0 4px 6px -4px rgba(0, 0, 0, 0.04);
+      --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.05);
+    }
+
+    [data-theme="dark"] {
+      --bg: #0f172a;
+      --card-bg: #1e293b;
+      --text: #f1f5f9;
+      --border: #334155;
+      --gray-50: #1e293b;
+      --gray-100: #0f172a;
+      --gray-200: #334155;
+      --gray-300: #475569;
+      --gray-400: #64748b;
+      --gray-500: #94a3b8;
+      --gray-600: #cbd5e1;
+      --gray-700: #e2e8f0;
+      --gray-800: #f1f5f9;
+      --primary-light: #312e81;
+      --primary-text: #c7d2fe;
+      --success-light: #064e3b;
+      --success-dark: #a7f3d0;
+      --danger-light: #7f1d1d;
+      --danger-dark: #fecaca;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    }
+
+    body {
+      background-color: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      line-height: 1.5;
+      transition: background-color 0.25s, color 0.25s;
+    }
+
+    /* Header */
+    header {
+      background: linear-gradient(135deg, #2563eb 0%, #4f46e5 50%, #7c3aed 100%);
+      color: #ffffff;
+      padding: 30px 20px;
+      text-align: center;
+      box-shadow: var(--shadow-lg);
+      position: relative;
+    }
+
+    .top-actions {
+      position: absolute;
+      top: 14px;
+      right: 20px;
+      display: flex;
+      gap: 10px;
+    }
+
+    .theme-toggle-btn {
+      background: rgba(255, 255, 255, 0.2);
+      border: 1px solid rgba(255, 255, 255, 0.35);
+      color: #fff;
+      padding: 7px 14px;
+      border-radius: 9999px;
+      cursor: pointer;
+      font-size: 0.88rem;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      backdrop-filter: blur(8px);
+      transition: all 0.2s;
+    }
+
+    .theme-toggle-btn:hover {
+      background: rgba(255, 255, 255, 0.35);
+      transform: translateY(-1px);
+    }
+
+    header h1 {
+      font-size: 1.95rem;
+      font-weight: 800;
+      letter-spacing: -0.02em;
+      margin-bottom: 6px;
+    }
+
+    header p {
+      font-size: 1rem;
+      opacity: 0.92;
+      max-width: 680px;
+      margin: 0 auto;
+    }
+
+    .header-badges {
+      display: flex;
+      justify-content: center;
+      gap: 10px;
+      margin-top: 14px;
+      flex-wrap: wrap;
+    }
+
+    .header-pill {
+      background: rgba(255, 255, 255, 0.2);
+      border: 1px solid rgba(255, 255, 255, 0.3);
+      padding: 4px 12px;
+      border-radius: 20px;
+      font-size: 0.82rem;
+      font-weight: 600;
+    }
+
+    /* Container */
+    .container {
+      max-width: 1320px;
+      margin: 0 auto;
+      padding: 24px 20px 80px;
+    }
+
+    /* Search & Filter Bar */
+    .filter-bar {
+      margin-bottom: 24px;
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .search-input {
+      flex: 1;
+      min-width: 260px;
+      padding: 14px 20px;
+      font-size: 0.98rem;
+      border: 2px solid var(--border);
+      border-radius: 14px;
+      background: var(--card-bg);
+      color: var(--text);
+      outline: none;
+      transition: border-color 0.2s, box-shadow 0.2s;
+      box-shadow: var(--shadow-sm);
+    }
+
+    .search-input:focus {
+      border-color: var(--primary);
+      box-shadow: 0 0 0 4px var(--primary-light);
+    }
+
+    /* Grid of Topic Cards */
+    .topics-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+      gap: 22px;
+    }
+
+    .topic-card {
+      background: var(--card-bg);
+      border: 2px solid var(--border);
+      border-radius: 18px;
+      padding: 22px;
+      cursor: pointer;
+      transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+      display: flex;
+      flex-direction: column;
+      position: relative;
+      overflow: hidden;
+      box-shadow: var(--shadow);
+    }
+
+    .topic-card:hover {
+      transform: translateY(-5px);
+      border-color: var(--primary);
+      box-shadow: var(--shadow-xl);
+    }
+
+    .topic-card-header {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      margin-bottom: 12px;
+    }
+
+    .topic-icon {
+      font-size: 2.2rem;
+      background: var(--gray-100);
+      width: 56px;
+      height: 56px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 16px;
+      flex-shrink: 0;
+    }
+
+    .topic-title-area {
+      flex: 1;
+    }
+
+    .topic-title {
+      font-size: 1.15rem;
+      font-weight: 700;
+      color: var(--text);
+      line-height: 1.3;
+    }
+
+    .topic-badge {
+      display: inline-block;
+      background: var(--primary-light);
+      color: var(--primary-text);
+      font-size: 0.8rem;
+      font-weight: 700;
+      padding: 3px 10px;
+      border-radius: 8px;
+      margin-top: 4px;
+    }
+
+    .topic-desc {
+      font-size: 0.88rem;
+      color: var(--gray-600);
+      margin-bottom: 16px;
+      flex: 1;
+      line-height: 1.45;
+    }
+
+    .topic-subtopics {
+      border-top: 1px dashed var(--border);
+      padding-top: 12px;
+      margin-bottom: 16px;
+    }
+
+    .subtopic-tag {
+      display: inline-block;
+      background: var(--gray-100);
+      color: var(--gray-700);
+      font-size: 0.75rem;
+      padding: 2px 8px;
+      border-radius: 6px;
+      margin: 2px 3px 2px 0;
+      font-weight: 500;
+    }
+
+    .start-quiz-btn {
+      background: var(--primary);
+      color: #ffffff;
+      border: none;
+      padding: 12px 18px;
+      border-radius: 12px;
+      font-weight: 700;
+      font-size: 0.95rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      cursor: pointer;
+      transition: background 0.2s, transform 0.15s;
+    }
+
+    .start-quiz-btn:hover {
+      background: var(--primary-hover);
+      transform: translateY(-1px);
+    }
+
+    /* ========================================= */
+    /* QUIZ VIEW (2-COLUMN RESPONSIVE LAYOUT)   */
+    /* ========================================= */
+    #quizView {
+      display: none;
+    }
+
+    /* Top Sticky Header for Quiz */
+    .quiz-sticky-header {
+      position: sticky;
+      top: 10px;
+      z-index: 900;
+      background: var(--card-bg);
+      border: 2px solid var(--border);
+      border-radius: 16px;
+      padding: 14px 20px;
+      margin-bottom: 22px;
+      box-shadow: var(--shadow-lg);
+      backdrop-filter: blur(14px);
+    }
+
+    .quiz-sticky-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 14px;
+      flex-wrap: wrap;
+    }
+
+    /* Module Điều Hướng Trở Lại (Top Nav Bar) */
+    .nav-back-button-main {
+      background: linear-gradient(135deg, #4f46e5 0%, #6366f1 100%);
+      color: #ffffff;
+      border: none;
+      padding: 10px 18px;
+      border-radius: 12px;
+      cursor: pointer;
+      font-weight: 700;
+      font-size: 0.92rem;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      transition: all 0.2s;
+      box-shadow: 0 4px 10px rgba(79, 70, 229, 0.25);
+    }
+
+    .nav-back-button-main:hover {
+      background: linear-gradient(135deg, #4338ca 0%, #4f46e5 100%);
+      transform: translateY(-2px);
+      box-shadow: 0 6px 14px rgba(79, 70, 229, 0.35);
+    }
+
+    .quiz-header-info {
+      flex: 1;
+      min-width: 220px;
+    }
+
+    .quiz-header-title {
+      font-size: 1.25rem;
+      font-weight: 800;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .quiz-header-total {
+      font-size: 0.88rem;
+      color: var(--primary-text);
+      font-weight: 700;
+      background: var(--primary-light);
+      padding: 3px 12px;
+      border-radius: 8px;
+      display: inline-block;
+      margin-top: 4px;
+    }
+
+    .stats-group {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .stat-badge {
+      padding: 6px 14px;
+      border-radius: 10px;
+      font-size: 0.88rem;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .stat-answered {
+      background: var(--gray-100);
+      color: var(--gray-700);
+    }
+
+    .stat-correct {
+      background: var(--success-light);
+      color: var(--success-dark);
+    }
+
+    .stat-wrong {
+      background: var(--danger-light);
+      color: var(--danger-dark);
+    }
+
+    .progress-bar-container {
+      width: 100%;
+      height: 8px;
+      background: var(--gray-200);
+      border-radius: 9999px;
+      overflow: hidden;
+      margin-top: 12px;
+    }
+
+    .progress-bar-fill {
+      height: 100%;
+      background: linear-gradient(90deg, #10b981 0%, #3b82f6 100%);
+      width: 0%;
+      transition: width 0.3s ease;
+      border-radius: 9999px;
+    }
+
+    /* 2-Column Quiz Layout: Left for Questions, Right for Sticky Palette */
+    .quiz-two-col {
+      display: grid;
+      grid-template-columns: 1fr 340px;
+      gap: 24px;
+      align-items: start;
+    }
+
+    /* Left Column: Questions List & Filters */
+    .quiz-left-col {
+      min-width: 0;
+    }
+
+    .quiz-filter-row {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 20px;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+
+    .filter-chip {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      color: var(--gray-700);
+      padding: 7px 16px;
+      border-radius: 20px;
+      cursor: pointer;
+      font-size: 0.88rem;
+      font-weight: 600;
+      transition: all 0.2s;
+    }
+
+    .filter-chip:hover, .filter-chip.active {
+      background: var(--primary);
+      border-color: var(--primary);
+      color: #fff;
+    }
+
+    .questions-list {
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+
+    .question-card {
+      background: var(--card-bg);
+      border: 2px solid var(--border);
+      border-radius: 18px;
+      padding: 24px;
+      box-shadow: var(--shadow);
+      transition: border-color 0.2s, box-shadow 0.2s, transform 0.2s;
+      scroll-margin-top: 110px;
+    }
+
+    .question-card.answered-correct {
+      border-color: var(--success);
+    }
+
+    .question-card.answered-wrong {
+      border-color: var(--danger);
+    }
+
+    .q-meta {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      margin-bottom: 14px;
+      flex-wrap: wrap;
+    }
+
+    .q-number-tag {
+      background: var(--primary-light);
+      color: var(--primary-text);
+      font-weight: 800;
+      font-size: 0.88rem;
+      padding: 4px 12px;
+      border-radius: 8px;
+    }
+
+    .q-subtopic-tag {
+      font-size: 0.82rem;
+      color: var(--gray-600);
+      background: var(--gray-100);
+      padding: 4px 12px;
+      border-radius: 8px;
+      font-weight: 500;
+    }
+
+    .q-text {
+      font-size: 1.05rem;
+      font-weight: 600;
+      color: var(--text);
+      line-height: 1.6;
+      margin-bottom: 18px;
+    }
+
+    /* Options */
+    .options-grid {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .option-btn {
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+      width: 100%;
+      text-align: left;
+      padding: 14px 18px;
+      border: 2px solid var(--border);
+      border-radius: 12px;
+      background: var(--card-bg);
+      color: var(--text);
+      cursor: pointer;
+      font-size: 0.98rem;
+      line-height: 1.45;
+      transition: all 0.18s;
+      outline: none;
+    }
+
+    .option-btn:hover:not(:disabled) {
+      border-color: var(--primary);
+      background: var(--gray-50);
+      transform: translateX(4px);
+    }
+
+    .option-letter {
+      font-weight: 800;
+      background: var(--gray-100);
+      color: var(--gray-700);
+      width: 30px;
+      height: 30px;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      font-size: 0.88rem;
+      transition: all 0.2s;
+    }
+
+    .option-btn:hover:not(:disabled) .option-letter {
+      background: var(--primary);
+      color: #fff;
+    }
+
+    .option-content {
+      flex: 1;
+      padding-top: 3px;
+    }
+
+    /* Option Results Styling */
+    .option-btn.is-correct {
+      background: var(--success-light) !important;
+      border-color: var(--success) !important;
+      color: var(--success-dark) !important;
+      font-weight: 600;
+    }
+
+    .option-btn.is-correct .option-letter {
+      background: var(--success) !important;
+      color: #fff !important;
+    }
+
+    .option-btn.is-wrong {
+      background: var(--danger-light) !important;
+      border-color: var(--danger) !important;
+      color: var(--danger-dark) !important;
+      font-weight: 600;
+    }
+
+    .option-btn.is-wrong .option-letter {
+      background: var(--danger) !important;
+      color: #fff !important;
+    }
+
+    .option-btn:disabled {
+      cursor: default;
+    }
+
+    .option-btn:disabled:not(.is-correct):not(.is-wrong) {
+      opacity: 0.55;
+    }
+
+    .answer-feedback {
+      display: none;
+      margin-top: 14px;
+      padding: 12px 16px;
+      border-radius: 10px;
+      font-size: 0.94rem;
+      font-weight: 600;
+      align-items: center;
+      gap: 8px;
+      animation: fadeIn 0.25s ease;
+    }
+
+    .feedback-correct {
+      background: var(--success-light);
+      color: var(--success-dark);
+      border: 1px solid var(--success);
+    }
+
+    .feedback-wrong {
+      background: var(--danger-light);
+      color: var(--danger-dark);
+      border: 1px solid var(--danger);
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(-4px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* ================================================= */
+    /* RIGHT SIDEBAR: BẢNG ĐIỀU HƯỚNG CÂU HỎI (STICKY)  */
+    /* ================================================= */
+    .quiz-right-sidebar {
+      position: sticky;
+      top: 96px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    /* Module Điều Hướng Trở Lại (Sidebar Card) */
+    .sidebar-back-module {
+      background: var(--card-bg);
+      border: 2px solid var(--primary);
+      border-radius: 16px;
+      padding: 14px 16px;
+      box-shadow: var(--shadow);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .sidebar-back-module:hover {
+      background: var(--primary-light);
+      transform: translateY(-2px);
+      box-shadow: var(--shadow-lg);
+    }
+
+    .sidebar-back-left {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .sidebar-back-icon {
+      font-size: 1.4rem;
+      width: 40px;
+      height: 40px;
+      border-radius: 10px;
+      background: var(--primary);
+      color: #fff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .sidebar-back-title {
+      font-size: 0.94rem;
+      font-weight: 800;
+      color: var(--text);
+    }
+
+    .sidebar-back-subtitle {
+      font-size: 0.78rem;
+      color: var(--gray-600);
+    }
+
+    /* Palette Card */
+    .palette-sidebar-card {
+      background: var(--card-bg);
+      border: 2px solid var(--border);
+      border-radius: 18px;
+      padding: 18px;
+      box-shadow: var(--shadow-lg);
+      display: flex;
+      flex-direction: column;
+      max-height: calc(100vh - 190px);
+    }
+
+    .palette-card-title {
+      font-size: 0.95rem;
+      font-weight: 800;
+      color: var(--text);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 8px;
+      letter-spacing: -0.01em;
+    }
+
+    .palette-counter-badge {
+      font-size: 0.82rem;
+      background: var(--primary-light);
+      color: var(--primary-text);
+      padding: 3px 10px;
+      border-radius: 12px;
+      font-weight: 700;
+    }
+
+    .palette-legend {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-size: 0.78rem;
+      color: var(--gray-600);
+      font-weight: 600;
+      padding-bottom: 10px;
+      border-bottom: 1px dashed var(--border);
+      margin-bottom: 12px;
+    }
+
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+
+    .legend-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 3px;
+    }
+
+    .dot-correct { background: var(--success); }
+    .dot-wrong { background: var(--danger); }
+    .dot-unanswered { background: var(--gray-200); border: 1px solid var(--gray-400); }
+
+    /* Palette Grid */
+    .palette-scroll-area {
+      overflow-y: auto;
+      flex: 1;
+      padding-right: 4px;
+      margin-bottom: 14px;
+    }
+
+    .palette-scroll-area::-webkit-scrollbar {
+      width: 5px;
+    }
+
+    .palette-scroll-area::-webkit-scrollbar-thumb {
+      background: var(--gray-300);
+      border-radius: 4px;
+    }
+
+    .palette-grid {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 6px;
+    }
+
+    .palette-item {
+      height: 38px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 8px;
+      font-size: 0.88rem;
+      font-weight: 700;
+      border: 1px solid var(--border);
+      background: var(--gray-50);
+      color: var(--gray-700);
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+
+    .palette-item:hover {
+      transform: scale(1.08);
+      border-color: var(--primary);
+      box-shadow: var(--shadow-sm);
+    }
+
+    .palette-item.is-correct {
+      background: var(--success) !important;
+      color: #fff !important;
+      border-color: var(--success) !important;
+    }
+
+    .palette-item.is-wrong {
+      background: var(--danger) !important;
+      color: #fff !important;
+      border-color: var(--danger) !important;
+    }
+
+    .palette-item.is-active {
+      box-shadow: 0 0 0 3px var(--primary);
+    }
+
+    /* Palette Footer Quick Actions */
+    .palette-footer-actions {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+      border-top: 1px solid var(--border);
+      padding-top: 12px;
+    }
+
+    .pal-action-btn {
+      padding: 8px 10px;
+      border-radius: 8px;
+      font-size: 0.82rem;
+      font-weight: 700;
+      cursor: pointer;
+      border: 1px solid var(--border);
+      background: var(--gray-100);
+      color: var(--text);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 4px;
+      transition: all 0.2s;
+    }
+
+    .pal-action-btn:hover {
+      background: var(--gray-200);
+      border-color: var(--gray-400);
+    }
+
+    /* Bottom Summary Card */
+    .quiz-bottom-summary {
+      background: var(--card-bg);
+      border: 2px solid var(--border);
+      border-radius: 20px;
+      padding: 32px 24px;
+      text-align: center;
+      margin-top: 36px;
+      box-shadow: var(--shadow-lg);
+    }
+
+    .summary-score-circle {
+      width: 120px;
+      height: 120px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #10b981, #059669);
+      color: #fff;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 16px;
+      box-shadow: 0 10px 20px rgba(16, 185, 129, 0.3);
+    }
+
+    .summary-score-num {
+      font-size: 2.2rem;
+      font-weight: 800;
+      line-height: 1;
+    }
+
+    .summary-score-pct {
+      font-size: 0.9rem;
+      font-weight: 600;
+      opacity: 0.9;
+    }
+
+    .summary-title {
+      font-size: 1.45rem;
+      font-weight: 800;
+      margin-bottom: 8px;
+    }
+
+    .summary-subtitle {
+      color: var(--gray-600);
+      font-size: 0.98rem;
+      margin-bottom: 24px;
+    }
+
+    .summary-actions {
+      display: flex;
+      justify-content: center;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .action-btn {
+      padding: 12px 24px;
+      border-radius: 12px;
+      font-size: 0.95rem;
+      font-weight: 700;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      transition: all 0.2s;
+      border: none;
+    }
+
+    .btn-primary {
+      background: var(--primary);
+      color: #fff;
+    }
+
+    .btn-primary:hover {
+      background: var(--primary-hover);
+      transform: translateY(-2px);
+    }
+
+    .btn-secondary {
+      background: var(--gray-100);
+      color: var(--text);
+      border: 1px solid var(--border);
+    }
+
+    .btn-secondary:hover {
+      background: var(--gray-200);
+      transform: translateY(-2px);
+    }
+
+    /* Floating Scroll-to-Top */
+    .scroll-top-btn {
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      background: var(--primary);
+      color: #fff;
+      width: 46px;
+      height: 46px;
+      border-radius: 50%;
+      border: none;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      box-shadow: var(--shadow-xl);
+      z-index: 999;
+      opacity: 0;
+      visibility: hidden;
+      transition: all 0.25s;
+    }
+
+    .scroll-top-btn.visible {
+      opacity: 1;
+      visibility: visible;
+    }
+
+    .scroll-top-btn:hover {
+      transform: translateY(-3px);
+    }
+
+    /* Mobile Quick Drawer / Collapsible for Palette on small screens */
+    .mobile-palette-toggle {
+      display: none;
+    }
+
+    /* Responsive Breakpoints */
+    @media (max-width: 1024px) {
+      .quiz-two-col {
+        grid-template-columns: 1fr 280px;
+        gap: 18px;
+      }
+      .palette-grid {
+        grid-template-columns: repeat(4, 1fr);
+      }
+    }
+
+    @media (max-width: 860px) {
+      .quiz-two-col {
+        grid-template-columns: 1fr;
+      }
+      .quiz-right-sidebar {
+        position: static;
+        order: -1; /* place palette above questions or make collapsible */
+        margin-bottom: 20px;
+      }
+      .palette-sidebar-card {
+        max-height: 260px;
+      }
+      .palette-grid {
+        grid-template-columns: repeat(auto-fill, minmax(38px, 1fr));
+      }
+    }
+
+    @media (max-width: 640px) {
+      header { padding: 22px 14px; }
+      header h1 { font-size: 1.45rem; }
+      .container { padding: 14px 12px 60px; }
+      .topics-grid { grid-template-columns: 1fr; }
+      .quiz-sticky-header { padding: 12px; }
+      .quiz-header-title { font-size: 1.05rem; }
+      .question-card { padding: 16px; }
+      .q-text { font-size: 0.98rem; }
+      .option-btn { padding: 12px 14px; font-size: 0.92rem; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- App Header -->
+  <header>
+    <div class="top-actions">
+      <button class="theme-toggle-btn" onclick="toggleTheme()" id="themeBtn">🌙 Chế độ tối</button>
+    </div>
+    <h1>📚 NGÂN HÀNG TRẮC NGHIỆM GIẢI PHẪU BỆNH</h1>
+    <p>Hệ thống ôn luyện trắc nghiệm theo từng môn học chuyên sâu • Chấm điểm tức thì</p>
+    <div class="header-badges">
+      <span class="header-pill">✨ 13 Chuyên Đề Lớn</span>
+      <span class="header-pill">🎯 604 Câu Hỏi Đầy Đủ</span>
+      <span class="header-pill">⚡ Chọn Là Hiện Kết Quả Ngay</span>
+    </div>
+  </header>
+
+  <div class="container">
+
+    <!-- HOME VIEW (Topic Selection) -->
+    <div id="homeView">
+      <div class="filter-bar">
+        <input 
+          type="text" 
+          class="search-input" 
+          id="topicSearch" 
+          placeholder="🔍 Tìm kiếm môn học, bài học hoặc từ khóa (ví dụ: dạ dày, phổi, HPV, gan, tuyến giáp...)" 
+          oninput="handleSearch(this.value)"
+        >
+      </div>
+
+      <div class="topics-grid" id="topicsGrid"></div>
+    </div>
+
+    <!-- QUIZ VIEW (Practice Screen with 2 Columns) -->
+    <div id="quizView">
+
+      <!-- Sticky Navigation & Stats Header -->
+      <div class="quiz-sticky-header">
+        <div class="quiz-sticky-row">
+          
+          <!-- MODULE ĐIỀU HƯỚNG TRỞ LẠI (NÚT CHÍNH) -->
+          <button class="nav-back-button-main" onclick="returnToHome()" title="Quay lại danh sách chọn môn học">
+            ⬅ Trở lại danh sách môn
+          </button>
+          
+          <div class="quiz-header-info">
+            <div class="quiz-header-title">
+              <span id="quizIcon">🔬</span>
+              <span id="quizTitle">Tên Môn Học</span>
+            </div>
+            <!-- Hiện số câu hỏi của môn đã chọn -->
+            <div class="quiz-header-total" id="quizTotalBadge">
+              Tổng số: 0 câu hỏi
+            </div>
+          </div>
+
+          <div class="stats-group">
+            <span class="stat-badge stat-answered" id="statAnswered">Đã làm: 0/0</span>
+            <span class="stat-badge stat-correct" id="statCorrect">✔ Đúng: 0</span>
+            <span class="stat-badge stat-wrong" id="statWrong">✖ Sai: 0</span>
+          </div>
+        </div>
+
+        <div class="progress-bar-container">
+          <div class="progress-bar-fill" id="progressBar"></div>
+        </div>
+      </div>
+
+      <!-- 2-COLUMN MAIN CONTENT: Left for Questions, Right for Navigation Palette -->
+      <div class="quiz-two-col">
+
+        <!-- CỘT TRÁI: Danh Sách Câu Hỏi Của Môn Đã Chọn -->
+        <main class="quiz-left-col">
+          <!-- Filter row -->
+          <div class="quiz-filter-row">
+            <button class="filter-chip active" onclick="setQuestionFilter('all', this)" id="btnFilterAll">Tất cả câu</button>
+            <button class="filter-chip" onclick="setQuestionFilter('unanswered', this)">Chưa làm</button>
+            <button class="filter-chip" onclick="setQuestionFilter('wrong', this)">Làm sai</button>
+            <button class="filter-chip" onclick="setQuestionFilter('correct', this)">Làm đúng</button>
+          </div>
+
+          <!-- All Questions List rendered here -->
+          <div class="questions-list" id="questionsList"></div>
+
+          <!-- Bottom Summary Box -->
+          <div class="quiz-bottom-summary" id="bottomSummary">
+            <div class="summary-score-circle">
+              <span class="summary-score-num" id="summaryScoreNum">0</span>
+              <span class="summary-score-pct" id="summaryScorePct">0%</span>
+            </div>
+            <div class="summary-title" id="summaryTitle">Tiến Độ Làm Bài</div>
+            <div class="summary-subtitle" id="summarySubtitle">Hãy tiếp tục hoàn thành các câu hỏi để đạt kết quả tối đa!</div>
+            <div class="summary-actions">
+              <!-- Module điều hướng trở lại ở cuối trang -->
+              <button class="action-btn btn-primary" onclick="returnToHome()">
+                ⬅ Trở lại danh sách môn
+              </button>
+              <button class="action-btn btn-secondary" onclick="restartCurrentQuiz()">
+                🔄 Làm lại môn này
+              </button>
+            </div>
+          </div>
+        </main>
+
+        <!-- CỘT PHẢI: MODULE ĐIỀU HƯỚNG TRỞ LẠI & BẢNG ĐIỀU HƯỚNG CÂU HỎI (STICKY) -->
+        <aside class="quiz-right-sidebar">
+
+          <!-- 1. MODULE ĐIỀU HƯỚNG TRỞ LẠI (SIDEBAR CARD) -->
+          <div class="sidebar-back-module" onclick="returnToHome()" title="Click để quay về trang danh sách tất cả các môn học">
+            <div class="sidebar-back-left">
+              <div class="sidebar-back-icon">⬅</div>
+              <div>
+                <div class="sidebar-back-title">Trở Lại Danh Sách Môn</div>
+                <div class="sidebar-back-subtitle">Chọn môn học / chuyên đề khác</div>
+              </div>
+            </div>
+            <div style="font-size:1.1rem; color:var(--primary); font-weight:800;">➔</div>
+          </div>
+
+          <!-- 2. MODULE BẢNG ĐIỀU HƯỚNG CÂU HỎI (STICKY PALETTE) -->
+          <div class="palette-sidebar-card">
+            <div class="palette-card-title">
+              <span>🔢 BẢNG ĐIỀU HƯỚNG CÂU HỎI</span>
+              <span class="palette-counter-badge" id="sidebarProgressBadge">0/0</span>
+            </div>
+
+            <div class="palette-legend">
+              <div class="legend-item"><span class="legend-dot dot-correct"></span>Đúng</div>
+              <div class="legend-item"><span class="legend-dot dot-wrong"></span>Sai</div>
+              <div class="legend-item"><span class="legend-dot dot-unanswered"></span>Chưa làm</div>
+            </div>
+
+            <div class="palette-scroll-area">
+              <div class="palette-grid" id="paletteGrid"></div>
+            </div>
+
+            <div class="palette-footer-actions">
+              <button class="pal-action-btn" onclick="setQuestionFilter('wrong', null)" title="Lọc câu làm sai">
+                ❌ Câu sai
+              </button>
+              <button class="pal-action-btn" onclick="setQuestionFilter('all', null)" title="Hiện tất cả câu">
+                📋 Tất cả
+              </button>
+              <button class="pal-action-btn" onclick="restartCurrentQuiz()" title="Làm lại từ đầu">
+                🔄 Làm lại
+              </button>
+              <button class="pal-action-btn" onclick="window.scrollTo({top:0, behavior:'smooth'})" title="Lên đầu trang">
+                ▲ Đầu trang
+              </button>
+            </div>
+          </div>
+
+        </aside>
+
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Scroll-to-Top Button -->
+  <button class="scroll-top-btn" id="scrollTopBtn" onclick="window.scrollTo({top:0, behavior:'smooth'})" title="Lên đầu trang">
+    ▲
+  </button>
+
+  <!-- Complete Embedded Quiz Data -->
+  <script>
+    const ALL_CATEGORIES = [{"id":"da-day","title":"Bệnh Lý Dạ Dày","icon":"🔬","desc":"Viêm dạ dày, loét dạ dày, polyp và ung thư dạ dày","questionCount":55,"subTopics":[{"title":"I. VIÊM DẠ DÀY (CÂU 1–15)","count":15},{"title":"II. LOÉT DẠ DÀY (CÂU 16–30)","count":10},{"title":"III. POLYP DẠ DÀY (CÂU 31–45)","count":15},{"title":"IV. UNG THƯ DẠ DÀY (CÂU 46–60)","count":15}],"questions":[{"question":"Viêm dạ dày cấp thường do nguyên nhân","options":["Thiếu máu","Tăng huyết áp","Rượu, NSAIDs, stress nặng","Sỏi mật"],"correct":2,"subtopic":"I. VIÊM DẠ DÀY (CÂU 1–15)"},{"question":"Tổn thương mô học đặc trưng trong viêm dạ dày cấp","options":["Hoại tử bã đậu","Tăng sản tuyến đáy","Phù nề, sung huyết, thấm nhập bạch cầu trung tính","Tăng mô cơ"],"correct":2,"subtopic":"I. VIÊM DẠ DÀY (CÂU 1–15)"},{"question":"Viêm dạ dày mạn type A liên quan đến","options":["Nhiễm H. pylori","Tự miễn chống tế bào thành dạ dày","Vi rút","Tăng acid"],"correct":1,"subtopic":"I. VIÊM DẠ DÀY (CÂU 1–15)"},{"question":"Viêm dạ dày mạn type B phổ biến nhất do","options":["Stress","Rượu","H. pylori","Tự miễn"],"correct":2,"subtopic":"I. VIÊM DẠ DÀY (CÂU 1–15)"},{"question":"Viêm dạ dày mạn có nguy cơ dẫn đến","options":["Viêm túi mật","Tăng huyết áp","Dị sản ruột, loạn sản, ung thư dạ dày","Polyp đại tràng"],"correct":2,"subtopic":"I. VIÊM DẠ DÀY (CÂU 1–15)"},{"question":"Dấu hiệu mô học của viêm mạn","options":["Bạch cầu ái toan","Bạch cầu đa nhân trung tính","Tế bào lympho, tương bào, mất tuyến","U hạt không hoại tử"],"correct":2,"subtopic":"I. VIÊM DẠ DÀY (CÂU 1–15)"},{"question":"Trong viêm dạ dày do H. pylori, vi khuẩn nằm ở","options":["Trong nhân tế bào","Giữa lớp cơ niêm","Trên bề mặt niêm mạc, xen giữa chất nhầy","Trong lòng mạch"],"correct":2,"subtopic":"I. VIÊM DẠ DÀY (CÂU 1–15)"},{"question":"Một đặc điểm mô học gợi ý viêm dạ dày tự miễn","options":["Dị sản ruột ở vùng môn vị","Mất tuyến đáy thân vị","Tuyến đáy tăng sinh","Nhiều bạch cầu ái kiềm"],"correct":1,"subtopic":"I. VIÊM DẠ DÀY (CÂU 1–15)"},{"question":"Loại tế bào bị phá huỷ trong viêm dạ dày type A","options":["Tế bào chính","Tế bào G","Tế bào thành","Tế bào ưa bạc"],"correct":2,"subtopic":"I. VIÊM DẠ DÀY (CÂU 1–15)"},{"question":"Dị sản ruột là","options":["Chuyển sản tuyến nhầy sang biểu mô trụ tiết chất nhầy ruột","Tăng sản cơ","Dị sản vảy","Loạn sản mô liên kết"],"correct":0,"subtopic":"I. VIÊM DẠ DÀY (CÂU 1–15)"},{"question":"Viêm dạ dày có loét nông thường gặp ở","options":["Người không triệu chứng","Người bị stress nặng, sốc, bỏng","Trẻ nhỏ","Bệnh nhân đái tháo đường"],"correct":1,"subtopic":"I. VIÊM DẠ DÀY (CÂU 1–15)"},{"question":"Phân biệt viêm cấp và viêm mạn dựa vào","options":["Loại tế bào viêm xâm nhập","Lượng dịch tiết","Vị trí tổn thương","Dấu hiệu lâm sàng"],"correct":0,"subtopic":"I. VIÊM DẠ DÀY (CÂU 1–15)"},{"question":"Hậu quả dài hạn của viêm dạ dày tự miễn là","options":["U tuyến tuyến Barrett","Thiếu máu ác tính do giảm hấp thu vitamin B12","Tăng tiết acid","Tăng hấp thu sắt"],"correct":1,"subtopic":"I. VIÊM DẠ DÀY (CÂU 1–15)"},{"question":"Viêm dạ dày mạn vùng thân vị thường dẫn đến","options":["Viêm tụy","Dị sản ruột","Hội chứng Zollinger-Ellison","Trào ngược dạ dày"],"correct":1,"subtopic":"I. VIÊM DẠ DÀY (CÂU 1–15)"},{"question":"Viêm dạ dày mạn có thể dẫn đến biến đổi nào nguy hiểm?","options":["Viêm ruột thừa","Thoát vị hoành","Carcinôm tuyến dạ dày","Giảm tiết insulin"],"correct":2,"subtopic":"I. VIÊM DẠ DÀY (CÂU 1–15)"},{"question":"Loét dạ dày là","options":["Viêm dạ dày lan tỏa","Mất lớp niêm mạc xuyên qua lớp cơ niêm","Phình giãn lòng dạ dày","Viêm cấp"],"correct":1,"subtopic":"II. LOÉT DẠ DÀY (CÂU 16–30)"},{"question":"Nguyên nhân chủ yếu gây loét dạ dày","options":["Tăng áp lực máu","H. pylori và NSAIDs","Rượu mạnh","Stress cấp"],"correct":1,"subtopic":"II. LOÉT DẠ DÀY (CÂU 16–30)"},{"question":"Tổn thương mô học điển hình trong loét","options":["Loét nông dừng ở biểu mô","Mất cấu trúc niêm mạc + tổ chức hạt + mô xơ + viêm mạn","Dị sản tuyến","U hạt"],"correct":1,"subtopic":"II. LOÉT DẠ DÀY (CÂU 16–30)"},{"question":"Vị trí loét dạ dày hay gặp nhất","options":["Vùng đáy vị","Mặt trước bờ cong nhỏ vùng thân vị gần môn vị","Bờ cong lớn","Vùng tâm vị"],"correct":1,"subtopic":"II. LOÉT DẠ DÀY (CÂU 16–30)"},{"question":"Lớp nào bị tổn thương sâu nhất trong loét điển hình","options":["Lớp niêm mạc","Lớp dưới niêm","Lớp cơ","Qua cả lớp cơ, tới thanh mạc"],"correct":3,"subtopic":"II. LOÉT DẠ DÀY (CÂU 16–30)"},{"question":"Di chứng nguy hiểm nhất của loét dạ dày","options":["Giảm tiết acid","Thủng dạ dày gây viêm phúc mạc","Nôn nhiều","Hội chứng kém hấp thu"],"correct":1,"subtopic":"II. LOÉT DẠ DÀY (CÂU 16–30)"},{"question":"Loét lành có đặc điểm","options":["Viêm cấp nặng","Biểu mô tăng sinh mạnh","Tái tạo mô và mô sợi tổ chức hóa","Tạo nang"],"correct":2,"subtopic":"II. LOÉT DẠ DÀY (CÂU 16–30)"},{"question":"Biến chứng không thuộc loét dạ dày","options":["Chảy máu","Thủng","Viêm tụy","Hẹp môn vị"],"correct":2,"subtopic":"II. LOÉT DẠ DÀY (CÂU 16–30)"},{"question":"Yếu tố góp phần bảo vệ dạ dày","options":["H. pylori","Mucin","Pepsin","Acid HCl"],"correct":1,"subtopic":"II. LOÉT DẠ DÀY (CÂU 16–30)"},{"question":"Mô học của loét dạ dày mạn","options":["Chứa mủ","Bạch cầu trung tính","Biểu mô lát tầng hóa sừng","Mô hạt, xơ hóa, thâm nhiễm tế bào viêm mạn"],"correct":3,"subtopic":"II. LOÉT DẠ DÀY (CÂU 16–30)"},{"question":"Polyp dạ dày là","options":["Khối mô ác tính","Sự xâm lấn mô liên kết","Tổn thương dạng u lành phát triển từ niêm mạc dạ dày","Tăng sản tuyến đáy"],"correct":2,"subtopic":"III. POLYP DẠ DÀY (CÂU 31–45)"},{"question":"Loại polyp dạ dày phổ biến nhất","options":["Polyp tăng sản","Polyp tuyến","Polyp viêm","Polyp cơ"],"correct":0,"subtopic":"III. POLYP DẠ DÀY (CÂU 31–45)"},{"question":"Polyp tuyến có nguy cơ","options":["Tự thoái triển","Tăng tiết acid","Chuyển dạng ác tính thành carcinôm tuyến","Hoại tử"],"correct":2,"subtopic":"III. POLYP DẠ DÀY (CÂU 31–45)"},{"question":"Yếu tố nguy cơ gây polyp tuyến dạ dày","options":["Viêm tụy","Loạn sản biểu mô niêm mạc","Rối loạn điện giải","Polyp đại tràng"],"correct":1,"subtopic":"III. POLYP DẠ DÀY (CÂU 31–45)"},{"question":"Polyp tăng sản thường liên quan đến","options":["Viêm dạ dày mạn tính","Thiếu máu ác tính","Stress cấp","Tăng tiết gastrin"],"correct":0,"subtopic":"III. POLYP DẠ DÀY (CÂU 31–45)"},{"question":"Về mô học, polyp tăng sản có đặc điểm","options":["Tuyến đồng đều, xếp đều","Tuyến giãn, lượn sóng, không loạn sản","Tế bào dị dạng","Lớp cơ tăng sản"],"correct":1,"subtopic":"III. POLYP DẠ DÀY (CÂU 31–45)"},{"question":"Polyp tuyến thường được chia thành","options":["2 loại","3 loại","4 loại","Không phân loại"],"correct":1,"subtopic":"III. POLYP DẠ DÀY (CÂU 31–45)"},{"question":"Polyp tuyến dạ dày có thể đi kèm","options":["Nhiễm nấm","Hội chứng polyp toàn bộ đường tiêu hóa (FAP)","Thiếu máu","Viêm mủ"],"correct":1,"subtopic":"III. POLYP DẠ DÀY (CÂU 31–45)"},{"question":"Hội chứng FAP thường gây","options":["Polyp cơ","Polyp lành tính không biến chứng","Polyp tuyến dạ dày và nguy cơ ung thư cao","Viêm loét đại tràng"],"correct":2,"subtopic":"III. POLYP DẠ DÀY (CÂU 31–45)"},{"question":"Biến chứng thường gặp của polyp dạ dày","options":["Viêm tụy","Tắc ruột","Chảy máu, loét, chuyển dạng ác tính","Tăng hấp thu"],"correct":2,"subtopic":"III. POLYP DẠ DÀY (CÂU 31–45)"},{"question":"Polyp viêm thường liên quan đến","options":["Viêm gan","Viêm niêm mạc dạ dày kéo dài","Xơ gan","Lao phổi"],"correct":1,"subtopic":"III. POLYP DẠ DÀY (CÂU 31–45)"},{"question":"Mô học polyp viêm cho thấy","options":["Tuyến dạng tuyến","Thấm nhập bạch cầu đa nhân, mô sợi, mao mạch tăng sinh","Dị sản vảy","Hoại tử đông"],"correct":1,"subtopic":"III. POLYP DẠ DÀY (CÂU 31–45)"},{"question":"Polyp dạ dày có kích thước nhỏ thường","options":["Di căn xa","Tự thoái lui hoặc ổn định","Tạo ổ áp xe","Gây thủng dạ dày"],"correct":1,"subtopic":"III. POLYP DẠ DÀY (CÂU 31–45)"},{"question":"Đặc điểm giúp phân biệt polyp lành – ác","options":["Màu sắc","Loại tuyến","Loạn sản tế bào và phân bào bất thường","Vị trí"],"correct":2,"subtopic":"III. POLYP DẠ DÀY (CÂU 31–45)"},{"question":"Xử trí polyp dạ dày nghi ngờ ác tính","options":["Theo dõi mỗi 5 năm","Uống kháng sinh","Cắt bỏ nội soi để làm giải phẫu bệnh","Điều trị nội khoa"],"correct":2,"subtopic":"III. POLYP DẠ DÀY (CÂU 31–45)"},{"question":"Loại ung thư dạ dày phổ biến nhất","options":["Sarcoma","Ung thư biểu mô tuyến (adenocarcinoma)","Ung thư tế bào gai","U lympho"],"correct":1,"subtopic":"IV. UNG THƯ DẠ DÀY (CÂU 46–60)"},{"question":"Vị trí ung thư dạ dày thường gặp","options":["Bờ cong lớn vùng tâm vị","Bờ cong nhỏ vùng thân vị hoặc hang vị","Dưới môn vị","Thực quản"],"correct":1,"subtopic":"IV. UNG THƯ DẠ DÀY (CÂU 46–60)"},{"question":"Yếu tố nguy cơ chính gây ung thư dạ dày","options":["Hút thuốc lá","Nhiễm H. pylori mạn tính","Uống sữa nhiều","Thiếu vitamin"],"correct":1,"subtopic":"IV. UNG THƯ DẠ DÀY (CÂU 46–60)"},{"question":"Loại ung thư dạ dày có liên quan đến viêm teo và dị sản ruột","options":["Carcinôm tuyến dạng ruột","Carcinôm tế bào vảy","Lymphoma","Sarcoma"],"correct":0,"subtopic":"IV. UNG THƯ DẠ DÀY (CÂU 46–60)"},{"question":"Dạng mô học của carcinôm tuyến dạng lan tỏa","options":["Tế bào kết dính mạnh","Tế bào hình nhẫn (signet ring cells)","Tế bào gai","Tế bào nốt vôi"],"correct":1,"subtopic":"IV. UNG THƯ DẠ DÀY (CÂU 46–60)"},{"question":"Tế bào hình nhẫn có đặc điểm","options":["Nhân ở giữa, bào tương ít","Nhân lệch về một phía, bào tương chứa nhầy","Nhân đa thùy","Nhân tăng sắc và lớn"],"correct":1,"subtopic":"IV. UNG THƯ DẠ DÀY (CÂU 46–60)"},{"question":"Ung thư dạ dày lan tỏa thường xảy ra","options":["Người già, nam giới","Người trẻ tuổi, không có viêm mạn rõ ràng","Trẻ em","Người có bệnh tự miễn"],"correct":1,"subtopic":"IV. UNG THƯ DẠ DÀY (CÂU 46–60)"},{"question":"Ung thư dạ dày dạng ruột tiến triển theo","options":["Giai đoạn tuyến tính rõ rệt (in situ → xâm nhập)","Tăng sinh cơ học","Ung thư mạch máu","Không phân biệt được"],"correct":0,"subtopic":"IV. UNG THƯ DẠ DÀY (CÂU 46–60)"},{"question":"Đặc điểm mô học của carcinôm tuyến dạ dày","options":["Cấu trúc dạng tuyến, dị sản, loạn sản, xâm nhập mô đệm","Tăng sinh cơ trơn","Dị sản vảy","Hoại tử lan tỏa"],"correct":0,"subtopic":"IV. UNG THƯ DẠ DÀY (CÂU 46–60)"},{"question":"Ung thư dạ dày giai đoạn muộn thường xâm nhập","options":["Lớp thanh mạc và lan theo mạch máu, bạch huyết","Chỉ lớp niêm mạc","Lớp dưới niêm","Lớp cơ niêm"],"correct":0,"subtopic":"IV. UNG THƯ DẠ DÀY (CÂU 46–60)"},{"question":"Biến chứng thường gặp của ung thư dạ dày","options":["Tăng tiết gastrin","Hẹp môn vị, thủng, xuất huyết","Trào ngược dạ dày thực quản","Loét"],"correct":1,"subtopic":"IV. UNG THƯ DẠ DÀY (CÂU 46–60)"},{"question":"Chẩn đoán xác định ung thư dạ dày dựa trên","options":["Hình ảnh X-quang","Siêu âm","Nội soi và sinh thiết giải phẫu bệnh","Xét nghiệm máu"],"correct":2,"subtopic":"IV. UNG THƯ DẠ DÀY (CÂU 46–60)"},{"question":"Ung thư dạ dày lan rộng có thể di căn đến","options":["Gan, hạch quanh dạ dày, buồng trứng","Ruột non","Lách","Thận"],"correct":0,"subtopic":"IV. UNG THƯ DẠ DÀY (CÂU 46–60)"},{"question":"Hội chứng Virchow liên quan đến","options":["Hạch thượng đòn trái di căn từ ung thư dạ dày","Hạch bẹn","Lách to","Vàng da"],"correct":0,"subtopic":"IV. UNG THƯ DẠ DÀY (CÂU 46–60)"},{"question":"Loại ung thư dạ dày có tiên lượng xấu nhất","options":["Carcinôm tuyến dạng ruột","Carcinôm tuyến dạng lan tỏa","Lymphoma","Polyp ác tính"],"correct":1,"subtopic":"IV. UNG THƯ DẠ DÀY (CÂU 46–60)"}]},{"id":"ho-hap","title":"Bệnh Lý Phổi & Đường Hô Hấp","icon":"🫁","desc":"Viêm phổi, lao phổi, xẹp phổi, COPD, hen, ung thư phổi, màng phổi","questionCount":60,"subTopics":[{"title":"VIÊM PHỔI","count":5},{"title":"LAO PHỔI","count":5},{"title":"XẸP PHỔI","count":5},{"title":"BỆNH PHỔI KẼ","count":5},{"title":"BỆNH PHỔI TẮC NGHẼN","count":10},{"title":"UNG THƯ PHỔI","count":5},{"title":"MÀNG PHỔI","count":5},{"title":"ĐƯỜNG HÔ HẤP TRÊN","count":10},{"title":"CÂU HỎI TỔNG HỢP VÀ NÂNG CAO","count":10}],"questions":[{"question":"Giai đoạn đầu của viêm phổi thùy phổi là","options":["Giai đoạn gan hóa đỏ","Giai đoạn gan hóa xám","Giai đoạn xơ hóa","Giai đoạn sung huyết"],"correct":3,"subtopic":"VIÊM PHỔI"},{"question":"Trong giai đoạn gan hóa đỏ, phổi có đặc điểm gì?","options":["Có màu xám, vách phế nang dày","Nhiều dịch xuất nhầy, không có hồng cầu","Đặc cứng, màu đỏ, chứa nhiều bạch cầu trung tính","Phổi phồng to, chứa không khí"],"correct":2,"subtopic":"VIÊM PHỔI"},{"question":"Đặc điểm mô học của viêm phổi do virus là","options":["Tế bào Langhans","Viêm mô kẽ, có tế bào khổng lồ và thể vùi trong bào tương","Hoại tử bã đậu","U hạt dạng kê"],"correct":1,"subtopic":"VIÊM PHỔI"},{"question":"Viêm phổi thùy phổi thường xảy ra ở","options":["Trẻ sơ sinh","Người cao tuổi","Một thùy phổi, thường là thùy trên","Cả hai bên phổi cùng lúc"],"correct":2,"subtopic":"VIÊM PHỔI"},{"question":"Tổn thương trong viêm phổi virus thường khu trú ở","options":["Phế quản lớn","Mô kẽ phổi","Phế nang chứa mủ","Mạch máu phổi"],"correct":1,"subtopic":"VIÊM PHỔI"},{"question":"Tổn thương đặc trưng trong lao phổi nguyên phát là","options":["Phức hợp Ghon","Hang lao","Xơ phổi","U hạt dạng kê"],"correct":0,"subtopic":"LAO PHỔI"},{"question":"Tổn thương đặc trưng ở vi thể trong lao phổi thứ phát","options":["Tế bào khổng lồ đa nhân trung tính","Tế bào Langhans, hoại tử bã đậu","Viêm phế nang","Phù phổi cấp"],"correct":1,"subtopic":"LAO PHỔI"},{"question":"Hang lao hình thành do","options":["Viêm phế nang","Nang bã đậu vỡ vào phế nang","Nang lao gặm vào phế quản, chất hoại tử được dẫn lưu ra ngoài","Sự tích tụ dịch trong phổi"],"correct":2,"subtopic":"LAO PHỔI"},{"question":"Lao kê có đặc điểm đại thể","options":["Một khối lớn ở đỉnh phổi","Tổn thương dạng nốt to trên 1 cm","Nhiều hạt kê vàng nhạt rải rác trong nhu mô phổi","Dịch mủ ở màng phổi"],"correct":2,"subtopic":"LAO PHỔI"},{"question":"Tế bào Langhans đặc trưng bởi","options":["Hình đa giác với nhân trung tâm","Nhân xếp vòng quanh rìa tế bào","Nhân lớn bất thường","Có màu đỏ nhạt"],"correct":1,"subtopic":"LAO PHỔI"},{"question":"Nguyên nhân thường gặp nhất của xẹp phổi tắc nghẽn là","options":["U mạch máu","Dị dạng phổi bẩm sinh","Ung thư phế quản","Tràn khí màng phổi"],"correct":2,"subtopic":"XẸP PHỔI"},{"question":"Trong xẹp phổi tắc nghẽn, phổi bị","options":["Phồng to","Bị ép từ ngoài vào","Mất khí do tắc nghẽn lòng phế quản","Thoát dịch ra ngoài"],"correct":2,"subtopic":"XẸP PHỔI"},{"question":"Xẹp phổi chèn ép thường do","options":["Viêm phế quản","Tràn dịch hoặc tràn khí màng phổi","Dị vật phế quản","Phù phổi cấp"],"correct":1,"subtopic":"XẸP PHỔI"},{"question":"Biểu hiện mô học của xẹp phổi lâu ngày","options":["Phế nang giãn","Dày vách phế nang và xơ hóa","Hoại tử","Tăng sinh biểu mô tuyến"],"correct":1,"subtopic":"XẸP PHỔI"},{"question":"Xẹp phổi chèn ép được hồi phục nếu","options":["Tình trạng kéo dài nhiều tháng","Loại bỏ nguyên nhân gây chèn ép sớm","Bổ sung thuốc giãn phế quản","Tiêm corticosteroid"],"correct":1,"subtopic":"XẸP PHỔI"},{"question":"Đặc điểm mô học của bệnh bụi phổi silic là","options":["U hạt không hoại tử","Vòng xơ hóa đồng tâm quanh hạt bụi","Viêm cấp tính","Xơ hóa dạng lưới không điển hình"],"correct":1,"subtopic":"BỆNH PHỔI KẼ"},{"question":"Trong bệnh phổi kẽ, vùng tổn thương chủ yếu là","options":["Phế quản chính","Khoang kẽ giữa các phế nang","Lòng phế nang","Động mạch phổi"],"correct":1,"subtopic":"BỆNH PHỔI KẼ"},{"question":"Bệnh phổi mô kẽ quá mẫn thường do","options":["Viêm virus","Phản ứng miễn dịch do hít phải kháng nguyên hữu cơ","Vi khuẩn Gram âm","Ung thư phế quản"],"correct":1,"subtopic":"BỆNH PHỔI KẼ"},{"question":"Hình ảnh vi thể đặc trưng trong bệnh bụi phổi amiăng","options":["Tế bào bọt","Thể vùi amiăng trong đại thực bào","Tế bào u biểu mô","Hang lao"],"correct":1,"subtopic":"BỆNH PHỔI KẼ"},{"question":"Đặc điểm mô học trong xơ phổi vô căn","options":["Viêm cấp tính","Hình ảnh tổ ong với các vùng xơ hóa thay đổi theo thời gian","Tăng sinh tế bào lympho","U hạt hoại tử"],"correct":1,"subtopic":"BỆNH PHỔI KẼ"},{"question":"Khí phế thủng là hậu quả của","options":["Tăng tiết nhầy","Giãn bất thường và không hồi phục các phế nang","Tắc phế quản","Tăng áp động mạch phổi"],"correct":1,"subtopic":"BỆNH PHỔI TẮC NGHẼN"},{"question":"Loại khí phế thủng liên quan đến hút thuốc lá","options":["Trung tâm tiểu thùy","Toàn tiểu thùy","Ngoại vi","Cục bộ"],"correct":0,"subtopic":"BỆNH PHỔI TẮC NGHẼN"},{"question":"Trong hen phế quản, mô học thấy","options":["Mạch máu giãn rộng","Tăng sinh tuyến nhầy, cơ trơn, và thâm nhiễm bạch cầu ái toan","Hoại tử tế bào biểu mô","Hang lao"],"correct":1,"subtopic":"BỆNH PHỔI TẮC NGHẼN"},{"question":"Hen phế quản đặc trưng bởi","options":["Phản ứng viêm cấp","Quá mẫn type I (dị ứng)","Nhiễm khuẩn thứ phát","Viêm mô kẽ"],"correct":1,"subtopic":"BỆNH PHỔI TẮC NGHẼN"},{"question":"Viêm phế quản mạn được chẩn đoán khi ho có đờm kéo dài","options":["1 tuần","1 tháng","3 tháng mỗi năm trong ít nhất 2 năm liên tiếp","Suốt mùa đông"],"correct":2,"subtopic":"BỆNH PHỔI TẮC NGHẼN"},{"question":"Đặc điểm chính của giãn phế quản","options":["Phổi teo nhỏ","Phế quản giãn không hồi phục do phá hủy thành phế quản","Xơ phổi khu trú","Hang lao"],"correct":1,"subtopic":"BỆNH PHỔI TẮC NGHẼN"},{"question":"Giãn phế quản thường gặp ở","options":["Thuỳ trên phổi","Thuỳ giữa phổi","Thuỳ dưới phổi","Màng phổi"],"correct":2,"subtopic":"BỆNH PHỔI TẮC NGHẼN"},{"question":"Trong COPD, hiện tượng thường gặp là","options":["Viêm mô kẽ","Tắc nghẽn luồng khí hô hấp không hồi phục","Tăng áp lực tĩnh mạch","Tràn dịch màng phổi"],"correct":1,"subtopic":"BỆNH PHỔI TẮC NGHẼN"},{"question":"Tổn thương mô học đặc trưng trong viêm phế quản mạn","options":["Viêm mô kẽ lan tỏa","Tăng sản tuyến nhầy, thâm nhiễm viêm mãn tính","Viêm tấy hoại tử","Phù mô kẽ"],"correct":1,"subtopic":"BỆNH PHỔI TẮC NGHẼN"},{"question":"Trong hen phế quản, các thể vùi Charcot-Leyden là","options":["Tinh thể từ vỡ tế bào bạch cầu ái toan","Thể virus","Tế bào dị dạng","Xác vi khuẩn"],"correct":0,"subtopic":"BỆNH PHỔI TẮC NGHẼN"},{"question":"Carcinôm tế bào nhỏ phế quản thường","options":["Phát triển chậm","Phân bào ít","Có nguồn gốc từ tế bào thần kinh nội tiết","Không di căn sớm"],"correct":2,"subtopic":"UNG THƯ PHỔI"},{"question":"Carcinôm tuyến phổi thường gặp ở","options":["Phế quản chính","Ngoại vi phổi","Trung tâm tiểu thùy","Dưới màng phổi"],"correct":1,"subtopic":"UNG THƯ PHỔI"},{"question":"Carcinôm tế bào vảy đặc trưng bởi","options":["Mô tuyến tăng sinh","Cầu nối gian bào, sừng hóa","Biểu mô hình trụ","Tế bào nhỏ, tăng sắc"],"correct":1,"subtopic":"UNG THƯ PHỔI"},{"question":"Carcinôm tế bào nhỏ phổi có tiên lượng","options":["Rất tốt","Trung bình","Rất xấu, thường chết trong vòng 1 năm nếu không điều trị","Không thay đổi theo giai đoạn"],"correct":2,"subtopic":"UNG THƯ PHỔI"},{"question":"Ung thư phổi nguyên phát thường gặp ở","options":["Trẻ em","Người già, hút thuốc lá nhiều năm","Phụ nữ trẻ","Người mắc lao phổi cấp"],"correct":1,"subtopic":"UNG THƯ PHỔI"},{"question":"Tràn dịch màng phổi có thể do","options":["Lao phổi","Suy tim","Ung thư","Tất cả các nguyên nhân trên"],"correct":3,"subtopic":"MÀNG PHỔI"},{"question":"Tràn khí màng phổi xảy ra khi","options":["Dịch thấm vào khoang màng phổi","Không khí xâm nhập khoang màng phổi","Máu tràn vào màng phổi","Lympho thấm qua"],"correct":1,"subtopic":"MÀNG PHỔI"},{"question":"Viêm màng phổi do vi khuẩn có đặc điểm","options":["Dịch tiết trong suốt","Dịch tiết giàu protein và tế bào viêm","Dịch thanh dịch","Dịch mỡ"],"correct":1,"subtopic":"MÀNG PHỔI"},{"question":"U trung biểu mô màng phổi liên quan tới","options":["Bụi silic","Khí CO2","Amiăng (asbestos)","Suy tim"],"correct":2,"subtopic":"MÀNG PHỔI"},{"question":"Trong u trung biểu mô ác tính, mô học thấy","options":["Mô liên kết giàu collagen","Tế bào hình vuông tạo tuyến và dạng sarcom","U hạt không hoại tử","Biểu mô phì đại"],"correct":1,"subtopic":"MÀNG PHỔI"},{"question":"Polyp mũi thường là","options":["U ác tính","U mạch máu","U lành, do viêm mạn tính","Ung thư biểu mô"],"correct":2,"subtopic":"ĐƯỜNG HÔ HẤP TRÊN"},{"question":"Mô học của polyp mũi","options":["Hoại tử bã đậu","Mô liên kết phù nề, thấm nhập tế bào viêm","Sừng hóa","Áp xe"],"correct":1,"subtopic":"ĐƯỜNG HÔ HẤP TRÊN"},{"question":"Carcinôm vòm hầu liên quan đến","options":["HPV","Virus Epstein-Barr (EBV)","Vi khuẩn","Nấm mốc"],"correct":1,"subtopic":"ĐƯỜNG HÔ HẤP TRÊN"},{"question":"Carcinôm vòm hầu thường gặp ở","options":["Châu Âu","Bắc Mỹ","Đông Nam Á và Trung Quốc","Ấn Độ"],"correct":2,"subtopic":"ĐƯỜNG HÔ HẤP TRÊN"},{"question":"Biểu mô trong carcinôm vòm hầu không sừng hóa","options":["Có biệt hóa rõ","Sừng hóa mạnh","Không biệt hóa, nhiều tế bào lympho","Tạo tuyến"],"correct":2,"subtopic":"ĐƯỜNG HÔ HẤP TRÊN"},{"question":"Polyp thanh quản thường do","options":["Viêm mạn do nói nhiều hoặc hút thuốc","Ung thư","Nhiễm nấm","Dị ứng"],"correct":0,"subtopic":"ĐƯỜNG HÔ HẤP TRÊN"},{"question":"U nhú thanh quản do","options":["Virus HPV type 6 và 11","Virus EBV","Nhiễm trùng vi khuẩn","Di truyền"],"correct":0,"subtopic":"ĐƯỜNG HÔ HẤP TRÊN"},{"question":"Trong u nhú thanh quản, mô học thấy","options":["Mô xơ hóa","Biểu mô lát tầng sừng hóa, tạo nhú","U tuyến","Hoại tử"],"correct":1,"subtopic":"ĐƯỜNG HÔ HẤP TRÊN"},{"question":"U nhú thanh quản có thể","options":["Không tái phát","Chuyển dạng ác tính hiếm gặp","Không gây biến chứng","Không cần điều trị"],"correct":1,"subtopic":"ĐƯỜNG HÔ HẤP TRÊN"},{"question":"Carcinôm thanh quản tế bào vảy thường xuất hiện ở","options":["Người trẻ không hút thuốc","Người lớn tuổi có tiền sử hút thuốc, uống rượu","Trẻ em","Phụ nữ tuổi sinh sản"],"correct":1,"subtopic":"ĐƯỜNG HÔ HẤP TRÊN"},{"question":"Carcinôm tế bào nhỏ phế quản có đặc điểm mô học","options":["Tế bào lớn, giàu bào tương","Nhân nhỏ, tăng sắc, phân bào cao","Hình nhú rõ","Tế bào dị dạng khổng lồ"],"correct":1,"subtopic":"CÂU HỎI TỔNG HỢP VÀ NÂNG CAO"},{"question":"Trong ung thư phổi, loại thường gặp nhất ở người không hút thuốc là","options":["Carcinôm tế bào nhỏ","Carcinôm tuyến","Carcinôm tế bào vảy","Ung thư mô đệm"],"correct":1,"subtopic":"CÂU HỎI TỔNG HỢP VÀ NÂNG CAO"},{"question":"Xét về dịch tễ học, loại ung thư phổ biến nhất ở phổi là","options":["Carcinôm tuyến","Carcinôm tế bào vảy","Carcinôm tế bào nhỏ","Sarcom"],"correct":0,"subtopic":"CÂU HỎI TỔNG HỢP VÀ NÂNG CAO"},{"question":"Trong lao kê, sự lan truyền vi khuẩn theo đường","options":["Bạch huyết","Phế quản","Máu","Màng phổi"],"correct":2,"subtopic":"CÂU HỎI TỔNG HỢP VÀ NÂNG CAO"},{"question":"Mô học của bệnh phổi mô kẽ quá mẫn cấp tính cho thấy","options":["U hạt không hoại tử, thâm nhiễm lympho quanh tiểu phế quản","Hoại tử bã đậu","Tăng sinh tuyến nhầy","Tế bào ái toan"],"correct":0,"subtopic":"CÂU HỎI TỔNG HỢP VÀ NÂNG CAO"},{"question":"U nhú thanh quản liên quan đến virus nào?","options":["HPV type 16 và 18","HPV type 6 và 11","EBV","CMV"],"correct":1,"subtopic":"CÂU HỎI TỔNG HỢP VÀ NÂNG CAO"},{"question":"Loại ung thư phổi nào thường gây hội chứng cận u (paraneoplastic syndrome)?","options":["Carcinôm tế bào nhỏ","Carcinôm tuyến","Carcinôm tế bào vảy","Sarcom"],"correct":0,"subtopic":"CÂU HỎI TỔNG HỢP VÀ NÂNG CAO"},{"question":"Trong khí phế thủng, hiện tượng mô học nổi bật là","options":["Dày màng đáy","Giãn rộng phế nang, mất vách phế nang","Xơ hóa quanh tiểu phế quản","Lắng đọng collagen"],"correct":1,"subtopic":"CÂU HỎI TỔNG HỢP VÀ NÂNG CAO"},{"question":"Tràn dịch màng phổi do ung thư đặc trưng bởi","options":["Dịch thanh dịch ít tế bào","Dịch tiết chứa tế bào ác tính","Dịch mủ đục","Dịch trong suốt"],"correct":1,"subtopic":"CÂU HỎI TỔNG HỢP VÀ NÂNG CAO"},{"question":"Carcinôm hầu mũi (nasopharyngeal carcinoma) thường biểu hiện triệu chứng đầu tiên là","options":["Sốt cao","Đau họng","Hạch cổ sưng không đau","Khó thở đột ngột"],"correct":2,"subtopic":"CÂU HỎI TỔNG HỢP VÀ NÂNG CAO"}]},{"id":"co-tu-cung","title":"Bệnh Lý Cổ Tử Cung","icon":"🩺","desc":"Polyp cổ trong, Condyloma, CIN, nhiễm HPV, vắc xin và ung thư CTC","questionCount":49,"subTopics":[{"title":"I. POLYP CỔ TRONG CỔ TỬ CUNG (10 câu)","count":10},{"title":"II. CONDYLOMA CỔ TỬ CUNG (10 câu)","count":5},{"title":"III. CIN – TÂN SINH TRONG BIỂU MÔ CTC (15 câu)","count":15},{"title":"IV. HPV & VACCINE (15 câu)","count":14},{"title":"V. UNG THƯ CỔ TỬ CUNG (10 câu)","count":5}],"questions":[{"question":"Polyp cổ trong cổ tử cung thường xuất hiện ở","options":["Trẻ em","Phụ nữ sau mãn kinh","Nam giới","Phụ nữ tuổi sinh sản"],"correct":3,"subtopic":"I. POLYP CỔ TRONG CỔ TỬ CUNG (10 câu)"},{"question":"Polyp cổ trong cổ tử cung là","options":["Ung thư tuyến","Tổn thương giả u","U ác tính","Tổn thương hoại tử"],"correct":1,"subtopic":"I. POLYP CỔ TRONG CỔ TỬ CUNG (10 câu)"},{"question":"Biểu mô phủ bề mặt polyp cổ trong là","options":["Biểu mô lát tầng không sừng hóa","Biểu mô trụ đơn tiết nhầy","Biểu mô chuyển sản gai","Biểu mô dị sản"],"correct":1,"subtopic":"I. POLYP CỔ TRONG CỔ TỬ CUNG (10 câu)"},{"question":"Kích thước điển hình của polyp cổ trong thường","options":[">5cm","<3cm","5-7cm","3-5cm"],"correct":1,"subtopic":"I. POLYP CỔ TRONG CỔ TỬ CUNG (10 câu)"},{"question":"Vi thể mô đệm polyp thường có đặc điểm","options":["Teo đét, không mạch máu","Giàu tương bào","Phù nề, sung huyết","Có bạch cầu đa nhân"],"correct":2,"subtopic":"I. POLYP CỔ TRONG CỔ TỬ CUNG (10 câu)"},{"question":"Biểu hiện lâm sàng của polyp cổ tử cung thường là","options":["Không triệu chứng","Sốt","Xuất huyết âm đạo","Đau khi giao hợp"],"correct":2,"subtopic":"I. POLYP CỔ TRONG CỔ TỬ CUNG (10 câu)"},{"question":"Đặc điểm đại thể của polyp","options":["Khối xù xì, màu nâu sẫm","Dạng loét nông","Khối tròn, màu hồng nhạt, trơn láng","Khối dẹt, hoại tử"],"correct":2,"subtopic":"I. POLYP CỔ TRONG CỔ TỬ CUNG (10 câu)"},{"question":"Loại biểu mô có thể thấy chuyển sản trong polyp","options":["Biểu mô lát tầng gai","Biểu mô giả tầng","Biểu mô tiết nhầy","Biểu mô gai chuyển sản"],"correct":3,"subtopic":"I. POLYP CỔ TRONG CỔ TỬ CUNG (10 câu)"},{"question":"Phản ứng viêm kèm theo polyp là nguyên nhân gây","options":["Loạn sản biểu mô","Giãn rộng mạch máu","Tăng sinh tuyến","Dị sản nhẹ"],"correct":1,"subtopic":"I. POLYP CỔ TRONG CỔ TỬ CUNG (10 câu)"},{"question":"Polyp cổ trong cổ tử cung thuộc loại","options":["U ác tính thường gặp","Tổn thương giả u","Ung thư tuyến cổ trong","Tổn thương tiền ung"],"correct":1,"subtopic":"I. POLYP CỔ TRONG CỔ TỬ CUNG (10 câu)"},{"question":"Condyloma cổ tử cung do nhiễm","options":["HPV type 16, 18","HPV type 6, 11","EBV","HSV"],"correct":1,"subtopic":"II. CONDYLOMA CỔ TỬ CUNG (10 câu)"},{"question":"Condyloma cổ tử cung là","options":["Tổn thương tiền ung thư","U ác tính","U lành tính","Tổn thương viêm"],"correct":2,"subtopic":"II. CONDYLOMA CỔ TỬ CUNG (10 câu)"},{"question":"Dạng đại thể của condyloma","options":["Loét nông","Dạng sùi hoặc phẳng","U đặc","Khối xơ hoá"],"correct":1,"subtopic":"II. CONDYLOMA CỔ TỬ CUNG (10 câu)"},{"question":"Đặc điểm mô học đặc trưng cho nhiễm HPV","options":["Tế bào koilocyte","Tế bào dạng tuyến","Tế bào hoại tử","Tế bào dạng gai"],"correct":0,"subtopic":"II. CONDYLOMA CỔ TỬ CUNG (10 câu)"},{"question":"Condyloma có thể tiến triển thành ung thư khi","options":["Nhiễm HPV type thấp kéo dài","Đồng nhiễm HPV nguy cơ cao","Nhiễm virus EBV","Bệnh lý miễn dịch"],"correct":1,"subtopic":"II. CONDYLOMA CỔ TỬ CUNG (10 câu)"},{"question":"CIN là","options":["Ung thư cổ tử cung","Loạn sản tế bào tuyến","Tổn thương tiền ung thư","U lành tính cổ tử cung"],"correct":2,"subtopic":"III. CIN – TÂN SINH TRONG BIỂU MÔ CTC (15 câu)"},{"question":"CIN có liên quan chặt chẽ đến nhiễm","options":["HSV","HPV nguy cơ cao","EBV","H. pylori"],"correct":1,"subtopic":"III. CIN – TÂN SINH TRONG BIỂU MÔ CTC (15 câu)"},{"question":"CIN I là","options":["Loạn sản nhẹ, giới hạn 1/3 dưới biểu mô","Loạn sản toàn bộ biểu mô","Loạn sản tuyến","Ung thư biểu mô tại chỗ"],"correct":0,"subtopic":"III. CIN – TÂN SINH TRONG BIỂU MÔ CTC (15 câu)"},{"question":"Đặc điểm mô học của CIN II","options":["Loạn sản nhẹ","Loạn sản vừa, tổn thương đến 2/3 chiều dày biểu mô","Không có bất thường tế bào","Biểu mô tuyến bị đảo lộn"],"correct":1,"subtopic":"III. CIN – TÂN SINH TRONG BIỂU MÔ CTC (15 câu)"},{"question":"CIN III còn được gọi là","options":["Carcinoma tuyến","CIN độ I","Carcinoma tại chỗ","Carcinoma xâm lấn"],"correct":2,"subtopic":"III. CIN – TÂN SINH TRONG BIỂU MÔ CTC (15 câu)"},{"question":"Tế bào koilocyte có thể gặp trong","options":["Viêm cổ tử cung không đặc hiệu","CIN I","Carcinoma tuyến","U cơ trơn tử cung"],"correct":1,"subtopic":"III. CIN – TÂN SINH TRONG BIỂU MÔ CTC (15 câu)"},{"question":"Hệ thống phân loại hiện đại cho CIN là","options":["WHO","Bethesda","Gleason","FIGO"],"correct":1,"subtopic":"III. CIN – TÂN SINH TRONG BIỂU MÔ CTC (15 câu)"},{"question":"Đa số CIN I","options":["Tiến triển thành ung thư","Tự thoái triển","Không điều trị được","Cần cắt tử cung"],"correct":1,"subtopic":"III. CIN – TÂN SINH TRONG BIỂU MÔ CTC (15 câu)"},{"question":"CIN II và III","options":["Luôn luôn thoái triển","Không có liên quan đến HPV","Nguy cơ cao tiến triển thành ung thư","Không cần điều trị"],"correct":2,"subtopic":"III. CIN – TÂN SINH TRONG BIỂU MÔ CTC (15 câu)"},{"question":"Yếu tố nguy cơ của CIN KHÔNG BAO GỒM","options":["Hút thuốc lá","HPV nguy cơ cao","Suy giảm miễn dịch","Sử dụng vitamin D"],"correct":3,"subtopic":"III. CIN – TÂN SINH TRONG BIỂU MÔ CTC (15 câu)"},{"question":"Phát hiện CIN chủ yếu qua","options":["MRI","Pap smear","CT scanner","Soi ổ bụng"],"correct":1,"subtopic":"III. CIN – TÂN SINH TRONG BIỂU MÔ CTC (15 câu)"},{"question":"Pap smear phát hiện","options":["Tăng sản nội mạc","Loạn sản cổ tử cung","Polyp nội mạc","U xơ tử cung"],"correct":1,"subtopic":"III. CIN – TÂN SINH TRONG BIỂU MÔ CTC (15 câu)"},{"question":"CIN thường không có triệu chứng, ngoại trừ","options":["Đau đầu","Sốt","Khí hư kéo dài, ra huyết bất thường","Tiêu chảy"],"correct":2,"subtopic":"III. CIN – TÂN SINH TRONG BIỂU MÔ CTC (15 câu)"},{"question":"HPV gây ung thư do","options":["Gây viêm cấp","Gây hoại tử mô","Ức chế gen p53, Rb","Làm tăng tiết dịch nhầy"],"correct":2,"subtopic":"III. CIN – TÂN SINH TRONG BIỂU MÔ CTC (15 câu)"},{"question":"Gen virus sinh ung chủ yếu của HPV","options":["E1, E2","E4, L1","E6, E7","L1, L2"],"correct":2,"subtopic":"III. CIN – TÂN SINH TRONG BIỂU MÔ CTC (15 câu)"},{"question":"HPV type nguy cơ cao phổ biến nhất là","options":["6 và 11","42 và 44","16 và 18","1 và 2"],"correct":2,"subtopic":"IV. HPV & VACCINE (15 câu)"},{"question":"HPV có thể gây ung thư nào KHÔNG thuộc đường sinh dục","options":["Âm đạo","Hậu môn","Hầu họng","Gan"],"correct":3,"subtopic":"IV. HPV & VACCINE (15 câu)"},{"question":"HPV lây truyền chủ yếu qua","options":["Máu","Dịch tiêu hoá","Quan hệ tình dục","Hít phải giọt bắn"],"correct":2,"subtopic":"IV. HPV & VACCINE (15 câu)"},{"question":"HPV có thể lây khi dùng chung","options":["Bàn chải đánh răng","Khăn mặt","Đồ lót","Đồ ăn"],"correct":2,"subtopic":"IV. HPV & VACCINE (15 câu)"},{"question":"Cơ chế vaccine HPV dựa vào","options":["DNA virus sống","Tế bào bất hoạt","Virus-like particles (VLPs)","Vi khuẩn chết"],"correct":2,"subtopic":"IV. HPV & VACCINE (15 câu)"},{"question":"Vaccine HPV không chứa","options":["DNA virus","Protein L1","VLPs","Tác nhân gây ung thư"],"correct":0,"subtopic":"IV. HPV & VACCINE (15 câu)"},{"question":"Vaccine HPV hiệu quả nhất khi","options":["Sau sinh con","Sau 40 tuổi","Trước khi quan hệ tình dục","Sau khi có HPV"],"correct":2,"subtopic":"IV. HPV & VACCINE (15 câu)"},{"question":"Vaccine Gardasil 9 bảo vệ được","options":["2 type HPV","4 type HPV","9 type HPV","11 type HPV"],"correct":2,"subtopic":"IV. HPV & VACCINE (15 câu)"},{"question":"Đối tượng tiêm vaccine lý tưởng","options":["Trẻ gái 9–14 tuổi","Phụ nữ mang thai","Nam giới trên 50","Người sau điều trị ung thư"],"correct":0,"subtopic":"IV. HPV & VACCINE (15 câu)"},{"question":"Phối hợp xét nghiệm HPV và Pap smear gọi là","options":["Biopsy","Co-testing","Triple test","Dual scan"],"correct":1,"subtopic":"IV. HPV & VACCINE (15 câu)"},{"question":"Tế bào nghi ngờ trong Pap smear là","options":["Tế bào nang","Tế bào gai sừng hóa","Tế bào koilocyte","Tế bào vảy bình thường"],"correct":2,"subtopic":"IV. HPV & VACCINE (15 câu)"},{"question":"Vaccine HPV không khuyến cáo cho","options":["Người dị ứng thành phần","Phụ nữ sau mãn kinh","Người có CIN I","Người có tiền sử nhiễm HPV"],"correct":0,"subtopic":"IV. HPV & VACCINE (15 câu)"},{"question":"Vaccine phòng được","options":["Tất cả các type HPV","Gần 100% type nguy cơ cao",">90% type nguy cơ cao gây UTCTC","Chỉ HPV 6 và 11"],"correct":2,"subtopic":"IV. HPV & VACCINE (15 câu)"},{"question":"Vaccine tạo ra","options":["Miễn dịch tế bào","Miễn dịch dịch thể","Miễn dịch thụ động","Miễn dịch tự nhiên"],"correct":1,"subtopic":"IV. HPV & VACCINE (15 câu)"},{"question":"Ung thư cổ tử cung phổ biến nhất là","options":["Adenocarcinoma","Carcinoma tế bào gai","Carcinoid","Lymphoma"],"correct":1,"subtopic":"V. UNG THƯ CỔ TỬ CUNG (10 câu)"},{"question":"Yếu tố nguy cơ lớn nhất là","options":["Quan hệ tình dục sớm","HPV","Hút thuốc","Viêm cổ tử cung"],"correct":1,"subtopic":"V. UNG THƯ CỔ TỬ CUNG (10 câu)"},{"question":"Carcinoma tế bào gai loại biệt hóa tốt có đặc điểm","options":["Cầu sừng rõ","Không có chất sừng","Tế bào nhỏ, dị dạng","Xâm nhập mạch máu"],"correct":0,"subtopic":"V. UNG THƯ CỔ TỬ CUNG (10 câu)"},{"question":"Ung thư tuyến cổ trong chiếm","options":["70%","10–15%","50%","5%"],"correct":1,"subtopic":"V. UNG THƯ CỔ TỬ CUNG (10 câu)"},{"question":"CIN III không điều trị sẽ tiến triển thành","options":["Polyp cổ tử cung","Ung thư cổ tử cung xâm nhập","U xơ tử cung","Carcinoid"],"correct":1,"subtopic":"V. UNG THƯ CỔ TỬ CUNG (10 câu)"}]},{"id":"than-tu-cung","title":"Bệnh Lý Thân Tử Cung","icon":"🏥","desc":"Viêm nội mạc, Adenomyosis, lạc nội mạc, tăng sản, u xơ, carcinom nội mạc","questionCount":50,"subTopics":[{"title":"I. Viêm nội mạc tử cung (Chronic Endometritis)","count":5},{"title":"II. Bệnh tuyến cơ (Adenomyosis)","count":5},{"title":"III. Lạc nội mạc tử cung (Endometriosis)","count":5},{"title":"IV. Tăng sản nội mạc tử cung (Endometrial Hyperplasia)","count":5},{"title":"V. Polyp nội mạc tử cung (Endometrial Polyp)","count":5},{"title":"VI. U cơ trơn tử cung (U xơ tử cung, Leiomyoma)","count":5},{"title":"VII. Ung thư tuyến nội mạc tử cung (Endometrial Carcinoma)","count":5},{"title":"VIII. Tổng hợp kiến thức","count":5},{"title":"IX. Câu hỏi bổ sung tổng hợp (Câu 41–50)","count":10}],"questions":[{"question":"Viêm nội mạc tử cung thường xảy ra sau các tình huống nào?","options":["Mãn kinh","Quan hệ tình dục lần đầu","Sau sinh, sảy thai hoặc thủ thuật buồng tử cung","Phẫu thuật vú"],"correct":2,"subtopic":"I. Viêm nội mạc tử cung (Chronic Endometritis)"},{"question":"Vi khuẩn nào sau đây thường gặp trong viêm nội mạc tử cung?","options":["Bacillus anthracis","Streptococcus","Helicobacter pylori","Clostridium tetani"],"correct":1,"subtopic":"I. Viêm nội mạc tử cung (Chronic Endometritis)"},{"question":"Viêm nội mạc tử cung mạn tính thường có tế bào viêm nào đặc trưng?","options":["Bạch cầu đa nhân","Tế bào mast","Tương bào","Bạch cầu ái toan"],"correct":2,"subtopic":"I. Viêm nội mạc tử cung (Chronic Endometritis)"},{"question":"Biểu hiện mô học của viêm cấp là?","options":["Xơ hóa mô đệm","Xâm nhập lympho bào","Thấm nhập bạch cầu đa nhân trung tính","Giãn tuyến nội mạc"],"correct":2,"subtopic":"I. Viêm nội mạc tử cung (Chronic Endometritis)"},{"question":"Lao nội mạc tử cung do tác nhân nào gây ra?","options":["Mycoplasma genitalium","Mycobacterium tuberculosis","Neisseria gonorrhoeae","Candida albicans"],"correct":1,"subtopic":"I. Viêm nội mạc tử cung (Chronic Endometritis)"},{"question":"Bệnh tuyến cơ tử cung phổ biến ở độ tuổi nào?","options":["20–30 tuổi","15–25 tuổi","35–50 tuổi","Trên 60 tuổi"],"correct":2,"subtopic":"II. Bệnh tuyến cơ (Adenomyosis)"},{"question":"Adenomyosis là sự hiện diện của mô nào ở vị trí bất thường?","options":["Mô lympho","Mô thần kinh","Mô nội mạc tử cung trong cơ tử cung","Mô xương trong nội mạc tử cung"],"correct":2,"subtopic":"II. Bệnh tuyến cơ (Adenomyosis)"},{"question":"Một triệu chứng đặc trưng của adenomyosis là?","options":["Khó thở","Tăng huyết áp","Đau bụng kinh","Viêm khớp"],"correct":2,"subtopic":"II. Bệnh tuyến cơ (Adenomyosis)"},{"question":"Đặc điểm vi thể nào sau đây đúng với adenomyosis?","options":["Tế bào gai","Tuyến nội mạc và mô đệm trong cơ tử cung","U mô đệm không biệt hóa","Tế bào hạt dạng đa nhân"],"correct":1,"subtopic":"II. Bệnh tuyến cơ (Adenomyosis)"},{"question":"Biểu hiện đại thể thường thấy của tử cung trong adenomyosis là?","options":["Nhỏ gọn và mềm","Dạng nang nước rõ rệt","To ra với cơ dạng bè, mềm","Loét và chảy máu rõ"],"correct":2,"subtopic":"II. Bệnh tuyến cơ (Adenomyosis)"},{"question":"Lạc nội mạc tử cung thường xảy ra ở vị trí nào nhiều nhất?","options":["Cổ tử cung","Thành bụng","Buồng trứng","Phổi"],"correct":2,"subtopic":"III. Lạc nội mạc tử cung (Endometriosis)"},{"question":"Tỉ lệ phụ nữ mắc lạc nội mạc tử cung trong độ tuổi sinh sản là?","options":["1–2%","5–15%","25–35%","50%"],"correct":1,"subtopic":"III. Lạc nội mạc tử cung (Endometriosis)"},{"question":"Cơ chế bệnh sinh được chấp nhận nhiều nhất là?","options":["Nhiễm trùng","Dị ứng","Kinh nguyệt ngược dòng","Thiếu máu"],"correct":2,"subtopic":"III. Lạc nội mạc tử cung (Endometriosis)"},{"question":"Đại thực bào chứa hemosiderin là đặc điểm vi thể của?","options":["Viêm nội mạc tử cung","Tăng sản","Lạc nội mạc tử cung","U cơ trơn"],"correct":2,"subtopic":"III. Lạc nội mạc tử cung (Endometriosis)"},{"question":"Triệu chứng lâm sàng chính của bệnh là?","options":["Sốt cao","Đau vùng chậu và vô sinh","Tăng cân","Chảy máu cam"],"correct":1,"subtopic":"III. Lạc nội mạc tử cung (Endometriosis)"},{"question":"Tăng sản nội mạc tử cung xảy ra khi nào?","options":["Thiếu Estrogen","Progesterone vượt trội","Estrogen tăng cao kéo dài không bị đối kháng bởi Progesterone","Testosterone tăng cao"],"correct":2,"subtopic":"IV. Tăng sản nội mạc tử cung (Endometrial Hyperplasia)"},{"question":"Yếu tố nguy cơ hàng đầu gây tăng sản nội mạc tử cung là?","options":["Viêm gan B","Béo phì","Thiếu máu","Suy tuyến thượng thận"],"correct":1,"subtopic":"IV. Tăng sản nội mạc tử cung (Endometrial Hyperplasia)"},{"question":"Thuốc Tamoxifen có thể gây tăng sản vì?","options":["Gây ức chế androgen","Là chất chủ vận Estrogen ở nội mạc tử cung","Là chất đối kháng Estrogen hoàn toàn","Gây teo mô đệm"],"correct":1,"subtopic":"IV. Tăng sản nội mạc tử cung (Endometrial Hyperplasia)"},{"question":"Hình ảnh mô học của tăng sản không điển hình là?","options":["Tuyến phân bố thưa, kích thước nhỏ","Tuyến sát nhau, nhân không dị dạng","Tuyến lớn, mất phân cực, nhân nhược sắc","Hoại tử tuyến"],"correct":2,"subtopic":"IV. Tăng sản nội mạc tử cung (Endometrial Hyperplasia)"},{"question":"Biểu hiện lâm sàng phổ biến nhất là?","options":["Đau đầu","Xuất huyết tử cung bất thường","Buồn nôn","Bí tiểu"],"correct":1,"subtopic":"IV. Tăng sản nội mạc tử cung (Endometrial Hyperplasia)"},{"question":"Polyp nội mạc là loại u nào?","options":["U mạch","U lympho","U lành tính mô đệm nội mạc có tính đơn dòng","U cơ trơn"],"correct":2,"subtopic":"V. Polyp nội mạc tử cung (Endometrial Polyp)"},{"question":"Polyp thường gặp ở phụ nữ","options":["Trẻ tuổi","Mãn kinh","Sau sinh","Mang thai"],"correct":1,"subtopic":"V. Polyp nội mạc tử cung (Endometrial Polyp)"},{"question":"Một biến chứng tiềm ẩn của polyp nội mạc là?","options":["Thoái hóa bọc","Di căn gan","Ác tính hóa","Gãy xương"],"correct":2,"subtopic":"V. Polyp nội mạc tử cung (Endometrial Polyp)"},{"question":"Tổn thương mô học thường thấy là?","options":["Tuyến nhỏ, thưa thớt","Mô đệm xơ, nhiều tuyến giãn rộng","Cấu trúc sarcoma","Viêm mủ"],"correct":1,"subtopic":"V. Polyp nội mạc tử cung (Endometrial Polyp)"},{"question":"Vị trí phổ biến nhất của polyp là?","options":["Eo tử cung","Đáy tử cung","Cổ tử cung","Dây chằng rộng"],"correct":1,"subtopic":"V. Polyp nội mạc tử cung (Endometrial Polyp)"},{"question":"U cơ trơn là u","options":["Ác tính","Trung gian","Lành tính phổ biến nhất","Không phân loại được"],"correct":2,"subtopic":"VI. U cơ trơn tử cung (U xơ tử cung, Leiomyoma)"},{"question":"Yếu tố nào kích thích u cơ trơn phát triển?","options":["Progesterone","Estrogen","Androgen","Insulin"],"correct":1,"subtopic":"VI. U cơ trơn tử cung (U xơ tử cung, Leiomyoma)"},{"question":"Vi thể của u cơ trơn cho thấy tế bào?","options":["Hình tròn, nhân nhỏ","Hình thoi, nhân bầu dục, ít phân bào","Nhân dị dạng, phân bào cao","Bào tương ưa bazơ"],"correct":1,"subtopic":"VI. U cơ trơn tử cung (U xơ tử cung, Leiomyoma)"},{"question":"Tổn thương đại thể nào sau đây đúng với u cơ trơn?","options":["Màu đỏ tươi, chảy dịch","Mặt cắt trắng xám, dạng cuộn","U mềm nhầy","Tăng sinh tuyến"],"correct":1,"subtopic":"VI. U cơ trơn tử cung (U xơ tử cung, Leiomyoma)"},{"question":"U dưới nội mạc thường gây?","options":["Bí tiểu","Xuất huyết tử cung bất thường","Vô sinh nam","Hoại tử buồng trứng"],"correct":1,"subtopic":"VI. U cơ trơn tử cung (U xơ tử cung, Leiomyoma)"},{"question":"Loại ung thư nội mạc tử cung thường gặp nhất là?","options":["Sarcoma","Carcinoma tuyến","U lympho","U cơ trơn ác tính"],"correct":1,"subtopic":"VII. Ung thư tuyến nội mạc tử cung (Endometrial Carcinoma)"},{"question":"Tần suất ung thư nội mạc tử cung cao nhất ở vùng?","options":["Đông Nam Á","Châu Âu và Bắc Mỹ","Trung Đông","Châu Phi"],"correct":1,"subtopic":"VII. Ung thư tuyến nội mạc tử cung (Endometrial Carcinoma)"},{"question":"Yếu tố nguy cơ không thuộc về nội tiết là?","options":["Béo phì","Tiểu đường","Tăng huyết áp","Hút thuốc lá"],"correct":3,"subtopic":"VII. Ung thư tuyến nội mạc tử cung (Endometrial Carcinoma)"},{"question":"Hình thái mô học của carcinoma biệt hóa tốt (grad 1) là?","options":["Tế bào không biệt hóa","Tạo ống tuyến rõ, đám đặc <5%","Tăng sản không điển hình","Nhân không chia"],"correct":1,"subtopic":"VII. Ung thư tuyến nội mạc tử cung (Endometrial Carcinoma)"},{"question":"Đường di căn phổ biến của ung thư nội mạc là?","options":["Hạch nách","Hạch cổ","Hạch chậu, hạch bẹn","Hạch cổ tử cung"],"correct":2,"subtopic":"VII. Ung thư tuyến nội mạc tử cung (Endometrial Carcinoma)"},{"question":"Viêm nội mạc tử cung cấp thường do?","options":["Nhiễm nấm","Nhiễm virus","Nhiễm khuẩn sau sinh","Do u"],"correct":2,"subtopic":"VIII. Tổng hợp kiến thức"},{"question":"Lạc nội mạc tử cung có thể gây biến chứng?","options":["Xơ gan","Viêm phế quản","Vô sinh","Hạ canxi máu"],"correct":2,"subtopic":"VIII. Tổng hợp kiến thức"},{"question":"Tăng sản điển hình có thể tiến triển thành?","options":["Viêm tử cung","Polyp","Ung thư tuyến nội mạc","U nang"],"correct":2,"subtopic":"VIII. Tổng hợp kiến thức"},{"question":"U cơ trơn tử cung thoái hóa có thể biểu hiện?","options":["Tăng phân bào mạnh","Xuất huyết, hoại tử, hóa bọc","Dị sản tuyến","Không thay đổi"],"correct":1,"subtopic":"VIII. Tổng hợp kiến thức"},{"question":"Phân biệt giữa tăng sản và ung thư dựa vào?","options":["Tỉ lệ tuyến/mô đệm","Kích thước tử cung","Loại vi khuẩn gây bệnh","Mức độ viêm"],"correct":0,"subtopic":"VIII. Tổng hợp kiến thức"},{"question":"Trong viêm nội mạc tử cung mạn tính do lao, mô đệm thường có gì?","options":["Vi thể bình thường","Mạch máu tăng sinh","Hạt viêm dạng lao","Dị sản biểu mô"],"correct":2,"subtopic":"IX. Câu hỏi bổ sung tổng hợp (Câu 41–50)"},{"question":"Trong adenomyosis, tuyến nội mạc tử cung thường nằm ở giai đoạn nào?","options":["Nghỉ","Phát triển","Teo","Hoại tử"],"correct":1,"subtopic":"IX. Câu hỏi bổ sung tổng hợp (Câu 41–50)"},{"question":"Trong lạc nội mạc tử cung, mô đệm có thể biến đổi thành?","options":["Xương","Biểu mô gai","Mô cơ trơn","U hạt"],"correct":2,"subtopic":"IX. Câu hỏi bổ sung tổng hợp (Câu 41–50)"},{"question":"Tăng sản nội mạc tử cung không điển hình có nguy cơ tiến triển thành ung thư?","options":["Cao hơn tăng sản không điển hình","Thấp hơn","Không có nguy cơ","Ngược lại"],"correct":0,"subtopic":"IX. Câu hỏi bổ sung tổng hợp (Câu 41–50)"},{"question":"Đặc điểm nào sau đây KHÔNG phù hợp với polyp nội mạc tử cung?","options":["Mô đệm xơ hóa","Nhiều mạch máu","Mặt cắt mềm nhũn, hoại tử","Tuyến giãn rộng"],"correct":2,"subtopic":"IX. Câu hỏi bổ sung tổng hợp (Câu 41–50)"},{"question":"U cơ trơn tử cung thường có hình dạng đại thể như thế nào?","options":["Đám rải rác trong nội mạc","Dạng polyp nhỏ","U tròn, giới hạn rõ, chắc","Tổ chức mềm dạng nhầy"],"correct":2,"subtopic":"IX. Câu hỏi bổ sung tổng hợp (Câu 41–50)"},{"question":"Carcinoma nội mạc tử cung grad 3 khác biệt với grad 1 ở điểm nào?","options":["Có nhân đồng nhất","Tạo ống tuyến rõ","Tỉ lệ đám đặc > 50%","Không dị dạng tế bào"],"correct":2,"subtopic":"IX. Câu hỏi bổ sung tổng hợp (Câu 41–50)"},{"question":"Một trường hợp bệnh nhân chảy máu tử cung bất thường, nên nghĩ đến nguyên nhân nào đầu tiên?","options":["Viêm mạn tính","Tăng sản nội mạc tử cung","U nang buồng trứng","Thiếu máu mạn"],"correct":1,"subtopic":"IX. Câu hỏi bổ sung tổng hợp (Câu 41–50)"},{"question":"Tác nhân chính gây viêm nội mạc tử cung sau sinh là?","options":["Candida","Vi khuẩn kỵ khí hỗn hợp","Vi rút Herpes","Tế bào miễn dịch"],"correct":1,"subtopic":"IX. Câu hỏi bổ sung tổng hợp (Câu 41–50)"},{"question":"Trong bệnh lý thân tử cung, tình trạng nào có thể gây tử cung to nhưng không phải u?","options":["Polyp","Viêm cấp","Adenomyosis","Tăng sản tuyến"],"correct":2,"subtopic":"IX. Câu hỏi bổ sung tổng hợp (Câu 41–50)"}]},{"id":"tuyen-giap","title":"Bệnh Lý Tuyến Giáp","icon":"🦋","desc":"Giải phẫu - sinh lý, dị tật, phình giáp, viêm giáp, u lành và ung thư giáp","questionCount":50,"subTopics":[{"title":"I. Giải phẫu – Sinh lý – Mô học tuyến giáp (5 câu)","count":5},{"title":"II. Dị tật bẩm sinh tuyến giáp (5 câu)","count":5},{"title":"III. Phình giáp đơn thuần – Bướu giáp địa phương (10 câu)","count":10},{"title":"IV. Viêm tuyến giáp (10 câu)","count":10},{"title":"V. U lành tuyến giáp (10 câu)","count":10},{"title":"VI. Ung thư tuyến giáp (10 câu)","count":10}],"questions":[{"question":"Tuyến giáp nằm ngang mức đốt sống nào?","options":["C2–C4","C5–T1","T1–T3","T3–T5"],"correct":1,"subtopic":"I. Giải phẫu – Sinh lý – Mô học tuyến giáp (5 câu)"},{"question":"Hormon tuyến giáp được tiết ra chủ yếu từ loại tế bào nào?","options":["Tế bào C","Tế bào thần kinh đệm","Tế bào nang","Tế bào lympho"],"correct":2,"subtopic":"I. Giải phẫu – Sinh lý – Mô học tuyến giáp (5 câu)"},{"question":"Tế bào C của tuyến giáp tiết ra","options":["TSH","T3","Calcitonin","Thyroglobulin"],"correct":2,"subtopic":"I. Giải phẫu – Sinh lý – Mô học tuyến giáp (5 câu)"},{"question":"Chất keo trong lòng nang tuyến giáp bắt màu gì trong nhuộm HE?","options":["Bắt màu base","Bắt màu acid","Không bắt màu","Bắt màu eosin mạnh"],"correct":1,"subtopic":"I. Giải phẫu – Sinh lý – Mô học tuyến giáp (5 câu)"},{"question":"Hormon TSH được tiết ra từ tuyến nào?","options":["Tuyến giáp","Tuyến tùng","Tuyến yên","Tuyến cận giáp"],"correct":2,"subtopic":"I. Giải phẫu – Sinh lý – Mô học tuyến giáp (5 câu)"},{"question":"Bệnh lý nào do không phát triển mầm tuyến giáp?","options":["Phình giáp","Cường giáp","Vô tạo tuyến giáp","Viêm giáp Hashimoto"],"correct":2,"subtopic":"II. Dị tật bẩm sinh tuyến giáp (5 câu)"},{"question":"Mô giáp lạc chỗ thường gặp nhất ở vị trí nào?","options":["Vùng cổ sau","Vùng nền sọ","Đáy lưỡi","Giữa hai thuỳ giáp"],"correct":2,"subtopic":"II. Dị tật bẩm sinh tuyến giáp (5 câu)"},{"question":"Tỷ lệ trẻ sơ sinh mắc vô tạo tuyến giáp","options":["1/1000","1/2000","1/4000","1/10000"],"correct":2,"subtopic":"II. Dị tật bẩm sinh tuyến giáp (5 câu)"},{"question":"Bọc ống giáp - lưỡi có thể phát hiện ở tuổi nào?","options":["Chỉ ở sơ sinh","Chỉ ở người lớn","Mọi lứa tuổi","Thường ở tuổi dậy thì"],"correct":2,"subtopic":"II. Dị tật bẩm sinh tuyến giáp (5 câu)"},{"question":"Điều trị dứt điểm bọc ống giáp - lưỡi là","options":["Uống iod","Dùng kháng sinh","Điều trị nội khoa","Phẫu thuật cắt bỏ"],"correct":3,"subtopic":"II. Dị tật bẩm sinh tuyến giáp (5 câu)"},{"question":"Phình giáp đơn thuần còn được gọi là","options":["Viêm giáp tự miễn","Bướu cổ không độc","Cường giáp nhẹ","Nang tuyến giáp"],"correct":1,"subtopic":"III. Phình giáp đơn thuần – Bướu giáp địa phương (10 câu)"},{"question":"Thiếu iod là nguyên nhân chủ yếu gây","options":["Cường giáp","Ung thư giáp","Viêm tuyến giáp","Bướu giáp địa phương"],"correct":3,"subtopic":"III. Phình giáp đơn thuần – Bướu giáp địa phương (10 câu)"},{"question":"Biểu hiện chính của phình giáp đơn thuần","options":["Sốt cao, đau vùng cổ","Tuyến giáp to, không đau, không rối loạn chức năng","Tuyến giáp teo nhỏ","Tăng hormon T3-T4"],"correct":1,"subtopic":"III. Phình giáp đơn thuần – Bướu giáp địa phương (10 câu)"},{"question":"Mô học phình giáp đơn thuần giai đoạn sớm thường thấy","options":["Thâm nhiễm lympho","Nang giáp giãn to, lớp tế bào dẹt","Mô đệm xơ hóa nhiều","Biệt hóa gai"],"correct":1,"subtopic":"III. Phình giáp đơn thuần – Bướu giáp địa phương (10 câu)"},{"question":"Điều trị phình giáp đơn thuần chủ yếu là","options":["Phẫu thuật","Iod phóng xạ","Bổ sung iod","Corticoid"],"correct":2,"subtopic":"III. Phình giáp đơn thuần – Bướu giáp địa phương (10 câu)"},{"question":"Đặc điểm mô học nào dưới đây KHÔNG phù hợp với phình giáp đơn thuần","options":["Nang giáp đồng đều, không dị sản","Lòng nang chứa nhiều keo","Tăng sinh hỗn hợp nang và mô đệm","Hình ảnh vùi nhân điển hình"],"correct":3,"subtopic":"III. Phình giáp đơn thuần – Bướu giáp địa phương (10 câu)"},{"question":"Tuyến giáp trong phình giáp đơn thuần nặng sẽ","options":["Hoàn toàn xơ hóa","Không thay đổi mô học","Có thể xuất huyết, thoái hóa nang","Luôn luôn hóa ác"],"correct":2,"subtopic":"III. Phình giáp đơn thuần – Bướu giáp địa phương (10 câu)"},{"question":"Màu sắc tuyến giáp trong đại thể phình giáp đơn thuần là","options":["Xám bạc","Vàng nhạt","Nâu đồng đều hoặc loang lổ","Trắng xám"],"correct":2,"subtopic":"III. Phình giáp đơn thuần – Bướu giáp địa phương (10 câu)"},{"question":"Dạng mô học phổ biến của phình giáp đơn thuần","options":["Tăng sản nang","U nhú","Dị sản gai","Hoại tử mỡ"],"correct":0,"subtopic":"III. Phình giáp đơn thuần – Bướu giáp địa phương (10 câu)"},{"question":"Nguy cơ lớn nhất trong phình giáp đơn thuần kéo dài","options":["Viêm tuyến giáp","Áp xe hóa","Ung thư hóa","Tăng huyết áp"],"correct":2,"subtopic":"III. Phình giáp đơn thuần – Bướu giáp địa phương (10 câu)"},{"question":"Viêm giáp Hashimoto thường gặp ở","options":["Nam giới lớn tuổi","Phụ nữ tuổi sinh sản","Trẻ sơ sinh","Người cao tuổi"],"correct":1,"subtopic":"IV. Viêm tuyến giáp (10 câu)"},{"question":"Viêm tuyến giáp Hashimoto thuộc loại","options":["Viêm do vi khuẩn","Viêm không đặc hiệu","Viêm tự miễn","Viêm cấp mủ"],"correct":2,"subtopic":"IV. Viêm tuyến giáp (10 câu)"},{"question":"Dấu hiệu mô học đặc trưng nhất của viêm giáp Hashimoto","options":["Áp xe hóa","Nang vỡ","Thâm nhiễm lympho và tế bào Hurthle","Biệt hóa gai"],"correct":2,"subtopic":"IV. Viêm tuyến giáp (10 câu)"},{"question":"Viêm tuyến giáp De Quervain là","options":["Viêm hạt bán cấp","Viêm do nấm","Viêm xơ hóa","Viêm mạn tính ác tính"],"correct":0,"subtopic":"IV. Viêm tuyến giáp (10 câu)"},{"question":"Viêm giáp Riedel có đặc điểm","options":["Tiết nhiều hormon tuyến giáp","Lan rộng ra các mô lân cận","Có nang lớn chứa dịch","Đáp ứng tốt với iod"],"correct":1,"subtopic":"IV. Viêm tuyến giáp (10 câu)"},{"question":"Viêm tuyến giáp cấp thường do","options":["Lao","Vi khuẩn","Nấm","Virus"],"correct":1,"subtopic":"IV. Viêm tuyến giáp (10 câu)"},{"question":"Viêm giáp Hashimoto dễ nhầm với","options":["U tuyến giáp","Ung thư nhú","Nang keo","Dị sản"],"correct":1,"subtopic":"IV. Viêm tuyến giáp (10 câu)"},{"question":"Tế bào Hurthle bắt màu","options":["Acid mạnh","Base mạnh","Không bắt màu","Màu vàng đặc"],"correct":0,"subtopic":"IV. Viêm tuyến giáp (10 câu)"},{"question":"Viêm tuyến giáp bán cấp điển hình có đặc điểm mô học","options":["U hạt khổng lồ","Thâm nhiễm eosin","Xơ hóa toàn phần","Vùi nhân ác tính"],"correct":0,"subtopic":"IV. Viêm tuyến giáp (10 câu)"},{"question":"Dạng viêm tuyến giáp có thể dẫn đến suy giáp vĩnh viễn","options":["Viêm giáp cấp","Viêm giáp bán cấp","Viêm giáp Hashimoto","Viêm giáp Riedel"],"correct":2,"subtopic":"IV. Viêm tuyến giáp (10 câu)"},{"question":"U tuyến giáp lành tính phổ biến nhất là","options":["U nang","U tuyến nang (follicular adenoma)","U nhú","U mỡ"],"correct":1,"subtopic":"V. U lành tuyến giáp (10 câu)"},{"question":"Mô học u tuyến giáp lành thường có","options":["Tế bào nhân không điển hình","Tế bào nang đồng nhất, không xâm lấn vỏ","Dị sản gai rõ","Hoại tử lan rộng"],"correct":1,"subtopic":"V. U lành tuyến giáp (10 câu)"},{"question":"Đặc điểm phân biệt u tuyến lành với ung thư là","options":["Kích thước u","Màu sắc mô","Xâm lấn vỏ và mạch máu","Tăng sinh tế bào"],"correct":2,"subtopic":"V. U lành tuyến giáp (10 câu)"},{"question":"U tuyến giáp lành có thể phát sinh từ","options":["Tế bào C","Tế bào Hurthle","Tế bào nang","Tế bào lympho"],"correct":2,"subtopic":"V. U lành tuyến giáp (10 câu)"},{"question":"U tuyến giáp lành điển hình là","options":["Đơn ổ, có bao rõ","Nhiều ổ, xâm lấn xung quanh","Không có bao u","Luôn kèm hoại tử"],"correct":0,"subtopic":"V. U lành tuyến giáp (10 câu)"},{"question":"Dạng đặc biệt của u tuyến giáp lành","options":["U Hurthle","U gai","U mô đệm","U thần kinh"],"correct":0,"subtopic":"V. U lành tuyến giáp (10 câu)"},{"question":"Bao u trong u tuyến giáp lành là","options":["Mỏng manh, dễ vỡ","Không tồn tại","Xơ hóa rõ, phân biệt u và mô lành","Hoại tử hóa"],"correct":2,"subtopic":"V. U lành tuyến giáp (10 câu)"},{"question":"Phát biểu nào đúng về u tuyến nang giáp","options":["Luôn là ác tính","Thường xâm lấn mạch máu","Không xâm lấn vỏ bao","Gây di căn xa"],"correct":2,"subtopic":"V. U lành tuyến giáp (10 câu)"},{"question":"Dạng tế bào nào có thể gặp trong u tuyến lành","options":["Tế bào gai","Tế bào Hurthle","Tế bào dị sản ác","Tế bào lympho tăng sản"],"correct":1,"subtopic":"V. U lành tuyến giáp (10 câu)"},{"question":"Phân biệt u tuyến nang và carcinoma nang dựa vào","options":["Độ biệt hóa","Số lượng tế bào","Xâm lấn vỏ và mạch máu","Tăng sinh tuyến"],"correct":2,"subtopic":"V. U lành tuyến giáp (10 câu)"},{"question":"Ung thư tuyến giáp phổ biến nhất là","options":["Ung thư tủy","Ung thư nhú","Ung thư nang","Ung thư không biệt hóa"],"correct":1,"subtopic":"VI. Ung thư tuyến giáp (10 câu)"},{"question":"Ung thư tuyến giáp có tiên lượng tốt nhất","options":["Ung thư tủy","Ung thư nhú","Ung thư không biệt hóa","Ung thư nang xâm lấn mạnh"],"correct":1,"subtopic":"VI. Ung thư tuyến giáp (10 câu)"},{"question":"Thể u nào có nhân giống \"mắt hạt cà\"?","options":["Ung thư tủy","Ung thư nang","Ung thư nhú","U tuyến giáp lành"],"correct":2,"subtopic":"VI. Ung thư tuyến giáp (10 câu)"},{"question":"U tuyến giáp biệt hóa kém nhất","options":["Ung thư nhú","Ung thư nang","Ung thư tủy","Ung thư không biệt hóa"],"correct":3,"subtopic":"VI. Ung thư tuyến giáp (10 câu)"},{"question":"Ung thư tủy tuyến giáp phát sinh từ","options":["Tế bào nang","Tế bào Hurthle","Tế bào C","Tế bào mô đệm"],"correct":2,"subtopic":"VI. Ung thư tuyến giáp (10 câu)"},{"question":"Marker miễn dịch dương tính trong ung thư tủy","options":["Thyroglobulin","TTF-1","Calcitonin","CK7"],"correct":2,"subtopic":"VI. Ung thư tuyến giáp (10 câu)"},{"question":"Di căn hạch cổ thường gặp trong","options":["Ung thư nang","Ung thư tủy","Ung thư nhú","Ung thư không biệt hóa"],"correct":2,"subtopic":"VI. Ung thư tuyến giáp (10 câu)"},{"question":"Ung thư giáp liên quan hội chứng MEN 2","options":["Ung thư nhú","Ung thư nang","Ung thư tủy","Ung thư không biệt hóa"],"correct":2,"subtopic":"VI. Ung thư tuyến giáp (10 câu)"},{"question":"Tiên lượng xấu nhất trong các loại ung thư tuyến giáp","options":["Nhú","Nang","Tủy","Không biệt hóa"],"correct":3,"subtopic":"VI. Ung thư tuyến giáp (10 câu)"},{"question":"Đặc điểm mô học nổi bật của ung thư không biệt hóa","options":["Cấu trúc nhú điển hình","Tế bào dị dạng, hoại tử nhiều","Tế bào tiết calcitonin","Biệt hóa giống tuyến"],"correct":1,"subtopic":"VI. Ung thư tuyến giáp (10 câu)"}]},{"id":"buong-trung","title":"U Buồng Trứng","icon":"🔵","desc":"Mô học, dịch tễ, đột biến gen BRCA, chẩn đoán ROMA, phân kỳ và điều trị","questionCount":60,"subTopics":[{"title":"1. Giới thiệu về U Buồng Trứng","count":5},{"title":"2. Dịch Tễ Học và Phân Nhóm","count":5},{"title":"3. Đặc Điểm Mô Học của U Buồng Trứng","count":5},{"title":"4. Đặc Điểm Di Truyền và Xét Nghiệm","count":3},{"title":"5. Chẩn Đoán U Buồng Trứng","count":2},{"title":"6. Phân Giai Đoạn U Buồng Trứng","count":1},{"title":"7. Điều Trị U Buồng Trứng","count":3},{"title":"8. Tiên Lượng U Buồng Trứng","count":2},{"title":"9. Các Phương Pháp Điều Trị Tiên Tiến","count":4},{"title":"10. Các Dấu Ấn Sinh Học và Chẩn Đoán Mới","count":4},{"title":"11. Các Biến Chứng và Di Căn","count":4},{"title":"12. Tiên Lượng và Yếu Tố Ảnh Hưởng","count":4},{"title":"13. Ca Lâm Sàng và Ứng Dụng Thực Tiễn","count":4},{"title":"14. Tiến Bộ Mới Trong Điều Trị","count":4},{"title":"15. Hướng Phát Triển Tương Lai","count":4},{"title":"16. Các Ứng Dụng Thực Tiễn Trong Chẩn Đoán Và Điều Trị","count":6}],"questions":[{"question":"U buồng trứng phát sinh từ loại tế bào nào?","options":["Tế bào cơ","Tế bào nội mô","Tế bào biểu mô, tế bào mầm và mô đệm","Tế bào thần kinh"],"correct":2,"subtopic":"1. Giới thiệu về U Buồng Trứng"},{"question":"Loại u nào chiếm tỷ lệ cao nhất trong u buồng trứng?","options":["U tế bào mầm","U biểu mô","U dây sinh dục – mô đệm","U di căn"],"correct":1,"subtopic":"1. Giới thiệu về U Buồng Trứng"},{"question":"Ung thư buồng trứng phổ biến nhất thuộc nhóm nào?","options":["Ung thư thanh dịch độ cao","Ung thư nhầy","Ung thư tế bào sáng","Ung thư nội mạc tử cung"],"correct":0,"subtopic":"1. Giới thiệu về U Buồng Trứng"},{"question":"Ung thư buồng trứng có tỷ lệ tử vong cao nhất trong nhóm nào?","options":["Ung thư cổ tử cung","Ung thư nội mạc tử cung","Ung thư buồng trứng","Ung thư âm đạo"],"correct":2,"subtopic":"1. Giới thiệu về U Buồng Trứng"},{"question":"Loại u buồng trứng nào thường gặp ở phụ nữ trẻ?","options":["U tế bào mầm","U biểu mô","U dây sinh dục – mô đệm","U di căn"],"correct":0,"subtopic":"1. Giới thiệu về U Buồng Trứng"},{"question":"Tỷ lệ ung thư buồng trứng cao nhất ở nhóm tuổi nào?","options":["Dưới 20 tuổi","20 – 30 tuổi","50 – 70 tuổi","Trên 80 tuổi"],"correct":2,"subtopic":"2. Dịch Tễ Học và Phân Nhóm"},{"question":"Khu vực nào có tỷ lệ ung thư buồng trứng cao nhất?","options":["Châu Phi","Bắc Mỹ và Châu Âu","Đông Nam Á","Trung Đông"],"correct":1,"subtopic":"2. Dịch Tễ Học và Phân Nhóm"},{"question":"Yếu tố nguy cơ lớn nhất của ung thư buồng trứng là gì?","options":["Sinh con nhiều","Đột biến BRCA1/2","Hút thuốc lá","Sử dụng thuốc tránh thai"],"correct":1,"subtopic":"2. Dịch Tễ Học và Phân Nhóm"},{"question":"U buồng trứng nào liên quan đến hội chứng Lynch?","options":["Ung thư thanh dịch","Ung thư nội mạc tử cung","Ung thư tế bào sáng","U quái trưởng thành"],"correct":1,"subtopic":"2. Dịch Tễ Học và Phân Nhóm"},{"question":"U tế bào mầm phổ biến nhất là?","options":["U loạn sản","U quái trưởng thành","U túi noãn hoàng","U tế bào Sertoli-Leydig"],"correct":1,"subtopic":"2. Dịch Tễ Học và Phân Nhóm"},{"question":"U buồng trứng nào có nguy cơ ác tính cao nhất?","options":["U thanh dịch độ thấp","U thanh dịch độ cao","U nang nhầy","U nội mạc tử cung"],"correct":1,"subtopic":"3. Đặc Điểm Mô Học của U Buồng Trứng"},{"question":"U nào có thể chứa mô thần kinh, lông, răng?","options":["U quái trưởng thành","U loạn sản","U nội mạc tử cung","U tế bào sáng"],"correct":0,"subtopic":"3. Đặc Điểm Mô Học của U Buồng Trứng"},{"question":"Đặc điểm mô học của ung thư tế bào sáng là gì?","options":["Chứa nhiều tế bào hình đinh ghim","Nhân hình bầu dục, tăng sinh mạnh","Nhân nhỏ, sắp xếp dạng tuyến","Cấu trúc giống ruột"],"correct":0,"subtopic":"3. Đặc Điểm Mô Học của U Buồng Trứng"},{"question":"U nào thường liên quan đến lạc nội mạc tử cung?","options":["Ung thư thanh dịch","Ung thư nội mạc tử cung","U quái trưởng thành","U loạn sản"],"correct":1,"subtopic":"3. Đặc Điểm Mô Học của U Buồng Trứng"},{"question":"U buồng trứng nào có thể gây nam hóa?","options":["U tế bào hạt","U tế bào Sertoli-Leydig","U quái trưởng thành","U loạn sản"],"correct":1,"subtopic":"3. Đặc Điểm Mô Học của U Buồng Trứng"},{"question":"Đột biến nào liên quan đến ung thư buồng trứng di truyền?","options":["TP53","BRCA1/2","KRAS","MYC"],"correct":1,"subtopic":"4. Đặc Điểm Di Truyền và Xét Nghiệm"},{"question":"Đột biến TP53 thường gặp trong?","options":["Ung thư thanh dịch độ cao","Ung thư nội mạc tử cung","U tế bào mầm","U dây sinh dục – mô đệm"],"correct":0,"subtopic":"4. Đặc Điểm Di Truyền và Xét Nghiệm"},{"question":"Dấu ấn sinh học nào được sử dụng phổ biến nhất để theo dõi ung thư buồng trứng?","options":["CEA","CA125","AFP","hCG"],"correct":1,"subtopic":"4. Đặc Điểm Di Truyền và Xét Nghiệm"},{"question":"Phương pháp hình ảnh đầu tiên được sử dụng để phát hiện u buồng trứng?","options":["X-quang","Siêu âm qua ngả âm đạo","CT scan","MRI"],"correct":1,"subtopic":"5. Chẩn Đoán U Buồng Trứng"},{"question":"Dấu hiệu nào giúp phân biệt u buồng trứng lành tính với ác tính trên siêu âm?","options":["Kích thước khối u","Bờ không đều, có vách dày, tăng sinh mạch","Dịch trong nang","Không có triệu chứng"],"correct":1,"subtopic":"5. Chẩn Đoán U Buồng Trứng"},{"question":"Hệ thống phân giai đoạn nào thường dùng cho ung thư buồng trứng?","options":["TNM","FIGO","Ann Arbor","Dukes"],"correct":1,"subtopic":"6. Phân Giai Đoạn U Buồng Trứng"},{"question":"Phương pháp điều trị chính cho ung thư buồng trứng giai đoạn sớm?","options":["Xạ trị","Hóa trị","Phẫu thuật","Liệu pháp miễn dịch"],"correct":2,"subtopic":"7. Điều Trị U Buồng Trứng"},{"question":"Hóa trị nào thường dùng cho ung thư buồng trứng?","options":["Methotrexate","Paclitaxel + Carboplatin","Vincristine","Adriamycin"],"correct":1,"subtopic":"7. Điều Trị U Buồng Trứng"},{"question":"Khi nào cần chỉ định liệu pháp PARP inhibitors (Olaparib)?","options":["Khi có đột biến BRCA","Khi bệnh nhân không đáp ứng hóa trị","Khi u có kích thước lớn","Khi bệnh nhân không có triệu chứng"],"correct":0,"subtopic":"7. Điều Trị U Buồng Trứng"},{"question":"Yếu tố tiên lượng quan trọng nhất của ung thư buồng trứng?","options":["Loại mô học","Giai đoạn bệnh khi chẩn đoán","Kích thước khối u","Đột biến KRAS"],"correct":1,"subtopic":"8. Tiên Lượng U Buồng Trứng"},{"question":"Tỷ lệ sống 5 năm của ung thư buồng trứng giai đoạn sớm là?","options":["30%","50%","70%",">90%"],"correct":3,"subtopic":"8. Tiên Lượng U Buồng Trứng"},{"question":"Điều trị nào thường áp dụng cho ung thư buồng trứng giai đoạn muộn?","options":["Phẫu thuật đơn thuần","Hóa trị kết hợp phẫu thuật","Xạ trị đơn thuần","Điều trị nội tiết"],"correct":1,"subtopic":"9. Các Phương Pháp Điều Trị Tiên Tiến"},{"question":"Xạ trị có vai trò gì trong điều trị ung thư buồng trứng?","options":["Điều trị chính","Điều trị hỗ trợ giai đoạn sớm","Điều trị giảm nhẹ triệu chứng","Không có vai trò trong ung thư buồng trứng"],"correct":2,"subtopic":"9. Các Phương Pháp Điều Trị Tiên Tiến"},{"question":"Hóa trị nào thường dùng cho u tế bào mầm ác tính?","options":["BEP (Bleomycin, Etoposide, Cisplatin)","CHOP","FOLFIRI","Tamoxifen"],"correct":0,"subtopic":"9. Các Phương Pháp Điều Trị Tiên Tiến"},{"question":"Tại sao liệu pháp miễn dịch chưa phổ biến trong ung thư buồng trứng?","options":["Ung thư buồng trứng không biểu hiện PD-L1","Cơ chế kháng nguyên thấp","Thiếu thuốc điều trị","Không có nghiên cứu nào về liệu pháp miễn dịch"],"correct":1,"subtopic":"9. Các Phương Pháp Điều Trị Tiên Tiến"},{"question":"HE4 là dấu ấn sinh học thường được kết hợp với CA125 trong?","options":["Theo dõi điều trị ung thư buồng trứng","Phân biệt u lành tính và ác tính","Chẩn đoán ung thư cổ tử cung","Đánh giá đáp ứng với hóa trị"],"correct":1,"subtopic":"10. Các Dấu Ấn Sinh Học và Chẩn Đoán Mới"},{"question":"Chỉ số ROMA (Risk of Ovarian Malignancy Algorithm) kết hợp hai dấu ấn sinh học nào?","options":["CA125 và AFP","HE4 và CEA","HE4 và CA125","BRCA1 và BRCA2"],"correct":2,"subtopic":"10. Các Dấu Ấn Sinh Học và Chẩn Đoán Mới"},{"question":"Xét nghiệm nào giúp xác định nguy cơ di truyền ung thư buồng trứng?","options":["PCR","Giải trình tự gen BRCA1/2","CA125","Test nhanh HPV"],"correct":1,"subtopic":"10. Các Dấu Ấn Sinh Học và Chẩn Đoán Mới"},{"question":"Phương pháp nào có độ nhạy cao nhất trong phát hiện sớm ung thư buồng trứng?","options":["Siêu âm qua ngả âm đạo","Chụp MRI","PET-CT","X-quang ngực"],"correct":0,"subtopic":"10. Các Dấu Ấn Sinh Học và Chẩn Đoán Mới"},{"question":"Ung thư buồng trứng giai đoạn muộn thường di căn đến cơ quan nào?","options":["Phổi","Gan","Màng bụng (phúc mạc)","Não"],"correct":2,"subtopic":"11. Các Biến Chứng và Di Căn"},{"question":"Biến chứng phổ biến của ung thư buồng trứng giai đoạn tiến triển?","options":["Cổ trướng","Tắc ruột","Tràn dịch màng phổi","Tất cả các đáp án trên"],"correct":0,"subtopic":"11. Các Biến Chứng và Di Căn"},{"question":"Hội chứng Meigs liên quan đến loại u nào?","options":["U quái trưởng thành","U sợi buồng trứng","U thanh dịch","U nhầy"],"correct":1,"subtopic":"11. Các Biến Chứng và Di Căn"},{"question":"Nguyên nhân chính gây tử vong ở bệnh nhân ung thư buồng trứng?","options":["Chảy máu","Suy thận","Suy đa tạng do di căn phúc mạc","Đột quỵ"],"correct":2,"subtopic":"11. Các Biến Chứng và Di Căn"},{"question":"Yếu tố nào dưới đây KHÔNG ảnh hưởng đến tiên lượng ung thư buồng trứng?","options":["Giai đoạn bệnh","Đột biến BRCA1/2","Mức CA125","Số lần mang thai"],"correct":3,"subtopic":"12. Tiên Lượng và Yếu Tố Ảnh Hưởng"},{"question":"U nào có tiên lượng tốt nhất trong nhóm u tế bào mầm?","options":["U quái không trưởng thành","U loạn sản","U túi noãn hoàng","U quái trưởng thành"],"correct":3,"subtopic":"12. Tiên Lượng và Yếu Tố Ảnh Hưởng"},{"question":"Tỷ lệ sống 5 năm của bệnh nhân ung thư buồng trứng giai đoạn IV?","options":["10%","30%","50%","70%"],"correct":1,"subtopic":"12. Tiên Lượng và Yếu Tố Ảnh Hưởng"},{"question":"Yếu tố nào giúp cải thiện tiên lượng ung thư buồng trứng?","options":["Điều trị sớm khi chưa có triệu chứng","Chỉ định hóa trị ngay cả khi u lành tính","Không thực hiện phẫu thuật","Không cần theo dõi sau điều trị"],"correct":0,"subtopic":"12. Tiên Lượng và Yếu Tố Ảnh Hưởng"},{"question":"Bệnh nhân nữ 55 tuổi, có cổ trướng, CA125 tăng cao, khối u buồng trứng lớn. Chẩn đoán phù hợp nhất?","options":["U tế bào mầm","Ung thư buồng trứng giai đoạn muộn","U buồng trứng giáp biên","Lạc nội mạc tử cung"],"correct":1,"subtopic":"13. Ca Lâm Sàng và Ứng Dụng Thực Tiễn"},{"question":"Một phụ nữ trẻ có khối u buồng trứng và AFP tăng cao. Chẩn đoán phù hợp nhất?","options":["Ung thư nội mạc tử cung","U tế bào sáng","U túi noãn hoàng","U quái trưởng thành"],"correct":2,"subtopic":"13. Ca Lâm Sàng và Ứng Dụng Thực Tiễn"},{"question":"Bệnh nhân nữ 30 tuổi, u buồng trứng, triệu chứng nam hóa. Loại u nào phù hợp nhất?","options":["U quái trưởng thành","U tế bào Sertoli-Leydig","Ung thư thanh dịch","U nội mạc tử cung"],"correct":1,"subtopic":"13. Ca Lâm Sàng và Ứng Dụng Thực Tiễn"},{"question":"Một bệnh nhân được chẩn đoán ung thư buồng trứng thanh dịch độ cao. Phương pháp điều trị phù hợp?","options":["Hóa trị đơn thuần","Phẫu thuật cắt bỏ + Hóa trị","Theo dõi định kỳ","Điều trị nội tiết"],"correct":1,"subtopic":"13. Ca Lâm Sàng và Ứng Dụng Thực Tiễn"},{"question":"Chất ức chế PARP (Olaparib) có hiệu quả nhất ở bệnh nhân nào?","options":["Đột biến BRCA1/2","Đột biến TP53","Đột biến KRAS","Ung thư buồng trứng lành tính"],"correct":0,"subtopic":"14. Tiến Bộ Mới Trong Điều Trị"},{"question":"Bevacizumab là liệu pháp nhắm vào yếu tố nào?","options":["VEGF","EGFR","HER2","CD20"],"correct":0,"subtopic":"14. Tiến Bộ Mới Trong Điều Trị"},{"question":"Liệu pháp miễn dịch nào đang được thử nghiệm cho ung thư buồng trứng?","options":["Pembrolizumab","Rituximab","Tamoxifen","Vincristine"],"correct":0,"subtopic":"14. Tiến Bộ Mới Trong Điều Trị"},{"question":"Phương pháp nào có tiềm năng phát hiện sớm ung thư buồng trứng trong tương lai?","options":["Liquid biopsy","Xét nghiệm glucose máu","Nội soi tử cung","Chụp X-quang bụng"],"correct":0,"subtopic":"14. Tiến Bộ Mới Trong Điều Trị"},{"question":"Nghiên cứu hiện nay đang tập trung vào yếu tố nào để phát hiện sớm ung thư buồng trứng?","options":["Dấu ấn sinh học mới","Xét nghiệm glucose máu","Chế độ ăn uống","Giảm cân"],"correct":0,"subtopic":"15. Hướng Phát Triển Tương Lai"},{"question":"Một chiến lược phòng ngừa ung thư buồng trứng ở nhóm nguy cơ cao?","options":["Phẫu thuật cắt buồng trứng dự phòng","Không cần theo dõi","Hóa trị dự phòng","Dùng thuốc tránh thai"],"correct":0,"subtopic":"15. Hướng Phát Triển Tương Lai"},{"question":"Loại u buồng trứng nào đang có thử nghiệm liệu pháp miễn dịch?","options":["Ung thư thanh dịch độ cao","U tế bào mầm","U quái trưởng thành","U nhầy"],"correct":0,"subtopic":"15. Hướng Phát Triển Tương Lai"},{"question":"Yếu tố nào giúp cải thiện phát hiện sớm ung thư buồng trứng?","options":["Xét nghiệm máu kết hợp siêu âm","Chỉ dựa vào CA125","Không cần theo dõi","Nội soi ổ bụng định kỳ"],"correct":0,"subtopic":"15. Hướng Phát Triển Tương Lai"},{"question":"Một phụ nữ 45 tuổi đến khám vì đau bụng kéo dài, khám phát hiện khối u buồng trứng lớn. Xét nghiệm nào cần thực hiện đầu tiên?","options":["CA125","Xét nghiệm glucose","Test nhanh HPV","Chụp X-quang ngực"],"correct":0,"subtopic":"16. Các Ứng Dụng Thực Tiễn Trong Chẩn Đoán Và Điều Trị"},{"question":"Đột biến nào có liên quan đến ung thư buồng trứng di truyền?","options":["BRCA1/2","TP53","KRAS","HER2"],"correct":0,"subtopic":"16. Các Ứng Dụng Thực Tiễn Trong Chẩn Đoán Và Điều Trị"},{"question":"Phương pháp nào giúp phân biệt giữa u buồng trứng lành tính và ác tính?","options":["Chỉ số ROMA","Xét nghiệm glucose","Nội soi dạ dày","Siêu âm gan"],"correct":0,"subtopic":"16. Các Ứng Dụng Thực Tiễn Trong Chẩn Đoán Và Điều Trị"},{"question":"Tại sao siêu âm qua ngả âm đạo có giá trị trong chẩn đoán u buồng trứng?","options":["Phát hiện sớm khối u nhỏ","Chỉ sử dụng trong giai đoạn muộn","Không phân biệt được lành tính hay ác tính","Ít có giá trị trong đánh giá bệnh"],"correct":0,"subtopic":"16. Các Ứng Dụng Thực Tiễn Trong Chẩn Đoán Và Điều Trị"},{"question":"Ở bệnh nhân có nguy cơ cao ung thư buồng trứng, phương pháp nào giúp giảm nguy cơ mắc bệnh?","options":["Cắt buồng trứng dự phòng","Chỉ theo dõi định kỳ","Hóa trị dự phòng","Chế độ ăn giàu đạm"],"correct":0,"subtopic":"16. Các Ứng Dụng Thực Tiễn Trong Chẩn Đoán Và Điều Trị"},{"question":"Khi ung thư buồng trứng đã di căn phúc mạc, phương pháp điều trị nào thường được sử dụng?","options":["Hóa trị toàn thân","Xạ trị","Nội soi cắt khối u","Điều trị nội tiết"],"correct":0,"subtopic":"16. Các Ứng Dụng Thực Tiễn Trong Chẩn Đoán Và Điều Trị"}]},{"id":"ung-thu-vu","title":"Ung Thư Vú","icon":"🎀","desc":"Dịch tễ, thụ thể ER/PR/HER2, phân nhóm phân tử, hóa - xạ trị, thuốc nhắm trúng đích","questionCount":60,"subTopics":[{"title":"1. Dịch tễ học và Yếu tố nguy cơ","count":5},{"title":"2. Phân loại mô học và Tiên lượng","count":5},{"title":"3. Đặc điểm di truyền và Sinh học phân tử","count":5},{"title":"4. Triệu chứng lâm sàng và Chẩn đoán","count":5},{"title":"5. Điều trị ung thư vú","count":5},{"title":"6. Phân giai đoạn và Tiên lượng","count":5},{"title":"7. Dấu ấn sinh học và Xét nghiệm liên quan","count":5},{"title":"8. Điều trị Ung thư vú","count":5},{"title":"9. Điều trị xạ trị và Hóa trị","count":5},{"title":"10. Tiến bộ mới trong điều trị Ung thư vú","count":5},{"title":"11. Trường hợp lâm sàng và Tiến triển bệnh","count":5},{"title":"12. Trường hợp lâm sàng và Điều trị nâng cao","count":5}],"questions":[{"question":"Ung thư vú là bệnh ung thư phổ biến nhất ở phụ nữ, chiếm khoảng bao nhiêu phần trăm tổng số ca ung thư mới trên toàn cầu?","options":["10%","15%","25%","40%"],"correct":2,"subtopic":"1. Dịch tễ học và Yếu tố nguy cơ"},{"question":"Yếu tố nguy cơ chính của ung thư vú là gì?","options":["Nhiễm virus HPV","Tiếp xúc với tia UV","Đột biến BRCA1/BRCA2","Nhiễm vi khuẩn Helicobacter pylori"],"correct":2,"subtopic":"1. Dịch tễ học và Yếu tố nguy cơ"},{"question":"Đột biến BRCA1 và BRCA2 làm tăng nguy cơ mắc ung thư vú lên bao nhiêu lần so với dân số chung?","options":["2–5 lần","5–10 lần","10–20 lần","Không liên quan đến nguy cơ ung thư vú"],"correct":1,"subtopic":"1. Dịch tễ học và Yếu tố nguy cơ"},{"question":"Yếu tố nào dưới đây có thể làm giảm nguy cơ ung thư vú?","options":["Béo phì","Dùng liệu pháp hormone thay thế","Cho con bú","Tiền sử gia đình có người mắc ung thư vú"],"correct":2,"subtopic":"1. Dịch tễ học và Yếu tố nguy cơ"},{"question":"Yếu tố nào KHÔNG làm tăng nguy cơ ung thư vú?","options":["Dậy thì sớm","Mãn kinh muộn","Tập thể dục thường xuyên","Tiền sử xạ trị vùng ngực"],"correct":2,"subtopic":"1. Dịch tễ học và Yếu tố nguy cơ"},{"question":"Dạng ung thư vú xâm lấn phổ biến nhất là gì?","options":["Ung thư tiểu thùy xâm lấn","Ung thư thể nhầy","Ung thư ống tuyến xâm lấn","Ung thư dạng nội mạc"],"correct":2,"subtopic":"2. Phân loại mô học và Tiên lượng"},{"question":"Ung thư vú dạng nào có tiên lượng tốt nhất?","options":["Ung thư dạng tủy","Ung thư thể ống tuyến nhỏ","Ung thư thể nhầy","Ung thư vú ba âm tính"],"correct":1,"subtopic":"2. Phân loại mô học và Tiên lượng"},{"question":"Độ mô học nào có tiên lượng xấu nhất trong ung thư vú?","options":["Độ 1","Độ 2","Độ 3","Không liên quan đến tiên lượng"],"correct":2,"subtopic":"2. Phân loại mô học và Tiên lượng"},{"question":"Loại ung thư vú nào có khuynh hướng lan rộng nhưng khó phát hiện trên hình ảnh học?","options":["Ung thư ống tuyến xâm lấn","Ung thư tiểu thùy xâm lấn","Ung thư vú ba âm tính","Ung thư biểu mô nhầy"],"correct":1,"subtopic":"2. Phân loại mô học và Tiên lượng"},{"question":"Dấu ấn phân tử nào liên quan đến tiên lượng tốt hơn trong ung thư vú?","options":["HER2 dương tính","Ki-67 cao","POLE đột biến","p53 đột biến"],"correct":2,"subtopic":"2. Phân loại mô học và Tiên lượng"},{"question":"Đột biến nào thường gặp trong ung thư vú di truyền?","options":["TP53","PIK3CA","BRCA1/BRCA2","KRAS"],"correct":2,"subtopic":"3. Đặc điểm di truyền và Sinh học phân tử"},{"question":"Ung thư vú ba âm tính có đặc điểm gì?","options":["ER (+), PR (+), HER2 (+)","ER (-), PR (-), HER2 (-)","ER (+), PR (-), HER2 (-)","ER (-), PR (+), HER2 (+)"],"correct":1,"subtopic":"3. Đặc điểm di truyền và Sinh học phân tử"},{"question":"Phân nhóm phân tử nào của ung thư vú có tiên lượng tốt nhất?","options":["Luminal A","Luminal B","HER2 dương tính","Triple-negative"],"correct":0,"subtopic":"3. Đặc điểm di truyền và Sinh học phân tử"},{"question":"HER2 khuếch đại có liên quan đến cơ chế nào trong ung thư vú?","options":["Mất điều hòa chu kỳ tế bào","Tăng hoạt động tyrosine kinase","Giảm sửa chữa DNA","Ức chế miễn dịch"],"correct":1,"subtopic":"3. Đặc điểm di truyền và Sinh học phân tử"},{"question":"Ki-67 là chỉ số gì trong ung thư vú?","options":["Tỷ lệ phân bào","Mức độ hoại tử","Đáp ứng miễn dịch","Đột biến gen"],"correct":0,"subtopic":"3. Đặc điểm di truyền và Sinh học phân tử"},{"question":"Triệu chứng sớm nhất thường gặp của ung thư vú là gì?","options":["Đau vú","Chảy dịch núm vú","Khối u sờ thấy","Tụt núm vú"],"correct":2,"subtopic":"4. Triệu chứng lâm sàng và Chẩn đoán"},{"question":"Chụp nhũ ảnh có giá trị nhất ở nhóm phụ nữ nào?","options":["Dưới 30 tuổi","30-40 tuổi","Sau mãn kinh","Nam giới"],"correct":2,"subtopic":"4. Triệu chứng lâm sàng và Chẩn đoán"},{"question":"Sinh thiết vú nào được ưu tiên để chẩn đoán mô bệnh học?","options":["Chọc hút kim nhỏ (FNA)","Sinh thiết kim lõi","Sinh thiết lỏng","Sinh thiết cắt bỏ"],"correct":1,"subtopic":"4. Triệu chứng lâm sàng và Chẩn đoán"},{"question":"CA 15-3 là dấu ấn sinh học dùng để làm gì trong ung thư vú?","options":["Sàng lọc sớm","Chẩn đoán xác định","Theo dõi tái phát","Đánh giá đáp ứng điều trị"],"correct":2,"subtopic":"4. Triệu chứng lâm sàng và Chẩn đoán"},{"question":"Hệ thống phân giai đoạn nào được dùng trong ung thư vú?","options":["FIGO","Ann Arbor","TNM","Dukes"],"correct":2,"subtopic":"4. Triệu chứng lâm sàng và Chẩn đoán"},{"question":"Điều trị nào là nền tảng chính cho ung thư vú giai đoạn sớm?","options":["Hóa trị","Xạ trị","Phẫu thuật","Liệu pháp miễn dịch"],"correct":2,"subtopic":"5. Điều trị ung thư vú"},{"question":"Phẫu thuật bảo tồn vú thường được chỉ định khi nào?","options":["Giai đoạn IV","Giai đoạn sớm","Ung thư ba âm tính","Di căn xa"],"correct":1,"subtopic":"5. Điều trị ung thư vú"},{"question":"Thuốc nào là liệu pháp đích cho ung thư vú HER2 dương tính?","options":["Tamoxifen","Trastuzumab","Letrozole","Bevacizumab"],"correct":1,"subtopic":"5. Điều trị ung thư vú"},{"question":"Ung thư vú ba âm tính có phác đồ điều trị nào hiệu quả nhất?","options":["Hóa trị dựa trên anthracycline và taxane","Liệu pháp nội tiết","Liệu pháp kháng HER2","Xạ trị đơn thuần"],"correct":0,"subtopic":"5. Điều trị ung thư vú"},{"question":"Liệu pháp nội tiết nào được sử dụng cho ung thư vú ER dương tính?","options":["Trastuzumab","Tamoxifen","Cisplatin","Paclitaxel"],"correct":1,"subtopic":"5. Điều trị ung thư vú"},{"question":"Ung thư vú giai đoạn nào có tiên lượng tốt nhất?","options":["Giai đoạn I","Giai đoạn II","Giai đoạn III","Giai đoạn IV"],"correct":0,"subtopic":"6. Phân giai đoạn và Tiên lượng"},{"question":"Khi ung thư vú di căn xa, cơ quan nào thường bị ảnh hưởng nhất?","options":["Phổi","Xương","Não","Gan"],"correct":1,"subtopic":"6. Phân giai đoạn và Tiên lượng"},{"question":"Giai đoạn III của ung thư vú đặc trưng bởi điều gì?","options":["Di căn xa","Xâm lấn da, thành ngực hoặc hạch nách cố định","Giới hạn trong tuyến vú","Không xâm lấn hạch"],"correct":1,"subtopic":"6. Phân giai đoạn và Tiên lượng"},{"question":"Đặc điểm nào là dấu hiệu tiên lượng xấu trong ung thư vú?","options":["ER dương tính","HER2 âm tính","Ki-67 cao (>20%)","Kích thước u <2 cm"],"correct":2,"subtopic":"6. Phân giai đoạn và Tiên lượng"},{"question":"Ung thư vú ba âm tính có tiên lượng như thế nào so với các loại khác?","options":["Tốt hơn","Trung bình","Xấu hơn","Không ảnh hưởng"],"correct":2,"subtopic":"6. Phân giai đoạn và Tiên lượng"},{"question":"Dấu ấn sinh học nào giúp đánh giá nguy cơ tái phát ung thư vú?","options":["CA 15-3","AFP","PSA","CEA"],"correct":0,"subtopic":"7. Dấu ấn sinh học và Xét nghiệm liên quan"},{"question":"Dấu ấn nào liên quan đến ung thư vú có HER2 dương tính?","options":["Ki-67","p53","HER2/neu","CA 19-9"],"correct":2,"subtopic":"7. Dấu ấn sinh học và Xét nghiệm liên quan"},{"question":"Xét nghiệm nào có thể giúp xác định nguy cơ di truyền ung thư vú?","options":["Định lượng ER, PR","Phân tích BRCA1/BRCA2","Chụp nhũ ảnh","Xét nghiệm CA 125"],"correct":1,"subtopic":"7. Dấu ấn sinh học và Xét nghiệm liên quan"},{"question":"Bộ xét nghiệm nào có thể giúp xác định bệnh nhân có cần hóa trị hay không?","options":["Oncotype DX","Mammography","CA 19-9","Xét nghiệm máu tổng quát"],"correct":0,"subtopic":"7. Dấu ấn sinh học và Xét nghiệm liên quan"},{"question":"Phương pháp nào là tiêu chuẩn vàng trong xác định HER2 dương tính?","options":["Xét nghiệm miễn dịch mô hóa (IHC)","Xét nghiệm sinh hóa","PCR","Định lượng CA 15-3"],"correct":0,"subtopic":"7. Dấu ấn sinh học và Xét nghiệm liên quan"},{"question":"Phẫu thuật nào được áp dụng cho bệnh nhân ung thư vú giai đoạn sớm?","options":["Cắt bỏ toàn bộ tuyến vú","Phẫu thuật bảo tồn vú","Hóa trị đơn thuần","Liệu pháp miễn dịch"],"correct":1,"subtopic":"8. Điều trị Ung thư vú"},{"question":"Trastuzumab được sử dụng trong điều trị ung thư vú có đặc điểm nào?","options":["ER dương tính","PR âm tính","HER2 dương tính","Triple-negative"],"correct":2,"subtopic":"8. Điều trị Ung thư vú"},{"question":"Tamoxifen có cơ chế hoạt động như thế nào?","options":["Ức chế HER2","Chống estrogen tại mô vú","Kích thích thụ thể androgen","Ức chế tyrosine kinase"],"correct":1,"subtopic":"8. Điều trị Ung thư vú"},{"question":"Trong ung thư vú giai đoạn III, phương pháp điều trị nào thường được chỉ định đầu tiên?","options":["Hóa trị tân bổ trợ","Xạ trị","Liệu pháp miễn dịch","Phẫu thuật ngay lập tức"],"correct":0,"subtopic":"8. Điều trị Ung thư vú"},{"question":"Chỉ định nào phù hợp nhất cho liệu pháp ức chế CDK4/6 (như palbociclib)?","options":["Ung thư vú ba âm tính","HER2 dương tính","ER dương tính, HER2 âm tính","Không có thụ thể nội tiết"],"correct":2,"subtopic":"8. Điều trị Ung thư vú"},{"question":"Khi nào xạ trị thường được chỉ định sau phẫu thuật ung thư vú?","options":["Luôn luôn","Khi có di căn xa","Sau phẫu thuật bảo tồn vú","Khi bệnh nhân từ chối hóa trị"],"correct":2,"subtopic":"9. Điều trị xạ trị và Hóa trị"},{"question":"Hóa trị nào là phổ biến nhất trong ung thư vú?","options":["Methotrexate đơn thuần","Cisplatin + Etoposide","Doxorubicin + Cyclophosphamide","Bevacizumab"],"correct":2,"subtopic":"9. Điều trị xạ trị và Hóa trị"},{"question":"Chỉ định nào phù hợp nhất cho liệu pháp miễn dịch với Pembrolizumab?","options":["HER2 dương tính","ER dương tính","Triple-negative với biểu hiện PD-L1","Ung thư vú tại chỗ"],"correct":2,"subtopic":"9. Điều trị xạ trị và Hóa trị"},{"question":"Thuốc nào là lựa chọn hàng đầu cho bệnh nhân ung thư vú có đột biến BRCA?","options":["Olaparib","Tamoxifen","Trastuzumab","Cyclophosphamide"],"correct":0,"subtopic":"9. Điều trị xạ trị và Hóa trị"},{"question":"Sau phẫu thuật, nếu ung thư vú có di căn hạch, liệu pháp nào thường được chỉ định?","options":["Theo dõi không điều trị","Chỉ xạ trị","Hóa trị bổ trợ","Phẫu thuật lại"],"correct":2,"subtopic":"9. Điều trị xạ trị và Hóa trị"},{"question":"ADC (Antibody-Drug Conjugate) nào đang được nghiên cứu trong ung thư vú?","options":["Trastuzumab Deruxtecan","Bevacizumab","Letrozole","Paclitaxel"],"correct":0,"subtopic":"10. Tiến bộ mới trong điều trị Ung thư vú"},{"question":"Phương pháp nào có thể theo dõi tái phát ung thư vú sớm?","options":["Chụp nhũ ảnh","Siêu âm","Sinh thiết lỏng","MRI"],"correct":2,"subtopic":"10. Tiến bộ mới trong điều trị Ung thư vú"},{"question":"Liệu pháp miễn dịch chủ yếu nhắm vào mục tiêu nào trong ung thư vú?","options":["HER2","PD-1/PD-L1","EGFR","VEGF"],"correct":1,"subtopic":"10. Tiến bộ mới trong điều trị Ung thư vú"},{"question":"Chỉ số nào có thể giúp đánh giá nguy cơ tái phát trong ung thư vú ER dương tính?","options":["HER2","Oncotype DX","CA 19-9","AFP"],"correct":1,"subtopic":"10. Tiến bộ mới trong điều trị Ung thư vú"},{"question":"Chất ức chế PARP được dùng để điều trị ung thư vú có đột biến nào?","options":["TP53","BRCA1/BRCA2","PIK3CA","HER2"],"correct":1,"subtopic":"10. Tiến bộ mới trong điều trị Ung thư vú"},{"question":"Một bệnh nhân nữ 45 tuổi có ung thư vú ER dương tính, PR dương tính, HER2 âm tính. Liệu pháp nào phù hợp nhất?","options":["Trastuzumab","Tamoxifen","Bevacizumab","Cisplatin"],"correct":1,"subtopic":"11. Trường hợp lâm sàng và Tiến triển bệnh"},{"question":"Một bệnh nhân có ung thư vú ba âm tính, di căn gan. Phương pháp điều trị tối ưu?","options":["Liệu pháp nội tiết","Xạ trị","Hóa trị + Miễn dịch trị liệu","Phẫu thuật"],"correct":2,"subtopic":"11. Trường hợp lâm sàng và Tiến triển bệnh"},{"question":"Bệnh nhân 55 tuổi có khối u vú HER2 dương tính, phương pháp điều trị nào hiệu quả nhất?","options":["Tamoxifen","Trastuzumab + Hóa trị","Liệu pháp miễn dịch","Chỉ xạ trị"],"correct":1,"subtopic":"11. Trường hợp lâm sàng và Tiến triển bệnh"},{"question":"Một bệnh nhân trẻ phát hiện BRCA1 đột biến, lựa chọn dự phòng nào hợp lý nhất?","options":["Theo dõi định kỳ","Hóa trị dự phòng","Cắt bỏ tuyến vú dự phòng","Liệu pháp miễn dịch"],"correct":2,"subtopic":"11. Trường hợp lâm sàng và Tiến triển bệnh"},{"question":"Một bệnh nhân ung thư vú có HER2 dương tính, sau 1 năm tái phát di căn. Lựa chọn tiếp theo?","options":["Trastuzumab + Paclitaxel","Tamoxifen","Liệu pháp miễn dịch","Chỉ xạ trị"],"correct":0,"subtopic":"11. Trường hợp lâm sàng và Tiến triển bệnh"},{"question":"Một bệnh nhân nữ 35 tuổi được chẩn đoán ung thư vú giai đoạn II, có ER dương tính, HER2 âm tính. Liệu pháp nào được ưu tiên sau phẫu thuật?","options":["Xạ trị đơn thuần","Hóa trị + Tamoxifen","Chỉ theo dõi định kỳ","Chỉ hóa trị"],"correct":1,"subtopic":"12. Trường hợp lâm sàng và Điều trị nâng cao"},{"question":"Trong ung thư vú di căn xương, phương pháp điều trị bổ trợ nào thường được sử dụng?","options":["Hóa trị liều cao","Bisphosphonates","Phẫu thuật cắt bỏ tuyến vú","Xạ trị toàn thân"],"correct":1,"subtopic":"12. Trường hợp lâm sàng và Điều trị nâng cao"},{"question":"Một bệnh nhân có ung thư vú giai đoạn IV, di căn gan, ER âm tính, HER2 dương tính. Liệu pháp nào tối ưu?","options":["Liệu pháp nội tiết","Trastuzumab + Pertuzumab + Hóa trị","Chỉ xạ trị gan","Theo dõi định kỳ"],"correct":1,"subtopic":"12. Trường hợp lâm sàng và Điều trị nâng cao"},{"question":"Một bệnh nhân ung thư vú ba âm tính giai đoạn tiến triển, có biểu hiện PD-L1 dương tính. Điều trị nào phù hợp nhất?","options":["Hóa trị + Pembrolizumab","Tamoxifen","Xạ trị đơn thuần","Liệu pháp nội tiết"],"correct":0,"subtopic":"12. Trường hợp lâm sàng và Điều trị nâng cao"},{"question":"Một bệnh nhân có tiền sử gia đình mắc ung thư vú, xét nghiệm phát hiện đột biến BRCA1. Bệnh nhân chưa mắc ung thư, phương pháp dự phòng nào phù hợp?","options":["Phẫu thuật cắt bỏ tuyến vú dự phòng","Chỉ theo dõi mỗi năm","Dùng hóa trị liều thấp","Liệu pháp miễn dịch"],"correct":0,"subtopic":"12. Trường hợp lâm sàng và Điều trị nâng cao"}]},{"id":"gan-mat","title":"Bệnh Lý Gan - Mật","icon":"🟤","desc":"Viêm gan virus, xơ gan, ung thư biểu mô tế bào gan (HCC), sỏi và viêm đường mật","questionCount":30,"subTopics":[{"title":"I. VIÊM GAN (Câu 1–10)","count":10},{"title":"II. XƠ GAN (Câu 11–18)","count":8},{"title":"III. UNG THƯ GAN VÀ BỆNH ĐƯỜNG MẬT (Câu 19–30)","count":12}],"questions":[{"question":"Viêm gan cấp mô học đặc trưng bởi","options":["Tăng sinh mô sợi","Thâm nhiễm tế bào viêm quanh tĩnh mạch cửa, tổn thương tế bào gan rải rác","Dị sản biểu mô","Tăng sinh ống mật"],"correct":1,"subtopic":"I. VIÊM GAN (Câu 1–10)"},{"question":"Tế bào viêm chủ yếu trong viêm gan do virus là","options":["Bạch cầu trung tính","Bạch cầu ái toan","Lympho bào","Tương bào"],"correct":2,"subtopic":"I. VIÊM GAN (Câu 1–10)"},{"question":"Thể Councilman là","options":["Hạt mỡ","Tế bào gan hoại tử ái toan","Tế bào viêm dạng u","Tế bào Kupffer phì đại"],"correct":1,"subtopic":"I. VIÊM GAN (Câu 1–10)"},{"question":"Viêm gan mạn được chẩn đoán khi kéo dài trên","options":["1 tuần","1 tháng","3 tháng","6 tháng"],"correct":2,"subtopic":"I. VIÊM GAN (Câu 1–10)"},{"question":"Trong viêm gan mạn hoạt động, mô học cho thấy","options":["Hoại tử mảng (piecemeal necrosis) quanh khoảng cửa","Viêm cấp tính lan tỏa","Viêm mô mỡ","Viêm ống mật"],"correct":0,"subtopic":"I. VIÊM GAN (Câu 1–10)"},{"question":"Biến chứng lâu dài của viêm gan mạn","options":["Xơ gan","Viêm ruột thừa","Sỏi mật","Gan nhiễm mỡ"],"correct":0,"subtopic":"I. VIÊM GAN (Câu 1–10)"},{"question":"Viêm gan siêu vi B có thể gây","options":["Viêm tụy cấp","Xơ gan và ung thư tế bào gan","Bệnh Wilson","Thiếu máu"],"correct":1,"subtopic":"I. VIÊM GAN (Câu 1–10)"},{"question":"Tổn thương mô học ở viêm gan virus cấp nặng","options":["Hoại tử cầu gan (bridging necrosis)","Viêm mạch hoại tử","Nang lao","Tế bào hình nhẫn"],"correct":0,"subtopic":"I. VIÊM GAN (Câu 1–10)"},{"question":"Hoại tử tế bào gan trong viêm gan cấp thường xảy ra ở","options":["Vùng quanh cửa","Trung tâm tiểu thùy gan","Mô liên kết quanh gan","Mô mỡ"],"correct":1,"subtopic":"I. VIÊM GAN (Câu 1–10)"},{"question":"Viêm gan siêu vi C mạn thường diễn tiến âm thầm và dễ gây","options":["Viêm túi mật","Gan nhiễm mỡ","Xơ gan và ung thư gan tế bào nhỏ","Viêm tụy"],"correct":2,"subtopic":"I. VIÊM GAN (Câu 1–10)"},{"question":"Định nghĩa xơ gan","options":["Viêm cấp gan","Thoái hóa mỡ nặng","Sự hình thành các dải xơ và nốt tái tạo gan","Tăng áp tĩnh mạch cửa"],"correct":2,"subtopic":"II. XƠ GAN (Câu 11–18)"},{"question":"Mô học xơ gan cho thấy","options":["Viêm loét lan tỏa","Các nốt tế bào gan được bao quanh bởi mô xơ","Hoại tử trung tâm tiểu thùy","Dị sản ống mật"],"correct":1,"subtopic":"II. XƠ GAN (Câu 11–18)"},{"question":"Nguyên nhân thường gặp nhất của xơ gan","options":["Nhiễm ký sinh trùng","Viêm tụy mạn","Viêm gan virus B, C và nghiện rượu","Viêm túi mật"],"correct":2,"subtopic":"II. XƠ GAN (Câu 11–18)"},{"question":"Loại xơ gan do rượu thường có đặc điểm","options":["Gan mềm và phồng","Gan teo nhỏ, bề mặt hạt nhỏ đều","Mô gan tăng sinh lan tỏa","Tế bào Kupffer phì đại"],"correct":1,"subtopic":"II. XƠ GAN (Câu 11–18)"},{"question":"Biến chứng nghiêm trọng của xơ gan","options":["Viêm đại tràng","Tắc mật","Tăng áp lực tĩnh mạch cửa, cổ trướng, ung thư gan","Sỏi mật"],"correct":2,"subtopic":"II. XƠ GAN (Câu 11–18)"},{"question":"Xơ gan mô học còn gọi là","options":["Viêm gan cấp","Gan sợi hóa","Gan nhiễm sắt","Gan mỡ"],"correct":1,"subtopic":"II. XƠ GAN (Câu 11–18)"},{"question":"Nốt tái tạo ở xơ gan hình thành từ","options":["Tăng sinh ống mật","Tế bào Kupffer","Tăng sinh tế bào gan còn lại","Đại thực bào"],"correct":2,"subtopic":"II. XƠ GAN (Câu 11–18)"},{"question":"Phân loại xơ gan dựa vào","options":["Mức độ đau","Nồng độ enzym gan","Kích thước nốt tái tạo","Lượng mỡ gan"],"correct":2,"subtopic":"II. XƠ GAN (Câu 11–18)"},{"question":"Ung thư tế bào gan nguyên phát là","options":["Cholangiocarcinoma","Hepatocellular carcinoma (HCC)","Sarcoma","Metastasis từ ruột"],"correct":1,"subtopic":"III. UNG THƯ GAN VÀ BỆNH ĐƯỜNG MẬT (Câu 19–30)"},{"question":"Yếu tố nguy cơ chính gây HCC","options":["Nhiễm HBV, HCV, xơ gan","Sỏi mật","Rượu cấp","Nhiễm vi khuẩn HP"],"correct":0,"subtopic":"III. UNG THƯ GAN VÀ BỆNH ĐƯỜNG MẬT (Câu 19–30)"},{"question":"Đặc điểm mô học của HCC","options":["Tế bào hình tròn, sắp xếp tuyến","Tế bào gan dị dạng, bè tế bào dày >2 lớp","Tế bào cơ trơn","Tế bào hình nhẫn"],"correct":1,"subtopic":"III. UNG THƯ GAN VÀ BỆNH ĐƯỜNG MẬT (Câu 19–30)"},{"question":"Dấu hiệu mô học đặc trưng trong carcinôm ống mật","options":["Tuyến tăng sản và mô đệm xơ hóa mạnh","Bè tế bào","Tế bào gan hình thoi","Hoại tử dạng bã đậu"],"correct":0,"subtopic":"III. UNG THƯ GAN VÀ BỆNH ĐƯỜNG MẬT (Câu 19–30)"},{"question":"Cholangiocarcinoma thường xuất hiện ở","options":["Trong lòng ruột","Tế bào Kupffer","Biểu mô ống mật trong và ngoài gan","Đại tràng"],"correct":2,"subtopic":"III. UNG THƯ GAN VÀ BỆNH ĐƯỜNG MẬT (Câu 19–30)"},{"question":"Viêm túi mật cấp thường do","options":["Viêm tụy","Sỏi túi mật gây tắc ống cổ túi mật","Xơ gan","Rối loạn miễn dịch"],"correct":1,"subtopic":"III. UNG THƯ GAN VÀ BỆNH ĐƯỜNG MẬT (Câu 19–30)"},{"question":"Mô học của viêm túi mật cấp","options":["Thâm nhập lympho và tổ chức xơ","Thấm nhập bạch cầu đa nhân trung tính, phù nề, xung huyết","U hạt","Dị sản ruột"],"correct":1,"subtopic":"III. UNG THƯ GAN VÀ BỆNH ĐƯỜNG MẬT (Câu 19–30)"},{"question":"Viêm đường mật thường là hậu quả của","options":["Tăng cholesterol","Vi khuẩn xâm nhập do tắc mật bởi sỏi","Tăng áp lực gan","Viêm gan siêu vi"],"correct":1,"subtopic":"III. UNG THƯ GAN VÀ BỆNH ĐƯỜNG MẬT (Câu 19–30)"},{"question":"Mô học trong viêm đường mật cho thấy","options":["Thấm nhập lympho và hoại tử ống mật","Loạn sản tế bào gan","Xơ hóa tiểu thùy","Hoại tử tế bào hình nhẫn"],"correct":0,"subtopic":"III. UNG THƯ GAN VÀ BỆNH ĐƯỜNG MẬT (Câu 19–30)"},{"question":"Sỏi mật hình thành chủ yếu do","options":["Thiếu canxi","Rối loạn chuyển hóa acid mật và cholesterol","Dị ứng thực phẩm","Nhiễm nấm"],"correct":1,"subtopic":"III. UNG THƯ GAN VÀ BỆNH ĐƯỜNG MẬT (Câu 19–30)"},{"question":"Sỏi sắc tố thường liên quan đến","options":["Thiếu máu","Nhiễm vi khuẩn và ký sinh trùng","Rượu","Tăng insulin"],"correct":1,"subtopic":"III. UNG THƯ GAN VÀ BỆNH ĐƯỜNG MẬT (Câu 19–30)"},{"question":"Biến chứng nguy hiểm của viêm đường mật","options":["Rối loạn đông máu","Viêm phúc mạc, nhiễm trùng huyết","Thiếu máu","Viêm ruột"],"correct":1,"subtopic":"III. UNG THƯ GAN VÀ BỆNH ĐƯỜNG MẬT (Câu 19–30)"}]},{"id":"dai-cuong-benh-hoc","title":"Lịch Sử & Phân Ngành Bệnh Học","icon":"📖","desc":"Sự phát triển bệnh học, bệnh học phân tử, tế bào học, mô học, miễn dịch học","questionCount":50,"subTopics":[{"title":"1. Thời kỳ tiền sử đến năm 1500 sau Công Nguyên","count":3},{"title":"2. Thời kỳ 1500–1800 sau Công Nguyên","count":3},{"title":"3. Thế kỷ 19 – 1950","count":3},{"title":"4. Bệnh học hiện đại","count":2},{"title":"1. Bệnh học đại cương","count":1},{"title":"2. Bệnh học hệ thống","count":1},{"title":"3. Bệnh học mô học","count":1},{"title":"4. Bệnh học tế bào học","count":1},{"title":"5. Bệnh học pháp y","count":1},{"title":"6. Bệnh học huyết học","count":1},{"title":"7. Bệnh học hóa học (Sinh hóa lâm sàng)","count":2},{"title":"8. Bệnh học miễn dịch","count":2},{"title":"9. Bệnh học phân tử","count":2},{"title":"III. Ứng dụng lâm sàng của bệnh học","count":3},{"title":"IV. Lịch sử phát triển của bệnh học","count":3},{"title":"V. Các kỹ thuật bệnh học hiện đại","count":3},{"title":"VI. Câu hỏi tổng hợp","count":3},{"title":"VI. Câu hỏi tổng hợp (tiếp tục)","count":15}],"questions":[{"question":"Trong thời kỳ tiền sử, nguyên nhân gây bệnh thường được gán cho","options":["Vi khuẩn","Sự trừng phạt của các vị thần","Di truyền học","Môi trường ô nhiễm"],"correct":1,"subtopic":"1. Thời kỳ tiền sử đến năm 1500 sau Công Nguyên"},{"question":"Thần y học được tôn thờ ở Hy Lạp là","options":["Apollo","Zeus","Asclepius","Hermes"],"correct":2,"subtopic":"1. Thời kỳ tiền sử đến năm 1500 sau Công Nguyên"},{"question":"Hippocrates cho rằng bệnh tật là do","options":["Tế bào đột biến","Sự mất cân bằng của bốn dịch trong cơ thể","Nhiễm khuẩn từ môi trường","Sự thay đổi của DNA"],"correct":1,"subtopic":"1. Thời kỳ tiền sử đến năm 1500 sau Công Nguyên"},{"question":"Ai là người được coi là cha đẻ của giải phẫu học?","options":["Galen","Andreas Vesalius","Hippocrates","Avicenna"],"correct":1,"subtopic":"2. Thời kỳ 1500–1800 sau Công Nguyên"},{"question":"Antonie van Leeuwenhoek có đóng góp quan trọng gì trong bệnh học?","options":["Mô tả cấu trúc DNA","Phát minh ra kính hiển vi","Xây dựng lý thuyết vi sinh","Phát triển PCR"],"correct":1,"subtopic":"2. Thời kỳ 1500–1800 sau Công Nguyên"},{"question":"Mối liên hệ giữa triệu chứng lâm sàng và tổn thương tử thi lần đầu tiên được nghiên cứu bởi","options":["Rudolf Virchow","Giovanni Battista Morgagni","Louis Pasteur","Antonie van Leeuwenhoek"],"correct":1,"subtopic":"2. Thời kỳ 1500–1800 sau Công Nguyên"},{"question":"Người đặt nền móng cho bệnh học tế bào là","options":["Rudolf Virchow","Louis Pasteur","Paul Ehrlich","Joseph Lister"],"correct":0,"subtopic":"3. Thế kỷ 19 – 1950"},{"question":"Giả thuyết \"tất cả tế bào đều phát sinh từ tế bào trước đó\" được đề xuất bởi","options":["Rudolf Virchow","Gregor Mendel","Charles Darwin","Joseph Lister"],"correct":0,"subtopic":"3. Thế kỷ 19 – 1950"},{"question":"Công trình nghiên cứu nào của Louis Pasteur đã góp phần vào sự phát triển của bệnh học?","options":["Thuyết vi sinh vật","Phát minh kính hiển vi","Giải mã cấu trúc DNA","Tạo ra phương pháp nhuộm tế bào"],"correct":0,"subtopic":"3. Thế kỷ 19 – 1950"},{"question":"Công nghệ nào đã mở ra kỷ nguyên bệnh học phân tử?","options":["Kính hiển vi điện tử","Phản ứng chuỗi polymerase (PCR)","Nhuộm H&E","Xét nghiệm miễn dịch"],"correct":1,"subtopic":"4. Bệnh học hiện đại"},{"question":"Kỹ thuật nào giúp xác định đột biến gen liên quan đến ung thư?","options":["PCR","FISH","Hóa mô miễn dịch","Cả A và B"],"correct":3,"subtopic":"4. Bệnh học hiện đại"},{"question":"Bệnh học đại cương nghiên cứu","options":["Cơ chế bệnh chung","Từng hệ cơ quan riêng biệt","Bệnh di truyền","Bệnh nhiễm trùng"],"correct":0,"subtopic":"1. Bệnh học đại cương"},{"question":"Bệnh học hệ thống tập trung vào","options":["Cấu trúc mô bệnh","Mối liên hệ giữa bệnh và cơ quan","Miễn dịch học","Vi khuẩn học"],"correct":1,"subtopic":"2. Bệnh học hệ thống"},{"question":"Bệnh học mô học có vai trò quan trọng nhất trong chẩn đoán","options":["Bệnh viêm","Bệnh ung thư","Bệnh di truyền","Bệnh nhiễm trùng"],"correct":1,"subtopic":"3. Bệnh học mô học"},{"question":"Xét nghiệm tế bào học nào được dùng rộng rãi để phát hiện ung thư cổ tử cung?","options":["FNAC","Xét nghiệm Pap","Hóa mô miễn dịch","PCR"],"correct":1,"subtopic":"4. Bệnh học tế bào học"},{"question":"Bệnh học pháp y chủ yếu liên quan đến","options":["Xác định nguyên nhân tử vong","Chẩn đoán ung thư","Nghiên cứu mô học","Nghiên cứu huyết học"],"correct":0,"subtopic":"5. Bệnh học pháp y"},{"question":"Bệnh nào sau đây thuộc bệnh học huyết học?","options":["Bệnh bạch cầu","Bệnh tim mạch","Bệnh phổi","Bệnh thận"],"correct":0,"subtopic":"6. Bệnh học huyết học"},{"question":"Bệnh học hóa học tập trung vào phân tích","options":["Dịch cơ thể","Mô bệnh học","Cấu trúc DNA","Vi khuẩn"],"correct":0,"subtopic":"7. Bệnh học hóa học (Sinh hóa lâm sàng)"},{"question":"Xét nghiệm sinh hóa lâm sàng có thể giúp phát hiện","options":["Bệnh tim mạch","Rối loạn nội tiết","Rối loạn chức năng thận","Cả A, B và C"],"correct":3,"subtopic":"7. Bệnh học hóa học (Sinh hóa lâm sàng)"},{"question":"Bệnh học miễn dịch chủ yếu nghiên cứu","options":["Tế bào ung thư","Hệ miễn dịch","Vi khuẩn","Tế bào thần kinh"],"correct":1,"subtopic":"8. Bệnh học miễn dịch"},{"question":"Bệnh tự miễn nào sau đây có thể được chẩn đoán bằng bệnh học miễn dịch?","options":["Lupus ban đỏ hệ thống","Bệnh tiểu đường type 2","Bệnh Alzheimer","Bệnh lao"],"correct":0,"subtopic":"8. Bệnh học miễn dịch"},{"question":"Kỹ thuật nào sau đây không thuộc bệnh học phân tử?","options":["PCR","Giải trình tự gen","Nhuộm H&E","Lai tại chỗ huỳnh quang (FISH)"],"correct":2,"subtopic":"9. Bệnh học phân tử"},{"question":"Bệnh học phân tử giúp chẩn đoán","options":["Ung thư","Bệnh di truyền","Bệnh nhiễm trùng","Cả A, B và C"],"correct":3,"subtopic":"9. Bệnh học phân tử"},{"question":"Kỹ thuật nào được sử dụng phổ biến nhất để chẩn đoán ung thư?","options":["Hóa mô miễn dịch","PCR","Sinh thiết mô","FISH"],"correct":2,"subtopic":"III. Ứng dụng lâm sàng của bệnh học"},{"question":"Kỹ thuật nào giúp đưa ra phác đồ điều trị cá nhân hóa?","options":["Hóa mô miễn dịch","Bệnh học phân tử","Chụp X-quang","Xét nghiệm máu tổng quát"],"correct":1,"subtopic":"III. Ứng dụng lâm sàng của bệnh học"},{"question":"Bệnh học nào giúp xác định nguyên nhân tử vong?","options":["Bệnh học mô học","Bệnh học phân tử","Bệnh học pháp y","Bệnh học tế bào học"],"correct":2,"subtopic":"III. Ứng dụng lâm sàng của bệnh học"},{"question":"Người đầu tiên đề xuất lý thuyết vi sinh vật gây bệnh là","options":["Louis Pasteur","Robert Koch","Antonie van Leeuwenhoek","Joseph Lister"],"correct":0,"subtopic":"IV. Lịch sử phát triển của bệnh học"},{"question":"Ai phát minh ra kính hiển vi?","options":["Antonie van Leeuwenhoek","Robert Hooke","Galileo Galilei","Andreas Vesalius"],"correct":0,"subtopic":"IV. Lịch sử phát triển của bệnh học"},{"question":"Ai được xem là cha đẻ của miễn dịch học?","options":["Louis Pasteur","Paul Ehrlich","Robert Koch","Edward Jenner"],"correct":1,"subtopic":"IV. Lịch sử phát triển của bệnh học"},{"question":"Kỹ thuật nào sau đây giúp phát hiện các protein đặc hiệu trong mô bệnh?","options":["PCR","Hóa mô miễn dịch","Chụp cộng hưởng từ","Điện di protein"],"correct":1,"subtopic":"V. Các kỹ thuật bệnh học hiện đại"},{"question":"Chẩn đoán phân tử có thể xác định","options":["Đột biến gen","Sự biểu hiện protein","Mức độ methyl hóa DNA","Cả A, B và C"],"correct":3,"subtopic":"V. Các kỹ thuật bệnh học hiện đại"},{"question":"Kỹ thuật FNAC (chọc hút tế bào bằng kim nhỏ) thường được sử dụng để chẩn đoán","options":["Ung thư tuyến giáp","Ung thư máu","Bệnh Alzheimer","Bệnh nhiễm trùng"],"correct":0,"subtopic":"V. Các kỹ thuật bệnh học hiện đại"},{"question":"Bệnh học nào quan trọng nhất trong chẩn đoán ung thư?","options":["Bệnh học mô học","Bệnh học tế bào học","Bệnh học phân tử","Cả A, B và C"],"correct":3,"subtopic":"VI. Câu hỏi tổng hợp"},{"question":"Kỹ thuật nào giúp phân tích mức độ enzyme trong cơ thể?","options":["Bệnh học hóa học","Bệnh học mô học","Bệnh học tế bào học","Bệnh học huyết học"],"correct":0,"subtopic":"VI. Câu hỏi tổng hợp"},{"question":"Kỹ thuật nào giúp phát hiện các bất thường trong nhiễm sắc thể?","options":["PCR","FISH","Sinh thiết","Xét nghiệm máu"],"correct":1,"subtopic":"VI. Câu hỏi tổng hợp"},{"question":"Lý thuyết \"tế bào là đơn vị cơ bản của sự sống\" do ai đề xuất?","options":["Rudolf Virchow","Matthias Schleiden và Theodor Schwann","Louis Pasteur","Robert Koch"],"correct":1,"subtopic":"VI. Câu hỏi tổng hợp (tiếp tục)"},{"question":"Bệnh lý nào dưới đây có thể được phát hiện nhờ xét nghiệm hóa mô miễn dịch?","options":["Ung thư vú","Đái tháo đường","Bệnh Parkinson","Viêm gan"],"correct":0,"subtopic":"VI. Câu hỏi tổng hợp (tiếp tục)"},{"question":"Hình thái tế bào trong bệnh học tế bào học được đánh giá bằng","options":["Kính hiển vi điện tử","Kính hiển vi quang học","Cả A và B","Chụp X-quang"],"correct":2,"subtopic":"VI. Câu hỏi tổng hợp (tiếp tục)"},{"question":"Bệnh học huyết học giúp chẩn đoán bệnh nào sau đây?","options":["Thiếu máu","Đột quỵ","Viêm phổi","Loãng xương"],"correct":0,"subtopic":"VI. Câu hỏi tổng hợp (tiếp tục)"},{"question":"Kỹ thuật nào giúp xác định đột biến gen trong ung thư?","options":["PCR","Giải trình tự DNA","Lai tại chỗ huỳnh quang (FISH)","Cả A, B và C"],"correct":3,"subtopic":"VI. Câu hỏi tổng hợp (tiếp tục)"},{"question":"Người đầu tiên mô tả quá trình viêm là","options":["Hippocrates","Rudolf Virchow","Celsus","Galen"],"correct":2,"subtopic":"VI. Câu hỏi tổng hợp (tiếp tục)"},{"question":"Đặc điểm nào không thuộc về bệnh học pháp y?","options":["Khám nghiệm tử thi","Xác định nguyên nhân tử vong","Chẩn đoán ung thư","Hỗ trợ điều tra hình sự"],"correct":2,"subtopic":"VI. Câu hỏi tổng hợp (tiếp tục)"},{"question":"Kỹ thuật nào sau đây là công cụ chính trong bệnh học phân tử?","options":["Sinh thiết","PCR","Nhuộm H&E","Xét nghiệm máu"],"correct":1,"subtopic":"VI. Câu hỏi tổng hợp (tiếp tục)"},{"question":"Ai đã phát triển vắc-xin phòng bệnh dại?","options":["Edward Jenner","Robert Koch","Louis Pasteur","Alexander Fleming"],"correct":2,"subtopic":"VI. Câu hỏi tổng hợp (tiếp tục)"},{"question":"Phân ngành nào của bệnh học giúp phân tích sự thay đổi trong mô bệnh?","options":["Bệnh học mô học","Bệnh học hóa học","Bệnh học pháp y","Bệnh học miễn dịch"],"correct":0,"subtopic":"VI. Câu hỏi tổng hợp (tiếp tục)"},{"question":"Kỹ thuật nào giúp phát hiện vi khuẩn trong mẫu bệnh phẩm?","options":["PCR","Cấy vi khuẩn","Nhuộm Gram","Cả A, B và C"],"correct":3,"subtopic":"VI. Câu hỏi tổng hợp (tiếp tục)"},{"question":"Trong bệnh học miễn dịch, xét nghiệm nào thường được sử dụng để phát hiện các bệnh tự miễn?","options":["ELISA","PCR","Chụp cắt lớp CT","Xét nghiệm công thức máu"],"correct":0,"subtopic":"VI. Câu hỏi tổng hợp (tiếp tục)"},{"question":"Yếu tố nào dưới đây không liên quan đến bệnh học tế bào học?","options":["FNAC","Xét nghiệm Pap","Giải trình tự gen","Nhuộm Papanicolaou"],"correct":2,"subtopic":"VI. Câu hỏi tổng hợp (tiếp tục)"},{"question":"Bệnh lý nào dưới đây có thể được chẩn đoán bằng xét nghiệm FISH?","options":["Hội chứng Down","Ung thư vú HER2+","Ung thư máu","Cả A, B và C"],"correct":3,"subtopic":"VI. Câu hỏi tổng hợp (tiếp tục)"},{"question":"Mục đích chính của bệnh học là","options":["Chẩn đoán bệnh","Nghiên cứu nguyên nhân bệnh","Định hướng điều trị","Cả A, B và C"],"correct":3,"subtopic":"VI. Câu hỏi tổng hợp (tiếp tục)"}]},{"id":"te-bao","title":"Tổn Thương & Thích Nghi Tế Bào","icon":"🧬","desc":"Phì đại, tăng sản, chuyển sản, teo bào, hoại tử đông/lỏng, apoptosis, stress oxy hóa","questionCount":30,"subTopics":[{"title":"I. Thích nghi với stress tế bào","count":5},{"title":"II. Tổn thương tế bào có thể hồi phục","count":5},{"title":"III. Tổn thương không hồi phục và chết tế bào","count":5},{"title":"IV. Ứng dụng lâm sàng","count":5},{"title":"V. Cellular Aging and Autophagy","count":4},{"title":"VI. Oxidative Stress and Cellular Injury","count":3},{"title":"VII. Clinical Applications","count":3}],"questions":[{"question":"Cơ chế chính của phì đại tế bào là gì?","options":["Giảm tổng hợp protein","Tăng phân hủy protein","Gia tăng sản xuất protein và bào quan","Thay thế tế bào chết bằng tế bào mới"],"correct":2,"subtopic":"I. Thích nghi với stress tế bào"},{"question":"Tăng sản sinh lý của tuyến vú xảy ra trong tình huống nào?","options":["Dậy thì","Mãn kinh","Hút thuốc lá kéo dài","Thiếu oxy mô"],"correct":0,"subtopic":"I. Thích nghi với stress tế bào"},{"question":"Chuyển sản biểu mô trụ thành biểu mô vảy thường gặp trong tình trạng nào?","options":["Hút thuốc lá mạn tính","Tiểu đường","Viêm gan siêu vi","Bệnh gút"],"correct":0,"subtopic":"I. Thích nghi với stress tế bào"},{"question":"Teo cơ do bất động lâu dài là do?","options":["Giảm kích thước tế bào","Tăng số lượng tế bào","Hoại tử tế bào","Đột biến gen"],"correct":0,"subtopic":"I. Thích nghi với stress tế bào"},{"question":"Trong số các thay đổi thích nghi của tế bào, thay đổi nào có thể dẫn đến ung thư nếu kéo dài?","options":["Phì đại","Tăng sản","Teo","Chuyển sản"],"correct":3,"subtopic":"I. Thích nghi với stress tế bào"},{"question":"Tổn thương tế bào có thể hồi phục xảy ra khi?","options":["Tế bào tiếp tục phân chia không kiểm soát","Tế bào có thể phục hồi sau khi yếu tố gây stress được loại bỏ","Tế bào chết ngay lập tức","Hoại tử tế bào"],"correct":1,"subtopic":"II. Tổn thương tế bào có thể hồi phục"},{"question":"Dấu hiệu sớm nhất của tổn thương tế bào có thể hồi phục là?","options":["Mất nhân tế bào","Tích tụ lipid","Phù tế bào do rối loạn bơm Na+/K+","Hoại tử đông"],"correct":2,"subtopic":"II. Tổn thương tế bào có thể hồi phục"},{"question":"Tích tụ lipid trong tế bào thường gặp nhất ở cơ quan nào?","options":["Phổi","Gan","Thận","Tim"],"correct":1,"subtopic":"II. Tổn thương tế bào có thể hồi phục"},{"question":"Nguyên nhân chính của phù tế bào trong tổn thương có thể hồi phục là?","options":["Rối loạn bơm Na+/K+ ATPase","Hoạt hóa quá mức lysosome","Đột biến ADN","Hoạt hóa quá mức enzym protease"],"correct":0,"subtopic":"II. Tổn thương tế bào có thể hồi phục"},{"question":"Thiếu ATP trong tế bào sẽ ảnh hưởng đến?","options":["Chuyển hóa lipid","Cân bằng ion và nước","Tổng hợp ADN","Sự biệt hóa tế bào"],"correct":1,"subtopic":"II. Tổn thương tế bào có thể hồi phục"},{"question":"Tổn thương không hồi phục dẫn đến?","options":["Teo cơ","Hoại tử hoặc apoptosis","Phì đại","Tăng sản"],"correct":1,"subtopic":"III. Tổn thương không hồi phục và chết tế bào"},{"question":"Hoại tử khác apoptosis ở điểm nào?","options":["Hoại tử là quá trình có kiểm soát","Apoptosis luôn gây viêm","Hoại tử gây viêm còn apoptosis thì không","Apoptosis không liên quan đến ty thể"],"correct":2,"subtopic":"III. Tổn thương không hồi phục và chết tế bào"},{"question":"Loại hoại tử phổ biến trong nhồi máu cơ tim là?","options":["Hoại tử đông","Hoại tử lỏng","Hoại tử mỡ","Hoại tử hoại thư"],"correct":0,"subtopic":"III. Tổn thương không hồi phục và chết tế bào"},{"question":"Apoptosis đóng vai trò quan trọng trong?","options":["Quá trình viêm cấp tính","Phát triển phôi thai","Hình thành hoại tử đông","Sự lan rộng của tế bào ung thư"],"correct":1,"subtopic":"III. Tổn thương không hồi phục và chết tế bào"},{"question":"Đặc điểm của apoptosis là?","options":["Gây phản ứng viêm mạnh","Tế bào co lại và hình thành thể apoptotic","Màng tế bào bị phá vỡ ngay lập tức","Xảy ra do tổn thương cấp tính nghiêm trọng"],"correct":1,"subtopic":"III. Tổn thương không hồi phục và chết tế bào"},{"question":"Thiếu máu cục bộ gây tổn thương tế bào chủ yếu do?","options":["Giảm sản xuất ATP","Rối loạn tổng hợp ADN","Tăng tổng hợp protein","Giảm hấp thu glucose"],"correct":0,"subtopic":"IV. Ứng dụng lâm sàng"},{"question":"Tổn thương do tái tưới máu gây ra bởi?","options":["Thiếu oxy kéo dài","Sản xuất quá mức gốc tự do ROS","Giảm phân hủy protein","Hoạt hóa quá mức ty thể"],"correct":1,"subtopic":"IV. Ứng dụng lâm sàng"},{"question":"Ứng dụng quan trọng của apoptosis trong điều trị ung thư là gì?","options":["Ức chế quá trình apoptosis","Kích thích apoptosis để tiêu diệt tế bào ung thư","Gây hoại tử tế bào ung thư","Ức chế miễn dịch để giảm viêm"],"correct":1,"subtopic":"IV. Ứng dụng lâm sàng"},{"question":"Quá liều acetaminophen gây tổn thương tế bào theo cơ chế nào?","options":["Gây tổn thương ADN trực tiếp","Tạo ra chất trung gian độc hại làm cạn kiệt glutathione","Hoạt hóa quá mức apoptosis","Làm mất protein màng tế bào"],"correct":1,"subtopic":"IV. Ứng dụng lâm sàng"},{"question":"Trong bệnh Alzheimer, apoptosis bất thường có thể dẫn đến?","options":["Tăng sinh tế bào thần kinh","Mất tế bào thần kinh","Giảm sản xuất amyloid-beta","Tăng myelin hóa"],"correct":1,"subtopic":"IV. Ứng dụng lâm sàng"},{"question":"What is the primary cause of telomere shortening?","options":["Increased ATP production","Repeated cell division","Activation of lysosomes","Overexpression of growth factors"],"correct":1,"subtopic":"V. Cellular Aging and Autophagy"},{"question":"Which enzyme maintains telomere length in stem cells?","options":["DNA polymerase","RNA polymerase","Telomerase","Caspase-3"],"correct":2,"subtopic":"V. Cellular Aging and Autophagy"},{"question":"Cellular autophagy is primarily triggered by","options":["DNA mutations","Nutrient depletion","Uncontrolled cell division","Excessive ATP levels"],"correct":1,"subtopic":"V. Cellular Aging and Autophagy"},{"question":"What is a key function of autophagy in neurodegenerative diseases?","options":["Promoting apoptosis","Accumulating misfolded proteins","Removing damaged organelles","Increasing glucose uptake"],"correct":2,"subtopic":"V. Cellular Aging and Autophagy"},{"question":"Reactive oxygen species (ROS) primarily cause cellular damage by","options":["Increasing DNA replication","Oxidizing lipids, proteins, and DNA","Enhancing protein synthesis","Decreasing calcium levels"],"correct":1,"subtopic":"VI. Oxidative Stress and Cellular Injury"},{"question":"Which antioxidant enzyme neutralizes hydrogen peroxide?","options":["Superoxide dismutase","Catalase","Phospholipase","Kinase"],"correct":1,"subtopic":"VI. Oxidative Stress and Cellular Injury"},{"question":"In ischemia-reperfusion injury, which mechanism contributes most to cell damage?","options":["Increased blood flow","Depletion of glucose","Overproduction of ROS","Decreased ATP synthesis"],"correct":2,"subtopic":"VI. Oxidative Stress and Cellular Injury"},{"question":"A smoker develops squamous metaplasia in the respiratory epithelium. This adaptation is an example of","options":["Atrophy","Hyperplasia","Metaplasia","Dysplasia"],"correct":2,"subtopic":"VII. Clinical Applications"},{"question":"A patient with myocardial infarction presents with coagulative necrosis. What is the main reason for this type of necrosis?","options":["Lysosomal enzyme release","Ischemia leading to protein denaturation","Bacterial infection","Autoimmune response"],"correct":1,"subtopic":"VII. Clinical Applications"},{"question":"In cancer therapy, drugs that induce apoptosis in cancer cells mainly target which protein?","options":["p53","Actin","Myosin","Hemoglobin"],"correct":0,"subtopic":"VII. Clinical Applications"}]},{"id":"huyet-dong","title":"Rối Loạn Huyết Động & Tuần Hoàn","icon":"🩸","desc":"Phù nề, sung huyết động/tĩnh, cầm máu, huyết khối DVT, thuyên tắc, sốc và nhồi máu","questionCount":30,"subTopics":[{"title":"I. Phù Nề và Tràn Dịch","count":5},{"title":"II. Sung Huyết Động và Sung Huyết Tĩnh","count":5},{"title":"III. Cầm Máu và Rối Loạn Xuất Huyết","count":5},{"title":"IV. Huyết Khối và Thuyên Tắc","count":5},{"title":"V. Sốc và Rối Loạn Tuần Hoàn","count":4},{"title":"VI. Nhồi Máu và Tổn Thương Mô","count":3},{"title":"VII. Ứng Dụng Lâm Sàng","count":3}],"questions":[{"question":"Nguyên nhân chính gây phù nề trong suy tim sung huyết là gì?","options":["Giảm albumin máu","Tăng áp lực thủy tĩnh","Giảm bạch cầu","Mất nước"],"correct":1,"subtopic":"I. Phù Nề và Tràn Dịch"},{"question":"Phù toàn thân (anasarca) thường liên quan đến tình trạng nào sau đây?","options":["Suy dinh dưỡng","Hội chứng thận hư","Xơ gan","Tất cả các đáp án trên"],"correct":3,"subtopic":"I. Phù Nề và Tràn Dịch"},{"question":"Tắc nghẽn bạch huyết có thể dẫn đến phù nề do","options":["Tăng áp lực thủy tĩnh","Giảm áp lực thẩm thấu huyết tương","Rối loạn chức năng nội mô","Giảm dẫn lưu dịch gian bào"],"correct":3,"subtopic":"I. Phù Nề và Tràn Dịch"},{"question":"Giữ natri và nước trong cơ thể góp phần gây phù nề bằng cách nào?","options":["Giảm thể tích máu","Giảm áp lực thủy tĩnh","Tăng áp lực thẩm thấu huyết tương","Tăng áp lực thủy tĩnh và giảm áp lực thẩm thấu huyết tương"],"correct":3,"subtopic":"I. Phù Nề và Tràn Dịch"},{"question":"Phù do suy tim sung huyết thường có đặc điểm nào?","options":["Phù khu trú","Phù đối xứng ở chi dưới","Phù không có dấu ấn lõm","Phù ở vùng mặt và mí mắt"],"correct":1,"subtopic":"I. Phù Nề và Tràn Dịch"},{"question":"Sung huyết động xảy ra khi nào?","options":["Giãn nở tiểu động mạch","Giảm dòng máu tĩnh mạch","Thiếu oxy mô","Tắc nghẽn bạch huyết"],"correct":0,"subtopic":"II. Sung Huyết Động và Sung Huyết Tĩnh"},{"question":"Trong sung huyết động, mô thường có màu gì?","options":["Đỏ tươi","Xanh tím","Nhợt nhạt","Đen sẫm"],"correct":0,"subtopic":"II. Sung Huyết Động và Sung Huyết Tĩnh"},{"question":"Sung huyết tĩnh có đặc điểm nào sau đây?","options":["Quá trình chủ động","Do tắc nghẽn hồi lưu tĩnh mạch","Gây giãn nở động mạch","Mô có màu đỏ tươi"],"correct":1,"subtopic":"II. Sung Huyết Động và Sung Huyết Tĩnh"},{"question":"\"Gan hạt cau\" là hậu quả của?","options":["Sung huyết tĩnh phổi","Sung huyết động","Sung huyết tĩnh gan mạn tính","Tắc nghẽn bạch huyết"],"correct":2,"subtopic":"II. Sung Huyết Động và Sung Huyết Tĩnh"},{"question":"Trong sung huyết phổi mạn tính, đặc điểm mô học đặc trưng là?","options":["Xơ hóa mô phổi","\"Tế bào suy tim\" chứa hemosiderin","Giãn nở tiểu động mạch","Huyết khối trong phế nang"],"correct":1,"subtopic":"II. Sung Huyết Động và Sung Huyết Tĩnh"},{"question":"Tiểu cầu đóng vai trò quan trọng nhất trong giai đoạn nào của quá trình cầm máu?","options":["Cầm máu sơ cấp","Cầm máu thứ cấp","Tiêu fibrin","Tan cục máu đông"],"correct":0,"subtopic":"III. Cầm Máu và Rối Loạn Xuất Huyết"},{"question":"Yếu tố đông máu nào có vai trò quan trọng trong quá trình hình thành fibrin?","options":["Yếu tố VIII","Yếu tố IX","Yếu tố X","Yếu tố XIII"],"correct":3,"subtopic":"III. Cầm Máu và Rối Loạn Xuất Huyết"},{"question":"Hemophilia A là do thiếu hụt yếu tố đông máu nào?","options":["Yếu tố VII","Yếu tố VIII","Yếu tố IX","Yếu tố XIII"],"correct":1,"subtopic":"III. Cầm Máu và Rối Loạn Xuất Huyết"},{"question":"Bệnh Von Willebrand liên quan đến bất thường của?","options":["Tiểu cầu","Fibrinogen","Yếu tố Von Willebrand","Yếu tố X"],"correct":2,"subtopic":"III. Cầm Máu và Rối Loạn Xuất Huyết"},{"question":"DIC là một tình trạng trong đó?","options":["Hình thành huyết khối lan rộng","Giảm tiêu fibrin","Giảm tạo yếu tố đông máu","Rối loạn chức năng gan"],"correct":0,"subtopic":"III. Cầm Máu và Rối Loạn Xuất Huyết"},{"question":"Thành phần chính của huyết khối là?","options":["Tiểu cầu và fibrin","Albumin","Hemoglobin","Chất béo"],"correct":0,"subtopic":"IV. Huyết Khối và Thuyên Tắc"},{"question":"Huyết khối tĩnh mạch sâu (DVT) có nguy cơ cao dẫn đến?","options":["Nhồi máu cơ tim","Thuyên tắc phổi","Đột quỵ não","Xuất huyết nội sọ"],"correct":1,"subtopic":"IV. Huyết Khối và Thuyên Tắc"},{"question":"Tình trạng nào sau đây có thể gây ra thuyên tắc khí?","options":["Gãy xương dài","Chấn thương phổi","Phẫu thuật tim hở","Tất cả các đáp án trên"],"correct":3,"subtopic":"IV. Huyết Khối và Thuyên Tắc"},{"question":"Trong bệnh lý nào sau đây, thuyên tắc mỡ thường gặp nhất?","options":["Viêm tụy cấp","Nhồi máu phổi","Gãy xương dài","Nhồi máu não"],"correct":2,"subtopic":"IV. Huyết Khối và Thuyên Tắc"},{"question":"Thuyên tắc nước ối xảy ra trong?","options":["Chấn thương sọ não","Thai kỳ","Viêm phổi","Phẫu thuật ruột"],"correct":1,"subtopic":"IV. Huyết Khối và Thuyên Tắc"},{"question":"Nguyên nhân phổ biến nhất của sốc nhiễm trùng là?","options":["Vi khuẩn Gram dương","Vi khuẩn Gram âm","Nấm","Virus"],"correct":0,"subtopic":"V. Sốc và Rối Loạn Tuần Hoàn"},{"question":"Giai đoạn nào của sốc có thể hồi phục hoàn toàn nếu được điều trị?","options":["Giai đoạn không tiến triển","Giai đoạn tiến triển","Giai đoạn không thể hồi phục","Không giai đoạn nào"],"correct":0,"subtopic":"V. Sốc và Rối Loạn Tuần Hoàn"},{"question":"Trong sốc nhiễm trùng, yếu tố nào góp phần gây giãn mạch?","options":["TNF-α và IL-1","Hemoglobin","Yếu tố VIII","Haptoglobin"],"correct":0,"subtopic":"V. Sốc và Rối Loạn Tuần Hoàn"},{"question":"Cơ quan nào dễ bị tổn thương nhất trong sốc?","options":["Gan","Thận","Não","Tất cả các đáp án trên"],"correct":3,"subtopic":"V. Sốc và Rối Loạn Tuần Hoàn"},{"question":"Nguyên nhân phổ biến nhất gây nhồi máu cơ tim là?","options":["Huyết khối động mạch vành","Thuyên tắc phổi","Hạ huyết áp","Bệnh viêm cơ tim"],"correct":0,"subtopic":"VI. Nhồi Máu và Tổn Thương Mô"},{"question":"Nhồi máu trắng thường gặp ở cơ quan nào sau đây?","options":["Phổi","Ruột","Thận","Cơ vân"],"correct":2,"subtopic":"VI. Nhồi Máu và Tổn Thương Mô"},{"question":"Nhồi máu đỏ thường xảy ra khi nào?","options":["Ở mô có tuần hoàn kép","Ở mô thiếu oxy hoàn toàn","Khi huyết áp giảm","Trong tình trạng tăng đông máu"],"correct":0,"subtopic":"VI. Nhồi Máu và Tổn Thương Mô"},{"question":"Xét nghiệm nào thường được sử dụng để đánh giá nguy cơ huyết khối?","options":["D-dimer","CRP (C-reactive protein)","Hemoglobin","Bilirubin"],"correct":0,"subtopic":"VII. Ứng Dụng Lâm Sàng"},{"question":"Trong điều trị DIC, mục tiêu quan trọng nhất là?","options":["Truyền tiểu cầu ngay lập tức","Điều trị nguyên nhân gây DIC","Giảm sản xuất fibrinogen","Kích hoạt đông máu thêm"],"correct":1,"subtopic":"VII. Ứng Dụng Lâm Sàng"},{"question":"Trong bệnh lý huyết khối, thuốc nào thường được sử dụng để dự phòng và điều trị?","options":["Aspirin","Heparin","Warfarin","Tất cả các đáp án trên"],"correct":3,"subtopic":"VII. Ứng Dụng Lâm Sàng"}]},{"id":"khoi-u","title":"Khối U & Tân Sinh Học (Neoplasia)","icon":"🎯","desc":"Định nghĩa tân sinh, u lành vs ác tính, xâm lấn di căn, hệ thống TNM, hóa - xạ - miễn dịch","questionCount":40,"subTopics":[{"title":"I. Tổng Quan Về Khối U","count":5},{"title":"II. U Lành Tính","count":5},{"title":"III. U Ác Tính","count":5},{"title":"IV. Xâm Lấn, Di Căn Và Các Dạng Khối U Đặc Biệt","count":5},{"title":"V. Ứng Dụng Lâm Sàng","count":5},{"title":"VI. Các Phương Pháp Chẩn Đoán Ung Thư","count":5},{"title":"VII. Các Phương Pháp Điều Trị Ung Thư","count":5},{"title":"VIII. Liệu Pháp Miễn Dịch Và Liệu Pháp Nhắm Đích","count":5}],"questions":[{"question":"Thuật ngữ \"tân sinh\" (neoplasia) dùng để chỉ","options":["Sự chết tế bào theo chương trình","Sự tăng sinh bất thường của mô","Hiện tượng viêm cấp tính","Sự sửa chữa mô tổn thương"],"correct":1,"subtopic":"I. Tổng Quan Về Khối U"},{"question":"Thành phần cơ bản của khối u bao gồm","options":["Chủ mô u và mô đệm","Bạch cầu và hồng cầu","Tiểu cầu và collagen","Mạch máu và lympho bào"],"correct":0,"subtopic":"I. Tổng Quan Về Khối U"},{"question":"Điểm khác biệt chính giữa u lành tính và u ác tính là gì?","options":["U ác tính có khả năng xâm lấn và di căn","U lành tính luôn phát triển chậm hơn u ác tính","U lành tính không cần phẫu thuật","U ác tính có vỏ bao rõ ràng"],"correct":0,"subtopic":"I. Tổng Quan Về Khối U"},{"question":"Danh pháp của các khối u lành tính thường có hậu tố nào?","options":["\"-sarcoma\"","\"-carcinoma\"","\"-oma\"","\"-blastoma\""],"correct":2,"subtopic":"I. Tổng Quan Về Khối U"},{"question":"Ví dụ nào dưới đây là u ác tính mặc dù có hậu tố \"-oma\"?","options":["U xơ (fibroma)","U mỡ (lipoma)","U lympho (lymphoma)","U tuyến (adenoma)"],"correct":2,"subtopic":"I. Tổng Quan Về Khối U"},{"question":"Đặc điểm của u lành tính là","options":["Giới hạn rõ ràng, không xâm lấn","Có khả năng di căn","Phát triển rất nhanh","Xâm nhập mạch máu"],"correct":0,"subtopic":"II. U Lành Tính"},{"question":"U tuyến dạng nang (cystadenoma) thường gặp ở cơ quan nào?","options":["Phổi","Buồng trứng","Gan","Tim"],"correct":1,"subtopic":"II. U Lành Tính"},{"question":"Polyp là gì?","options":["U dạng nang","U biểu mô có cấu trúc nhánh","Khối u nhô lên trên bề mặt niêm mạc","U xương lành tính"],"correct":2,"subtopic":"II. U Lành Tính"},{"question":"U nào sau đây là một loại u lành tính của mô cơ trơn?","options":["Osteoma","Leiomyoma","Lipoma","Fibroma"],"correct":1,"subtopic":"II. U Lành Tính"},{"question":"Một u lành tính thường có đặc điểm nào sau đây trên vi thể?","options":["Tế bào u có nhân lớn, dị dạng","Hoạt động phân bào bất thường","Tế bào có biệt hóa tốt","Xâm nhập mạch máu"],"correct":2,"subtopic":"II. U Lành Tính"},{"question":"Đặc điểm chính của u ác tính là","options":["Không có khả năng xâm lấn","Phát triển chậm","Xâm nhập mô xung quanh và có thể di căn","Luôn có vỏ bao"],"correct":2,"subtopic":"III. U Ác Tính"},{"question":"Sarcoma là thuật ngữ dùng để chỉ","options":["U có nguồn gốc từ tế bào biểu mô","U có nguồn gốc từ mô liên kết","U không biệt hóa","U lành tính của tuyến"],"correct":1,"subtopic":"III. U Ác Tính"},{"question":"Ung thư biểu mô tuyến (adenocarcinoma) có nguồn gốc từ","options":["Tế bào trung mô","Tế bào biểu mô tuyến","Tế bào máu","Tế bào thần kinh"],"correct":1,"subtopic":"III. U Ác Tính"},{"question":"Đặc điểm nào sau đây KHÔNG phải của u ác tính?","options":["Di căn","Mất tính biệt hóa (thoái sản)","Phát triển chậm và có vỏ bao","Xâm nhập mô xung quanh"],"correct":2,"subtopic":"III. U Ác Tính"},{"question":"U ác tính có xu hướng phát triển nhanh do","options":["Hoạt động phân bào cao","Giảm tín hiệu ức chế tăng trưởng","Xâm nhập mạch máu","Tất cả các yếu tố trên"],"correct":3,"subtopic":"III. U Ác Tính"},{"question":"U nào dưới đây có khả năng di căn cao nhất?","options":["U xơ (fibroma)","U mỡ (lipoma)","Ung thư biểu mô tuyến (adenocarcinoma)","U xương lành tính (osteoma)"],"correct":2,"subtopic":"IV. Xâm Lấn, Di Căn Và Các Dạng Khối U Đặc Biệt"},{"question":"Con đường lan truyền phổ biến nhất của carcinoma là","options":["Qua hệ bạch huyết","Qua máu","Qua khoang cơ thể","Qua dây thần kinh"],"correct":0,"subtopic":"IV. Xâm Lấn, Di Căn Và Các Dạng Khối U Đặc Biệt"},{"question":"Sarcoma thường lan truyền theo con đường nào?","options":["Hệ bạch huyết","Đường máu","Khoang cơ thể","Không di căn"],"correct":1,"subtopic":"IV. Xâm Lấn, Di Căn Và Các Dạng Khối U Đặc Biệt"},{"question":"Một bệnh nhân có ung thư buồng trứng, nhiều khả năng khối u sẽ lan qua con đường nào?","options":["Hệ bạch huyết","Xâm nhập mạch máu","Lan rộng qua khoang phúc mạc","Trực tiếp xâm lấn qua cơ quan kế cận"],"correct":2,"subtopic":"IV. Xâm Lấn, Di Căn Và Các Dạng Khối U Đặc Biệt"},{"question":"\"Pseudomyxoma peritonei\" là thuật ngữ mô tả tình trạng nào?","options":["Ung thư buồng trứng lan qua hệ bạch huyết","Sự lan rộng của chất nhầy từ khối u vào khoang phúc mạc","Ung thư phổi di căn đến gan","Sarcoma di căn qua đường máu"],"correct":1,"subtopic":"IV. Xâm Lấn, Di Căn Và Các Dạng Khối U Đặc Biệt"},{"question":"Yếu tố nào quyết định mức độ ác tính của một khối u?","options":["Độ biệt hóa tế bào","Tốc độ phát triển","Khả năng xâm lấn và di căn","Tất cả các yếu tố trên"],"correct":3,"subtopic":"V. Ứng Dụng Lâm Sàng"},{"question":"Hệ thống TNM dùng để phân loại gì?","options":["Độ biệt hóa khối u","Giai đoạn bệnh ung thư","Mức độ viêm của khối u","Mức độ đáp ứng với hóa trị"],"correct":1,"subtopic":"V. Ứng Dụng Lâm Sàng"},{"question":"Một khối u có di căn xa sẽ được xếp loại TNM ở mức độ nào?","options":["T1","N0","M1","G1"],"correct":2,"subtopic":"V. Ứng Dụng Lâm Sàng"},{"question":"Dấu ấn ung thư nào được sử dụng để theo dõi ung thư tuyến tiền liệt?","options":["CEA","CA-125","PSA","AFP"],"correct":2,"subtopic":"V. Ứng Dụng Lâm Sàng"},{"question":"Ung thư vú có thể biểu hiện quá mức gen nào sau đây?","options":["RB","HER2/neu","BRCA1","APC"],"correct":1,"subtopic":"V. Ứng Dụng Lâm Sàng"},{"question":"Phương pháp nào được coi là tiêu chuẩn vàng trong chẩn đoán ung thư?","options":["Xét nghiệm máu","Sinh thiết mô","Chụp CT","Xét nghiệm dấu ấn khối u"],"correct":1,"subtopic":"VI. Các Phương Pháp Chẩn Đoán Ung Thư"},{"question":"Phương pháp nào sau đây giúp xác định kiểu gen của tế bào ung thư?","options":["Giải trình tự thế hệ mới (NGS)","Chụp cộng hưởng từ (MRI)","Sinh thiết lỏng","A và C đều đúng"],"correct":3,"subtopic":"VI. Các Phương Pháp Chẩn Đoán Ung Thư"},{"question":"Hệ thống TNM phân loại ung thư dựa trên yếu tố nào?","options":["Độ biệt hóa tế bào","Kích thước khối u, di căn hạch, di căn xa","Tuổi bệnh nhân","Phản ứng viêm của mô xung quanh"],"correct":1,"subtopic":"VI. Các Phương Pháp Chẩn Đoán Ung Thư"},{"question":"Dấu ấn khối u CA-125 được sử dụng để theo dõi ung thư nào?","options":["Ung thư đại tràng","Ung thư tuyến tiền liệt","Ung thư buồng trứng","Ung thư gan"],"correct":2,"subtopic":"VI. Các Phương Pháp Chẩn Đoán Ung Thư"},{"question":"Sinh thiết lỏng giúp phát hiện ung thư bằng cách","options":["Đo lượng kháng thể trong máu","Phát hiện DNA của tế bào ung thư lưu hành trong máu","Chụp ảnh mô bệnh","Phân tích protein huyết thanh"],"correct":1,"subtopic":"VI. Các Phương Pháp Chẩn Đoán Ung Thư"},{"question":"Phương pháp nào sau đây KHÔNG phải là một phương pháp điều trị ung thư chính?","options":["Phẫu thuật","Hóa trị","Liệu pháp miễn dịch","Kháng sinh liều cao"],"correct":3,"subtopic":"VII. Các Phương Pháp Điều Trị Ung Thư"},{"question":"Mục tiêu chính của phẫu thuật trong điều trị ung thư là gì?","options":["Làm giảm triệu chứng đau","Loại bỏ toàn bộ khối u","Tăng cường hiệu quả hóa trị","Ngăn ngừa hình thành di căn"],"correct":1,"subtopic":"VII. Các Phương Pháp Điều Trị Ung Thư"},{"question":"Hóa trị hoạt động theo cơ chế nào?","options":["Giết chết các tế bào ung thư đang phân chia nhanh","Tăng cường hệ miễn dịch chống ung thư","Ngăn chặn sự hình thành mạch máu của khối u","Ức chế hoạt động của tế bào gốc ung thư"],"correct":0,"subtopic":"VII. Các Phương Pháp Điều Trị Ung Thư"},{"question":"Tác dụng phụ phổ biến nhất của hóa trị là gì?","options":["Suy giảm miễn dịch","Gây tổn thương thận","Giảm huyết áp","Gây loãng xương"],"correct":0,"subtopic":"VII. Các Phương Pháp Điều Trị Ung Thư"},{"question":"Xạ trị tiêu diệt tế bào ung thư bằng cách nào?","options":["Phá hủy DNA của tế bào ung thư","Tăng tốc độ chết tế bào theo chương trình","Kích thích hệ miễn dịch tiêu diệt tế bào ung thư","Ức chế nguồn cung cấp năng lượng của tế bào"],"correct":0,"subtopic":"VII. Các Phương Pháp Điều Trị Ung Thư"},{"question":"Liệu pháp miễn dịch trong điều trị ung thư hoạt động bằng cách nào?","options":["Kích hoạt hệ thống miễn dịch để tiêu diệt tế bào ung thư","Tiêu diệt trực tiếp tế bào ung thư bằng thuốc","Ức chế sự tăng sinh của tế bào ung thư","Cản trở sự phát triển của khối u thông qua thiếu máu nuôi dưỡng"],"correct":0,"subtopic":"VIII. Liệu Pháp Miễn Dịch Và Liệu Pháp Nhắm Đích"},{"question":"Thuốc ức chế điểm kiểm soát miễn dịch (immune checkpoint inhibitors) hoạt động bằng cách nào?","options":["Ngăn chặn sự ức chế của tế bào T","Kích thích tế bào ung thư tự chết","Phá hủy mạch máu nuôi khối u","Giảm sự tăng sinh tế bào ung thư"],"correct":0,"subtopic":"VIII. Liệu Pháp Miễn Dịch Và Liệu Pháp Nhắm Đích"},{"question":"Liệu pháp nhắm đích (targeted therapy) khác với hóa trị truyền thống như thế nào?","options":["Chỉ tác động vào tế bào ung thư có đột biến đặc hiệu","Gây ít tác dụng phụ hơn hóa trị","Không ảnh hưởng đến tế bào lành","Cả A và B đều đúng"],"correct":3,"subtopic":"VIII. Liệu Pháp Miễn Dịch Và Liệu Pháp Nhắm Đích"},{"question":"Thuốc Imatinib (Gleevec) là liệu pháp nhắm đích được sử dụng để điều trị bệnh nào?","options":["Ung thư phổi","Bạch cầu dòng tủy mãn tính (CML)","Ung thư gan","Ung thư vú"],"correct":1,"subtopic":"VIII. Liệu Pháp Miễn Dịch Và Liệu Pháp Nhắm Đích"},{"question":"Liệu pháp kháng sinh có thể được sử dụng để điều trị ung thư nào?","options":["Ung thư phổi","Ung thư dạ dày do Helicobacter pylori","Ung thư đại trực tràng","Ung thư tuyến giáp"],"correct":1,"subtopic":"VIII. Liệu Pháp Miễn Dịch Và Liệu Pháp Nhắm Đích"}]},{"id":"hach-lymph","title":"Bệnh Lý Hạch & Hệ Tạo Huyết","icon":"🔴","desc":"Viêm hạch cấp/mạn, hội chứng HLH, bạch cầu tủy mạn CML, u lympho Hodgkin và Không Hodgkin","questionCount":40,"subTopics":[{"title":"Viêm Hạch Lymphô (Lymphadenitis)","count":7},{"title":"Hội Chứng Thực Bào Lymphô-Histiocyte Máu (HLH)","count":5},{"title":"Tân Sinh Lymphô","count":18},{"title":"Lymphoma (U lymphô)","count":10}],"questions":[{"question":"Viêm hạch lymphô là gì?","options":["Sự tăng sinh ác tính của hạch lymphô","Tình trạng viêm của hạch bạch huyết","Thoái hóa mỡ trong hạch bạch huyết","Rối loạn miễn dịch của hệ bạch huyết"],"correct":1,"subtopic":"Viêm Hạch Lymphô (Lymphadenitis)"},{"question":"Viêm hạch lymphô cấp không đặc hiệu thường gặp nhất ở vị trí nào?","options":["Hạch cổ và hạch nách","Hạch trung thất","Hạch ổ bụng","Hạch chậu"],"correct":0,"subtopic":"Viêm Hạch Lymphô (Lymphadenitis)"},{"question":"Nguyên nhân thường gặp nhất của viêm hạch lymphô cấp không đặc hiệu là?","options":["Vi khuẩn liên cầu và tụ cầu","Nhiễm nấm","Nhiễm ký sinh trùng","Nhiễm lao"],"correct":0,"subtopic":"Viêm Hạch Lymphô (Lymphadenitis)"},{"question":"Đặc điểm mô học của viêm hạch lymphô cấp không đặc hiệu?","options":["Trung tâm mầm lớn với thâm nhiễm bạch cầu trung tính","Xơ hóa lan tỏa hạch lymphô","Hoại tử đông đặc trung tâm hạch","Sự tăng sinh quá mức của tế bào mast"],"correct":0,"subtopic":"Viêm Hạch Lymphô (Lymphadenitis)"},{"question":"Viêm hạch lymphô do nhiễm virus thường có đặc điểm nào?","options":["Chỉ ảnh hưởng một hạch đơn độc","Viêm hạch lymphô toàn thân","Gây hoại tử mỡ hạch lymphô","Không gây ra triệu chứng toàn thân"],"correct":1,"subtopic":"Viêm Hạch Lymphô (Lymphadenitis)"},{"question":"Viêm hạch lymphô mạn không đặc hiệu thường do nguyên nhân nào?","options":["Vi khuẩn lao, giang mai","Nhiễm virus cúm","Chấn thương cơ học","Nhiễm trùng cấp tính"],"correct":0,"subtopic":"Viêm Hạch Lymphô (Lymphadenitis)"},{"question":"Đặc điểm của viêm hạch lymphô mạn?","options":["Hạch sưng, đau và đỏ","Hạch to kéo dài, ít đau","Hạch nhỏ lại sau vài ngày","Hoại tử nhanh chóng"],"correct":1,"subtopic":"Viêm Hạch Lymphô (Lymphadenitis)"},{"question":"Hội chứng HLH là gì?","options":["Rối loạn tự miễn làm tiêu hủy hạch lymphô","Kích hoạt quá mức của đại thực bào và tế bào T độc","Quá trình xơ hóa hạch lymphô toàn thân","Sự tăng sinh ác tính của tế bào B"],"correct":1,"subtopic":"Hội Chứng Thực Bào Lymphô-Histiocyte Máu (HLH)"},{"question":"Nguyên nhân phổ biến nhất gây HLH thứ phát là?","options":["Nhiễm virus Epstein-Barr (EBV)","Nhiễm khuẩn tụ cầu","Thiếu hụt vitamin B12","Mất nước nặng"],"correct":0,"subtopic":"Hội Chứng Thực Bào Lymphô-Histiocyte Máu (HLH)"},{"question":"Tiêu chuẩn chính trong chẩn đoán HLH là gì?","options":["Tăng ferritin máu","Giảm hồng cầu đơn thuần","Hạch lymphô teo nhỏ","Tăng bạch cầu trung tính"],"correct":0,"subtopic":"Hội Chứng Thực Bào Lymphô-Histiocyte Máu (HLH)"},{"question":"Sinh thiết tủy xương của bệnh nhân HLH cho thấy đặc điểm nào?","options":["Đại thực bào thực bào các tế bào máu","Tăng sinh tế bào plasma","Giảm sản xuất bạch cầu hạt","Hoại tử mô mỡ"],"correct":0,"subtopic":"Hội Chứng Thực Bào Lymphô-Histiocyte Máu (HLH)"},{"question":"Điều trị chính của HLH bao gồm?","options":["Ức chế miễn dịch và chặn cytokine","Dùng kháng sinh phổ rộng","Xạ trị hạch lymphô","Cắt bỏ hạch lymphô"],"correct":0,"subtopic":"Hội Chứng Thực Bào Lymphô-Histiocyte Máu (HLH)"},{"question":"Tân sinh lymphô bao gồm nhóm bệnh nào?","options":["Bệnh bạch cầu, u lymphô, rối loạn tế bào huyết tương","Chỉ bệnh bạch cầu","Chỉ u lymphô","Chỉ rối loạn tế bào huyết tương"],"correct":0,"subtopic":"Tân Sinh Lymphô"},{"question":"Dấu hiệu đặc trưng của u lymphô Hodgkin là?","options":["Tế bào Reed-Sternberg","Hoại tử trung tâm hạch","Sự xâm nhập bạch cầu trung tính","Xơ hóa mạch máu"],"correct":0,"subtopic":"Tân Sinh Lymphô"},{"question":"Dạng u lymphô không Hodgkin phổ biến nhất là?","options":["U lymphô tế bào B lớn lan tỏa (DLBCL)","U lymphô Burkitt","U lymphô tế bào T ngoại vi","Bệnh bạch cầu lymphô mạn"],"correct":0,"subtopic":"Tân Sinh Lymphô"},{"question":"Đột biến gen nào liên quan đến bệnh bạch cầu dòng tủy mạn (CML)?","options":["BCR-ABL","TP53","RAS","MYC"],"correct":0,"subtopic":"Tân Sinh Lymphô"},{"question":"U lymphô Burkitt có đặc điểm nào trên tiêu bản mô học?","options":["Kiểu tăng sinh “bầu trời đầy sao” (starry sky pattern)","Hoại tử trung tâm nang lymphô","Xơ hóa lan tỏa","Thâm nhiễm tế bào mast"],"correct":0,"subtopic":"Tân Sinh Lymphô"},{"question":"Chuyển đoạn t(14;18) thường gặp trong loại u lymphô nào?","options":["U lymphô nang (Follicular lymphoma)","U lymphô Hodgkin","Bệnh bạch cầu lymphô cấp tính (ALL)","U lymphô tế bào T"],"correct":0,"subtopic":"Tân Sinh Lymphô"},{"question":"Yếu tố nguy cơ môi trường gây bệnh bạch cầu tủy cấp tính (AML)?","options":["Phơi nhiễm benzene","Ăn thực phẩm nhiều muối","Thiếu vitamin D","Hút thuốc lá thụ động"],"correct":0,"subtopic":"Tân Sinh Lymphô"},{"question":"Virus Epstein-Barr (EBV) có liên quan đến loại u lymphô nào?","options":["U lymphô Burkitt","Bệnh bạch cầu tủy mạn","U lymphô tế bào NK","U lymphô Hodgkin"],"correct":0,"subtopic":"Tân Sinh Lymphô"},{"question":"Hội chứng thực bào lymphô-histiocyte máu (HLH) có thể dẫn đến biến chứng nào nghiêm trọng nhất?","options":["Suy đa tạng","Viêm hạch lymphô khu trú","Tăng bạch cầu ái toan","Giảm ferritin máu"],"correct":0,"subtopic":"Tân Sinh Lymphô"},{"question":"Trong bệnh bạch cầu lymphô cấp (ALL), dấu ấn miễn dịch nào là đặc trưng của dòng tế bào B?","options":["CD19","CD3","CD56","CD8"],"correct":0,"subtopic":"Tân Sinh Lymphô"},{"question":"Biểu hiện lâm sàng phổ biến của u lymphô Hodgkin là gì?","options":["Sưng hạch không đau","Sốt kéo dài nhưng không sưng hạch","Tăng bạch cầu trung tính","Xuất huyết tự phát"],"correct":0,"subtopic":"Tân Sinh Lymphô"},{"question":"Dạng u lymphô Hodgkin phổ biến nhất là?","options":["Dạng xơ cục","Dạng tế bào hỗn hợp","Dạng giàu lymphô","Dạng nghèo lymphô"],"correct":0,"subtopic":"Tân Sinh Lymphô"},{"question":"U lymphô không Hodgkin nào có liên quan chặt chẽ với vi khuẩn Helicobacter pylori?","options":["U lymphô MALT dạ dày","U lymphô Burkitt","U lymphô tế bào T ngoại vi","U lymphô tế bào B lớn lan tỏa"],"correct":0,"subtopic":"Tân Sinh Lymphô"},{"question":"Chỉ số nào thường tăng cao trong hội chứng thực bào lymphô-histiocyte máu (HLH)?","options":["Ferritin","Albumin","Canxi","Bạch cầu đa nhân trung tính"],"correct":0,"subtopic":"Tân Sinh Lymphô"},{"question":"Tổn thương mô học điển hình của bệnh bạch cầu dòng tủy mạn (CML) là gì?","options":["Tăng sinh dòng bạch cầu hạt","Thâm nhiễm tế bào plasma","Hoại tử lan tỏa","Tăng sinh mô xơ trong tủy xương"],"correct":0,"subtopic":"Tân Sinh Lymphô"},{"question":"Liệu pháp điều trị nhắm trúng đích trong bệnh bạch cầu dòng tủy mạn (CML) sử dụng thuốc nào?","options":["Imatinib","Methotrexate","Rituximab","Vincristine"],"correct":0,"subtopic":"Tân Sinh Lymphô"},{"question":"Trong u lymphô tế bào B lớn lan tỏa (DLBCL), xét nghiệm nào giúp phân biệt giữa các phân nhóm tiên lượng?","options":["Xét nghiệm gen MYC, BCL2, BCL6","Đo hoạt độ men LDH","Soi tủy đồ","Miễn dịch hóa mô CD4, CD8"],"correct":0,"subtopic":"Tân Sinh Lymphô"},{"question":"Đặc điểm quan trọng giúp phân biệt u lymphô Hodgkin với u lymphô không Hodgkin là gì?","options":["Sự hiện diện của tế bào Reed-Sternberg","Tổn thương lan tỏa ngoài hạch","Sự xâm nhập mô kẽ của tế bào B nhỏ","Mức độ xơ hóa hạch lymphô"],"correct":0,"subtopic":"Tân Sinh Lymphô"},{"question":"Lymphoma là gì?","options":["Bệnh lý ác tính của tế bào lympho","Viêm hạch lymphô mạn tính","Rối loạn miễn dịch nhẹ","Nhiễm trùng hạch bạch huyết"],"correct":0,"subtopic":"Lymphoma (U lymphô)"},{"question":"Loại u lymphô nào thường gặp nhất?","options":["U lymphô tế bào B lớn lan tỏa (DLBCL)","U lymphô Burkitt","U lymphô tế bào T ngoại vi","U lymphô Hodgkin"],"correct":0,"subtopic":"Lymphoma (U lymphô)"},{"question":"Đặc điểm tế bào đặc trưng của u lymphô Hodgkin là gì?","options":["Tế bào Reed-Sternberg","Tế bào Burkitt","Tế bào plasma","Tế bào mast"],"correct":0,"subtopic":"Lymphoma (U lymphô)"},{"question":"Trong các phân nhóm u lymphô Hodgkin, loại nào phổ biến nhất?","options":["Loại xơ cục","Loại tế bào hỗn hợp","Loại giàu lympho","Loại nghèo lympho"],"correct":0,"subtopic":"Lymphoma (U lymphô)"},{"question":"Trong u lymphô Burkitt, chuyển đoạn nhiễm sắc thể nào thường gặp?","options":["t(8;14) liên quan đến gen MYC","t(14;18) liên quan đến gen BCL2","t(9;22) liên quan đến BCR-ABL","t(11;14) liên quan đến cyclin D1"],"correct":0,"subtopic":"Lymphoma (U lymphô)"},{"question":"U lymphô không Hodgkin nào có liên quan mật thiết với virus Epstein-Barr (EBV)?","options":["U lymphô Burkitt","U lymphô tế bào B lớn lan tỏa (DLBCL)","U lymphô tế bào T ngoại vi","Bệnh bạch cầu lympho mạn (CLL)"],"correct":0,"subtopic":"Lymphoma (U lymphô)"},{"question":"Dấu ấn miễn dịch nào phổ biến trong u lymphô tế bào B lớn lan tỏa (DLBCL)?","options":["CD20","CD3","CD56","CD117"],"correct":0,"subtopic":"Lymphoma (U lymphô)"},{"question":"Triệu chứng \"B symptoms\" trong lymphoma bao gồm?","options":["Sốt, đổ mồ hôi đêm, giảm cân không rõ nguyên nhân","Ho dai dẳng, mệt mỏi, phát ban","Đau khớp, gan lách to, phù nề","Tiêu chảy kéo dài, đau bụng, sụt cân"],"correct":0,"subtopic":"Lymphoma (U lymphô)"},{"question":"Yếu tố tiên lượng quan trọng nhất trong u lymphô không Hodgkin là?","options":["Chỉ số IPI (International Prognostic Index)","Mức độ xâm lấn hạch lymphô","Tình trạng miễn dịch bệnh nhân","Số lượng bạch cầu trung tính"],"correct":0,"subtopic":"Lymphoma (U lymphô)"},{"question":"Liệu pháp điều trị tiêu chuẩn cho u lymphô tế bào B lớn lan tỏa (DLBCL) là?","options":["Hóa trị R-CHOP","Xạ trị đơn thuần","Liệu pháp miễn dịch đơn thuần","Phẫu thuật cắt bỏ hạch"],"correct":0,"subtopic":"Lymphoma (U lymphô)"}]}];
+
+    // State
+    let currentCategory = null;
+    let userAnswers = {}; // { questionIndex: chosenOptionIndex }
+    let currentFilter = 'all';
+
+    // Initialize App
+    function init() {
+      renderTopicCards(ALL_CATEGORIES);
+      setupScrollListener();
+      // Load saved theme
+      if (localStorage.getItem('theme') === 'dark') {
+        document.documentElement.setAttribute('data-theme', 'dark');
+        document.getElementById('themeBtn').textContent = '☀️ Chế độ sáng';
+      }
+    }
+
+    // Toggle Dark/Light Theme
+    function toggleTheme() {
+      const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+      if (isDark) {
+        document.documentElement.removeAttribute('data-theme');
+        localStorage.setItem('theme', 'light');
+        document.getElementById('themeBtn').textContent = '🌙 Chế độ tối';
+      } else {
+        document.documentElement.setAttribute('data-theme', 'dark');
+        localStorage.setItem('theme', 'dark');
+        document.getElementById('themeBtn').textContent = '☀️ Chế độ sáng';
+      }
+    }
+
+    // Render Home Cards
+    function renderTopicCards(categories) {
+      const grid = document.getElementById('topicsGrid');
+      if (categories.length === 0) {
+        grid.innerHTML = '<div style="grid-column:1/-1; text-align:center; padding:40px; color:var(--gray-600)">Không tìm thấy chuyên đề phù hợp với từ khóa!</div>';
+        return;
+      }
+
+      grid.innerHTML = categories.map((cat) => {
+        const subTags = cat.subTopics.slice(0, 4).map(st => 
+          `<span class="subtopic-tag">${escapeHtml(st.title.replace(/^[IVX0-9]+\.\s*/, ''))} (${st.count})</span>`
+        ).join('');
+        const moreTag = cat.subTopics.length > 4 
+          ? `<span class="subtopic-tag" style="opacity:0.75">+ ${cat.subTopics.length - 4} bài khác...</span>` 
+          : '';
+
+        return `
+          <div class="topic-card" onclick="selectTopic('${cat.id}')">
+            <div class="topic-card-header">
+              <div class="topic-icon">${cat.icon}</div>
+              <div class="topic-title-area">
+                <div class="topic-title">${escapeHtml(cat.title)}</div>
+                <div class="topic-badge">📌 ${cat.questionCount} câu hỏi</div>
+              </div>
+            </div>
+            <div class="topic-desc">${escapeHtml(cat.desc)}</div>
+            <div class="topic-subtopics">
+              <div style="font-size:0.75rem; color:var(--gray-600); margin-bottom:4px; font-weight:600;">CÁC BÀI HỌC CON:</div>
+              ${subTags} ${moreTag}
+            </div>
+            <button class="start-quiz-btn">
+              <span>Bắt đầu làm bài (${cat.questionCount} câu)</span> ➔
+            </button>
+          </div>
+        `;
+      }).join('');
+    }
+
+    // Search filter on home view
+    function handleSearch(query) {
+      const q = query.toLowerCase().trim();
+      if (!q) {
+        renderTopicCards(ALL_CATEGORIES);
+        return;
+      }
+      const filtered = ALL_CATEGORIES.filter(cat => {
+        if (cat.title.toLowerCase().includes(q)) return true;
+        if (cat.desc.toLowerCase().includes(q)) return true;
+        return cat.subTopics.some(st => st.title.toLowerCase().includes(q));
+      });
+      renderTopicCards(filtered);
+    }
+
+    // Select a Subject and Open Quiz Screen
+    function selectTopic(catId) {
+      currentCategory = ALL_CATEGORIES.find(c => c.id === catId);
+      if (!currentCategory) return;
+
+      userAnswers = {};
+      currentFilter = 'all';
+
+      // Switch views
+      document.getElementById('homeView').style.display = 'none';
+      document.getElementById('quizView').style.display = 'block';
+
+      // Set headers
+      document.getElementById('quizIcon').textContent = currentCategory.icon;
+      document.getElementById('quizTitle').textContent = currentCategory.title;
+      document.getElementById('quizTotalBadge').textContent = `Tổng số: ${currentCategory.questionCount} câu hỏi`;
+
+      // Reset filter chips
+      document.querySelectorAll('.filter-chip').forEach(c => c.classList.remove('active'));
+      document.getElementById('btnFilterAll').classList.add('active');
+
+      // Render Question Palette in Right Sidebar
+      renderPalette();
+
+      // Render All Questions of chosen Subject
+      renderQuestions();
+
+      // Update Live Stats
+      updateLiveStats();
+
+      // Scroll to top
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    // MODULE ĐIỀU HƯỚNG TRỞ LẠI: Return to Home view
+    function returnToHome() {
+      document.getElementById('quizView').style.display = 'none';
+      document.getElementById('homeView').style.display = 'block';
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    // Render Question Palette in Right Sidebar
+    function renderPalette() {
+      const grid = document.getElementById('paletteGrid');
+      const total = currentCategory.questions.length;
+      let html = '';
+
+      for (let i = 0; i < total; i++) {
+        let stateClass = '';
+        if (userAnswers[i] !== undefined) {
+          stateClass = (userAnswers[i] === currentCategory.questions[i].correct) ? 'is-correct' : 'is-wrong';
+        }
+        html += `<div class="palette-item ${stateClass}" id="pal-${i}" onclick="scrollToQuestion(${i})" title="Nhảy đến câu ${i + 1}">${i + 1}</div>`;
+      }
+      grid.innerHTML = html;
+    }
+
+    // Render all questions of the chosen topic in scrollable list
+    function renderQuestions() {
+      const list = document.getElementById('questionsList');
+      const questions = currentCategory.questions;
+      const letters = ['A', 'B', 'C', 'D'];
+
+      list.innerHTML = questions.map((q, qIdx) => {
+        const isAnswered = userAnswers[qIdx] !== undefined;
+        const chosen = userAnswers[qIdx];
+        const isCorrect = isAnswered && chosen === q.correct;
+
+        let cardClass = '';
+        if (isAnswered) {
+          cardClass = isCorrect ? 'answered-correct' : 'answered-wrong';
+        }
+
+        const optionsHtml = q.options.map((optText, optIdx) => {
+          let btnClass = '';
+          if (isAnswered) {
+            if (optIdx === q.correct) {
+              btnClass = 'is-correct';
+            } else if (optIdx === chosen && !isCorrect) {
+              btnClass = 'is-wrong';
+            }
+          }
+
+          return `
+            <button 
+              type="button" 
+              class="option-btn ${btnClass}" 
+              ${isAnswered ? 'disabled' : ''} 
+              onclick="handleAnswer(${qIdx}, ${optIdx})"
+            >
+              <span class="option-letter">${letters[optIdx]}</span>
+              <span class="option-content">${escapeHtml(optText)}</span>
+            </button>
+          `;
+        }).join('');
+
+        let feedbackHtml = '';
+        if (isAnswered) {
+          if (isCorrect) {
+            feedbackHtml = `
+              <div class="answer-feedback feedback-correct" style="display:flex;">
+                ✔ Chính xác! Đáp án đúng là <strong>${letters[q.correct]}. ${escapeHtml(q.options[q.correct])}</strong>
+              </div>
+            `;
+          } else {
+            feedbackHtml = `
+              <div class="answer-feedback feedback-wrong" style="display:flex;">
+                ✖ Bạn đã chọn ${letters[chosen]}. Đáp án đúng là: <strong>${letters[q.correct]}. ${escapeHtml(q.options[q.correct])}</strong>
+              </div>
+            `;
+          }
+        }
+
+        return `
+          <div class="question-card ${cardClass}" id="qCard-${qIdx}" data-idx="${qIdx}">
+            <div class="q-meta">
+              <span class="q-number-tag">Câu ${qIdx + 1} / ${questions.length}</span>
+              <span class="q-subtopic-tag">${escapeHtml(q.subtopic || currentCategory.title)}</span>
+            </div>
+            <div class="q-text">${escapeHtml(q.question)}</div>
+            <div class="options-grid">
+              ${optionsHtml}
+            </div>
+            ${feedbackHtml}
+          </div>
+        `;
+      }).join('');
+    }
+
+    // Handle user clicking an option
+    function handleAnswer(qIdx, optIdx) {
+      if (userAnswers[qIdx] !== undefined) return; // Already answered
+
+      userAnswers[qIdx] = optIdx;
+      const q = currentCategory.questions[qIdx];
+      const isCorrect = (optIdx === q.correct);
+      const letters = ['A', 'B', 'C', 'D'];
+
+      // Update card in DOM immediately
+      const card = document.getElementById(`qCard-${qIdx}`);
+      if (card) {
+        card.classList.remove('answered-correct', 'answered-wrong');
+        card.classList.add(isCorrect ? 'answered-correct' : 'answered-wrong');
+
+        const buttons = card.querySelectorAll('.option-btn');
+        buttons.forEach((btn, idx) => {
+          btn.disabled = true;
+          if (idx === q.correct) {
+            btn.classList.add('is-correct');
+          } else if (idx === optIdx && !isCorrect) {
+            btn.classList.add('is-wrong');
+          }
+        });
+
+        // Add feedback
+        let feedback = card.querySelector('.answer-feedback');
+        if (!feedback) {
+          feedback = document.createElement('div');
+          card.appendChild(feedback);
+        }
+        feedback.className = `answer-feedback ${isCorrect ? 'feedback-correct' : 'feedback-wrong'}`;
+        feedback.style.display = 'flex';
+        feedback.innerHTML = isCorrect 
+          ? `✔ Chính xác! Đáp án đúng là <strong>${letters[q.correct]}. ${escapeHtml(q.options[q.correct])}</strong>`
+          : `✖ Bạn đã chọn ${letters[optIdx]}. Đáp án đúng là: <strong>${letters[q.correct]}. ${escapeHtml(q.options[q.correct])}</strong>`;
+      }
+
+      // Update Right Sidebar Palette item immediately
+      const palItem = document.getElementById(`pal-${qIdx}`);
+      if (palItem) {
+        palItem.className = `palette-item ${isCorrect ? 'is-correct' : 'is-wrong'}`;
+      }
+
+      // Update Live Stats
+      updateLiveStats();
+    }
+
+    // Update real-time score, counter, and progress bar
+    function updateLiveStats() {
+      const total = currentCategory.questions.length;
+      let answeredCount = 0;
+      let correctCount = 0;
+      let wrongCount = 0;
+
+      for (let i = 0; i < total; i++) {
+        if (userAnswers[i] !== undefined) {
+          answeredCount++;
+          if (userAnswers[i] === currentCategory.questions[i].correct) {
+            correctCount++;
+          } else {
+            wrongCount++;
+          }
+        }
+      }
+
+      // Top badges
+      document.getElementById('statAnswered').textContent = `Đã làm: ${answeredCount}/${total}`;
+      document.getElementById('statCorrect').textContent = `✔ Đúng: ${correctCount}`;
+      document.getElementById('statWrong').textContent = `✖ Sai: ${wrongCount}`;
+
+      // Sidebar badge
+      document.getElementById('sidebarProgressBadge').textContent = `${answeredCount}/${total}`;
+
+      // Progress bar
+      const pct = total > 0 ? Math.round((answeredCount / total) * 100) : 0;
+      document.getElementById('progressBar').style.width = `${pct}%`;
+
+      // Bottom summary
+      const scorePct = answeredCount > 0 ? Math.round((correctCount / answeredCount) * 100) : 0;
+      document.getElementById('summaryScoreNum').textContent = `${correctCount}/${total}`;
+      document.getElementById('summaryScorePct').textContent = `${scorePct}%`;
+
+      if (answeredCount === total) {
+        document.getElementById('summaryTitle').textContent = `🎉 Hoàn Thành Môn Học!`;
+        document.getElementById('summarySubtitle').textContent = `Bạn đã trả lời đúng ${correctCount} trên tổng số ${total} câu hỏi (${scorePct}%). Chúc mừng bạn!`;
+      } else {
+        document.getElementById('summaryTitle').textContent = `Tiến Độ: ${answeredCount}/${total} câu`;
+        document.getElementById('summarySubtitle').textContent = `Còn ${total - answeredCount} câu chưa trả lời. Tiếp tục cuộn xuống để hoàn thành!`;
+      }
+    }
+
+    // Filter questions (All / Unanswered / Wrong / Correct)
+    function setQuestionFilter(filterType, btn) {
+      currentFilter = filterType;
+      document.querySelectorAll('.filter-chip').forEach(c => c.classList.remove('active'));
+      if (btn) {
+        btn.classList.add('active');
+      } else if (filterType === 'all') {
+        document.getElementById('btnFilterAll').classList.add('active');
+      }
+
+      const cards = document.querySelectorAll('.question-card');
+      cards.forEach(card => {
+        const idx = parseInt(card.getAttribute('data-idx'));
+        const isAnswered = userAnswers[idx] !== undefined;
+        const isCorrect = isAnswered && (userAnswers[idx] === currentCategory.questions[idx].correct);
+
+        if (filterType === 'all') {
+          card.style.display = 'block';
+        } else if (filterType === 'unanswered') {
+          card.style.display = !isAnswered ? 'block' : 'none';
+        } else if (filterType === 'wrong') {
+          card.style.display = (isAnswered && !isCorrect) ? 'block' : 'none';
+        } else if (filterType === 'correct') {
+          card.style.display = isCorrect ? 'block' : 'none';
+        }
+      });
+    }
+
+    // Scroll smoothly to a specific question from right sidebar
+    function scrollToQuestion(idx) {
+      const card = document.getElementById(`qCard-${idx}`);
+      if (card) {
+        card.style.display = 'block';
+        card.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        card.style.transform = 'scale(1.02)';
+        card.style.borderColor = 'var(--primary)';
+        setTimeout(() => {
+          card.style.transform = 'none';
+          const isAnswered = userAnswers[idx] !== undefined;
+          if (isAnswered) {
+            const isCorrect = (userAnswers[idx] === currentCategory.questions[idx].correct);
+            card.style.borderColor = isCorrect ? 'var(--success)' : 'var(--danger)';
+          } else {
+            card.style.borderColor = 'var(--border)';
+          }
+        }, 400);
+      }
+    }
+
+    // Restart Quiz for current subject
+    function restartCurrentQuiz() {
+      if (confirm('Bạn có chắc muốn làm lại môn này từ đầu không?')) {
+        userAnswers = {};
+        renderPalette();
+        renderQuestions();
+        updateLiveStats();
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      }
+    }
+
+    // Scroll-to-Top Button
+    function setupScrollListener() {
+      const btn = document.getElementById('scrollTopBtn');
+      window.addEventListener('scroll', () => {
+        if (window.scrollY > 400) {
+          btn.classList.add('visible');
+        } else {
+          btn.classList.remove('visible');
+        }
+      });
+    }
+
+    // Utility: HTML escape
+    function escapeHtml(str) {
+      if (!str) return '';
+      return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
+    }
+
+    // Auto-run
+    init();
+  </script>
+</body>
+</html>

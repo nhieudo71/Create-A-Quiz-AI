@@ -17,7 +17,8 @@ import {
   RefreshCw,
   FileQuestion,
   Download,
-  Upload
+  Upload,
+  Sparkles
 } from 'lucide-react';
 
 interface QuizLibraryProps {
@@ -132,7 +133,9 @@ export const QuizLibrary: React.FC<QuizLibraryProps> = ({ onStartQuiz }) => {
 
   const selectedSubject = subjects.find((s) => s.id === selectedSubjectId) ?? null;
 
-  const handleDownloadExport = async (quiz: SavedQuiz, format: 'docx' | 'anki') => {
+  const [isSeeding, setIsSeeding] = useState(false);
+
+  const handleDownloadExport = async (quiz: SavedQuiz, format: 'docx' | 'anki' | 'html') => {
     try {
       const url = `/api/v1/quizzes/${quiz.id}/export/${format}`;
       const res = await fetch(url, { headers: withAuthHeaders() });
@@ -140,14 +143,75 @@ export const QuizLibrary: React.FC<QuizLibraryProps> = ({ onStartQuiz }) => {
       const blob = await res.blob();
       const link = document.createElement('a');
       link.href = URL.createObjectURL(blob);
-      link.download = format === 'docx' ? `${quiz.title}.docx` : `${quiz.title}-anki.csv`;
+      link.download =
+        format === 'docx'
+          ? `${quiz.title}.docx`
+          : format === 'anki'
+          ? `${quiz.title}-anki.csv`
+          : `${quiz.title}.html`;
       link.click();
       URL.revokeObjectURL(link.href);
-      toast.success(`Đã xuất đề thi sang ${format === 'docx' ? 'Word (.docx)' : 'Anki (.csv)'}!`);
+      const label =
+        format === 'docx' ? 'Word (.docx)' : format === 'anki' ? 'Anki (.csv)' : 'HTML tương tác offline';
+      toast.success(`Đã xuất đề thi sang ${label}!`);
     } catch (err: any) {
       const msg = err.message || 'Lỗi khi xuất đề thi.';
       setErrorMessage(msg);
       toast.error(msg);
+    }
+  };
+
+  const handleImportHtml = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    e.target.value = '';
+    if (!file) return;
+    setErrorMessage(null);
+    try {
+      const formData = new FormData();
+      formData.append('file', file);
+      const subject = selectedSubject?.name ?? 'Giải Phẫu Bệnh';
+      const res = await fetch(
+        `/api/v1/quizzes/import/html?subjectName=${encodeURIComponent(subject)}`,
+        { method: 'POST', headers: withAuthHeaders(), body: formData }
+      );
+      const json = await res.json().catch(() => ({}));
+      if (!res.ok || !json.success) {
+        throw new Error(json?.error?.message || 'Không nhập được file HTML.');
+      }
+      await loadSubjects();
+      if (selectedSubjectId) await loadQuizzes(selectedSubjectId);
+      toast.success(`Đã nhập thành công ${json.data?.importedCount ?? ''} câu hỏi từ HTML!`);
+    } catch (err: any) {
+      const msg = err.message || 'Không nhập được file HTML.';
+      setErrorMessage(msg);
+      toast.error(msg);
+    }
+  };
+
+  const handleSeedPathology = async () => {
+    setIsSeeding(true);
+    setErrorMessage(null);
+    try {
+      const res = await fetch('/api/v1/quizzes/seed-pathology', {
+        method: 'POST',
+        headers: withAuthHeaders()
+      });
+      const json = await res.json().catch(() => ({}));
+      if (!res.ok || !json.success) {
+        throw new Error(json?.error?.message || 'Không nạp được bộ đề Giải Phẫu Bệnh.');
+      }
+      await loadSubjects();
+      if (json.data?.subject?.id) {
+        setSelectedSubjectId(json.data.subject.id);
+        await loadQuizzes(json.data.subject.id);
+      }
+      toast.success(`Đã nạp ${json.data?.quizzesCount ?? 13} đề thi với ${json.data?.questionsCount ?? 604} câu Giải Phẫu Bệnh!`);
+    } catch (err: any) {
+      const msg = err.message || 'Lỗi khi nạp dữ liệu Giải Phẫu Bệnh.';
+      setErrorMessage(msg);
+      toast.error(msg);
+    } finally {
+      setIsSeeding(false);
     }
   };
 
@@ -225,7 +289,21 @@ export const QuizLibrary: React.FC<QuizLibraryProps> = ({ onStartQuiz }) => {
             Các đề đã tạo được lưu vĩnh viễn theo từng môn học cho tới khi bạn xoá.
           </p>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 flex-wrap">
+          <button
+            onClick={() => void handleSeedPathology()}
+            disabled={isSeeding}
+            className="px-3 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-700 disabled:opacity-50 text-white text-xs font-bold transition flex items-center gap-1.5"
+            title="Nạp ngay 13 đề thi với 604 câu hỏi Giải Phẫu Bệnh mẫu"
+          >
+            {isSeeding ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Sparkles className="w-3.5 h-3.5" />}
+            <span>{isSeeding ? 'Đang nạp...' : 'Nạp Đề Mẫu GPB (604 câu)'}</span>
+          </button>
+          <label className="px-3 py-1.5 rounded-lg border border-slate-300 bg-white hover:bg-slate-50 text-slate-700 text-xs font-semibold cursor-pointer flex items-center gap-1.5 transition">
+            <Upload className="w-3.5 h-3.5" />
+            <span>Nhập HTML</span>
+            <input type="file" accept=".html,.htm" onChange={(e) => void handleImportHtml(e)} className="hidden" />
+          </label>
           <label className="px-3 py-1.5 rounded-lg border border-slate-300 bg-white hover:bg-slate-50 text-slate-700 text-xs font-semibold cursor-pointer flex items-center gap-1.5 transition">
             <Upload className="w-3.5 h-3.5" />
             <span>Nhập Excel</span>
@@ -328,6 +406,14 @@ export const QuizLibrary: React.FC<QuizLibraryProps> = ({ onStartQuiz }) => {
                       className="px-2 py-1.5 rounded-lg text-[11px] font-semibold text-slate-500 hover:text-sky-700 hover:bg-sky-50"
                     >
                       Anki
+                    </button>
+                    <button
+                      onClick={() => void handleDownloadExport(quiz, 'html')}
+                      title="Xuất file HTML tương tác offline"
+                      className="px-2 py-1.5 rounded-lg text-[11px] font-semibold text-slate-500 hover:text-emerald-700 hover:bg-emerald-50 flex items-center gap-1"
+                    >
+                      <Download className="w-3.5 h-3.5" />
+                      <span>HTML</span>
                     </button>
                     <button
                       onClick={() => setEditingQuiz(quiz)}

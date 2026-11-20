@@ -21,6 +21,7 @@ const composeQuizBodySchema = z.object({
   easy_pct: z.number().int().min(0).max(100).optional(),
   medium_pct: z.number().int().min(0).max(100).optional(),
   hard_pct: z.number().int().min(0).max(100).optional(),
+  subtopic: z.string().optional(),
   question_types: z
     .array(z.enum(['MCQ', 'MULTI_SELECT', 'TRUE_FALSE', 'FILL_BLANK', 'MATCHING', 'ORDERING', 'LIKERT']))
     .optional()
@@ -69,6 +70,7 @@ export function registerStudyRoutes(app: FastifyInstance, studyService: StudySer
       easyPct: body.easy_pct,
       mediumPct: body.medium_pct,
       hardPct: body.hard_pct,
+      subtopic: body.subtopic,
       questionTypes: body.question_types as QuestionType[] | undefined
     });
     return reply.status(201).send({ success: true, data });

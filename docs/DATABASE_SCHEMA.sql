@@ -41,6 +41,7 @@ CREATE TABLE IF NOT EXISTS questions (
     question_type VARCHAR(20) NOT NULL DEFAULT 'MCQ',
     -- Dữ liệu riêng theo loại (pairs của MATCHING, correctOrder của ORDERING, scale của LIKERT)
     payload JSONB,
+    subtopic VARCHAR(255),
     is_deleted BOOLEAN DEFAULT FALSE,
     created_at TIMESTAMPTZ DEFAULT NOW(),
     updated_at TIMESTAMPTZ DEFAULT NOW()
@@ -50,6 +51,7 @@ CREATE TABLE IF NOT EXISTS questions (
 -- CREATE TABLE IF NOT EXISTS không sửa được bảng cũ, nên phải ALTER riêng.
 ALTER TABLE questions ADD COLUMN IF NOT EXISTS question_type VARCHAR(20) NOT NULL DEFAULT 'MCQ';
 ALTER TABLE questions ADD COLUMN IF NOT EXISTS payload JSONB;
+ALTER TABLE questions ADD COLUMN IF NOT EXISTS subtopic VARCHAR(255);
 
 -- 4. BẢNG ĐÁP ÁN LỰA CHỌN (QUESTION_OPTIONS)
 CREATE TABLE IF NOT EXISTS question_options (

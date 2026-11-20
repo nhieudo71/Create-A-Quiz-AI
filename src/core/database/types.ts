@@ -34,6 +34,7 @@ export interface QuestionTable {
   source_reference: string | null;
   question_type: Generated<string>;
   payload: unknown | null;
+  subtopic: string | null;
   is_deleted: Generated<boolean>;
   created_at: Generated<Date>;
   updated_at: Generated<Date>;

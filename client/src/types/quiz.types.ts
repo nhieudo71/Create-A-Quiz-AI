@@ -18,6 +18,7 @@ export interface AttemptQuestion {
   difficulty: Difficulty;
   question_type: QuestionType;
   payload: QuestionPayload | null;
+  subtopic?: string | null;
   options: AttemptOption[];
 }
 

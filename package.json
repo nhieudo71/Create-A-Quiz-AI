@@ -7,7 +7,7 @@
     "dev": "tsx watch src/server.ts",
     "build": "tsc",
     "build:server": "tsc",
-    "test": "tsx --test tests/api.test.ts tests/auth.test.ts tests/settings.test.ts tests/backup.test.ts tests/retry.test.ts tests/ocr-fallback.test.ts tests/document-formats.test.ts tests/upload-formats.test.ts tests/quiz-library.test.ts tests/grading.test.ts tests/question-types.test.ts tests/phase2-ux.test.ts tests/phase3-study.test.ts tests/phase4-docs-ai.test.ts tests/phase5-export-import.test.ts",
+    "test": "tsx --test tests/api.test.ts tests/auth.test.ts tests/settings.test.ts tests/backup.test.ts tests/retry.test.ts tests/ocr-fallback.test.ts tests/document-formats.test.ts tests/upload-formats.test.ts tests/quiz-library.test.ts tests/grading.test.ts tests/question-types.test.ts tests/phase2-ux.test.ts tests/phase3-study.test.ts tests/phase4-docs-ai.test.ts tests/phase5-export-import.test.ts tests/html-quiz.test.ts",
     "build:client": "npm --prefix client run build",
     "build:all": "npm run build:client && npm run build:server",
     "start": "node dist/server.js",
